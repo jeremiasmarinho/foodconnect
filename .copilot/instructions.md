@@ -437,6 +437,154 @@ export class PaginatedResponse<T> extends ApiResponse<T[]> {
 }
 ```
 
+## ⚠️ Lições Aprendidas - Evitar Erros Comuns
+
+> Seção atualizada durante desenvolvimento para capturar e evitar erros recorrentes
+
+### **🔧 Configuração de Ambiente e Build**
+
+#### **Problema: NestJS CLI criando repositório git aninhado**
+
+- **Erro**: `nest new .` cria `.git` dentro da pasta backend, impedindo commits no repo principal
+- **Solução**: Sempre remover `.git` aninhado após `nest new`
+- **Comando**: `Remove-Item -Recurse -Force backend/.git` (PowerShell)
+
+#### **Problema: Branch protection impedindo push direto**
+
+- **Erro**: Push para `main` falha por proteção de branch
+- **Solução**: Sempre usar feature branches: `git checkout -b feat/nome-da-feature`
+- **Fluxo**: feature branch → push → pull request → merge
+
+#### **Problema: Context de terminal perdido no PowerShell**
+
+- **Erro**: Comandos executados no diretório errado por navegação incorreta
+- **Solução**: Sempre usar caminhos absolutos ou verificar `pwd` antes de comandos críticos
+- **Exemplo**: `cd C:\Users\"Jeremias Marinho"\foodconnect\backend` ao invés de `cd backend`
+
+### **💻 Erros de Comandos Terminal (PowerShell)**
+
+#### **Comando: ls -la (Linux/macOS)**
+
+- **❌ Erro**: `ls -la backend/` → "Não é possível localizar um parâmetro que coincida com o nome de parâmetro 'la'"
+- **✅ Correto**: `Get-ChildItem -Force backend/` ou `dir backend/` ou `ls backend/`
+- **Nota**: PowerShell usa Get-ChildItem, `-Force` mostra arquivos ocultos
+
+#### **Comando: Navegação com espaços no path**
+
+- **❌ Erro**: `cd C:\Users\Jeremias Marinho\foodconnect\backend` → Falha por espaço no nome
+- **✅ Correto**: `cd "C:\Users\Jeremias Marinho\foodconnect\backend"` ou `cd C:\Users\"Jeremias Marinho"\foodconnect\backend`
+- **Nota**: Sempre usar aspas quando path contém espaços
+
+#### **Comando: Múltiplos comandos em sequência**
+
+- **❌ Erro**: `cd backend && npm run start:dev` → Operador && não funciona no PowerShell
+- **✅ Correto**: `cd backend; npm run start:dev` ou separar em comandos individuais
+- **Nota**: PowerShell usa `;` para separar comandos, não `&&`
+
+#### **Comando: Verificar se arquivo/pasta existe**
+
+- **❌ Erro**: `[ -f backend/.git ]` → Sintaxe bash não funciona
+- **✅ Correto**: `Test-Path backend/.git` ou `if (Test-Path backend/.git) { ... }`
+- **Nota**: PowerShell usa cmdlets específicos para testes de path
+
+#### **Comando: Remover pasta recursivamente**
+
+- **❌ Erro**: `rm -rf backend/.git` → Comando Unix não reconhecido
+- **✅ Correto**: `Remove-Item -Recurse -Force backend/.git` ou `rmdir /s backend\.git`
+- **Nota**: PowerShell usa Remove-Item com parâmetros explícitos
+
+#### **Comando: Verificar comandos disponíveis**
+
+- **❌ Erro**: `which psql` → Comando Unix não existe
+- **✅ Correto**: `Get-Command psql` ou `where psql` ou simplesmente `psql --version`
+- **Nota**: PowerShell usa Get-Command para encontrar executáveis
+
+#### **Comando: Scripts npm com contexto de diretório**
+
+- **❌ Erro**: `npm run start:dev` na pasta errada → "Missing script: start:dev"
+- **✅ Correto**: Sempre verificar `pwd` e navegar para pasta com package.json
+- **Verificação**: `npm run` mostra scripts disponíveis no package.json atual
+
+#### **Comando: Prisma commands**
+
+- **❌ Erro**: `npx prisma dev` → "Unknown command 'dev'"
+- **✅ Correto**: `npx prisma migrate dev --name nome-da-migration`
+- **Alternativa**: `npx prisma db push` (para development sem migrations)
+- **Help**: `npx prisma --help` mostra comandos disponíveis
+
+### **🗃️ Configuração de Banco de Dados**
+
+#### **Problema: PostgreSQL não instalado localmente**
+
+- **Erro**: Tentativa de usar PostgreSQL sem instalação prévia
+- **Solução**: Usar SQLite para desenvolvimento local ou configurar PostgreSQL via Docker
+- **Configuração**: `provider = "sqlite"` no schema.prisma para dev
+
+#### **Problema: Prisma client path incorreto**
+
+- **Erro**: Import path `../../generated/prisma` pode falhar se não executar `prisma generate`
+- **Solução**: Sempre rodar `npx prisma generate` após alterações no schema
+- **Verificação**: Garantir que pasta `generated/` existe antes de imports
+
+### **🔄 Fluxo de Commits Incrementais**
+
+#### **Problema: Commits muito grandes sem contexto**
+
+- **Erro**: Commit de muitas alterações simultâneas dificulta rastreamento
+- **Solução**: Commits pequenos e incrementais após cada milestone
+- **Padrão**: feat → test → commit → push → próxima feature
+
+#### **Problema: Mensagens de commit genéricas**
+
+- **Erro**: Commits como "update files" não explicam alterações
+- **Solução**: Seguir formato: `tipo: descrição curta\n\n- Lista detalhada\n- Do que foi alterado`
+- **Exemplo**: `feat: configure database with Prisma ORM\n\n- Add User, Restaurant models\n- Setup migrations`
+
+### **🌿 Erros de Git Commands**
+
+#### **Comando: Git add com repositório aninhado**
+
+- **❌ Erro**: `git add .` → "backend/' does not have a commit checked out"
+- **✅ Solução**: Remover `.git` aninhado primeiro: `Remove-Item -Recurse -Force backend/.git`
+- **Prevenção**: Sempre verificar `Test-Path pasta/.git` antes de git add
+
+#### **Comando: Push direto para branch protegida**
+
+- **❌ Erro**: `git push origin main` → "Protected branch update failed"
+- **✅ Correto**:
+  ```bash
+  git checkout -b feat/nome-da-feature
+  git push -u origin feat/nome-da-feature
+  # Depois criar PR no GitHub
+  ```
+- **Regra**: Nunca push direto para main, sempre usar feature branches
+
+#### **Comando: Commit sem staging**
+
+- **❌ Erro**: `git commit -m "message"` sem `git add` → "no changes added to commit"
+- **✅ Correto**: `git add .` primeiro, depois `git commit -m "message"`
+- **Verificação**: `git status` mostra o que está staged vs untracked
+
+#### **Comando: Status de branch tracking**
+
+- **❌ Problema**: Branch local não trackeia remote → push falha
+- **✅ Correto**: `git push -u origin nome-da-branch` (primeira vez)
+- **Depois**: `git push` funciona normalmente
+
+### **🛠️ Desenvolvimento NestJS**
+
+#### **Problema: Scripts npm não encontrados**
+
+- **Erro**: `npm run start:dev` falhando por contexto de diretório
+- **Solução**: Verificar package.json e executar no diretório correto
+- **Verificação**: `npm run` lista scripts disponíveis
+
+#### **Problema: Modules não importados no AppModule**
+
+- **Erro**: Serviços injetados não funcionam se módulo não estiver importado
+- **Solução**: Sempre adicionar novos módulos ao imports do AppModule
+- **Pattern**: Criar módulo → exportar serviços → importar no AppModule
+
 ## 🎯 Instruções para GitHub Copilot
 
 Quando o Copilot estiver gerando código:
@@ -451,6 +599,10 @@ Quando o Copilot estiver gerando código:
 8. **SEMPRE** incluir comentários JSDoc para métodos públicos
 9. **SEMPRE** otimizar queries de banco de dados
 10. **SEMPRE** seguir princípios SOLID
+11. **SEMPRE** verificar contexto de diretório antes de comandos
+12. **SEMPRE** usar feature branches para desenvolvimento
+13. **SEMPRE** fazer commits incrementais após cada milestone
+14. **SEMPRE** verificar se módulos estão importados no AppModule
 
 ---
 
