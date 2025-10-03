@@ -802,6 +802,24 @@ Quando o Copilot estiver gerando código:
 17. **SEMPRE** documentar decisões de arquitetura e bibliotecas
 18. **SEMPRE** executar `pwd` antes de comandos críticos de terminal
 19. **SEMPRE** usar caminhos absolutos quando em dúvida sobre contexto
+20. **SEMPRE** auto-documentar erros de terminal descobertos durante desenvolvimento
+
+### **📋 REGRA CRÍTICA: Auto-Documentação de Erros Terminal**
+
+**Sempre que ocorrer um erro de terminal e você descobrir a solução:**
+
+1. **Imediatamente** adicione o erro à seção "Lições Aprendidas - Evitar Erros Comuns"
+2. **Formato obrigatório**:
+   ```markdown
+   #### **Comando: [Descrição do comando que falhou]**
+   
+   - **❌ Erro**: `comando errado` → "mensagem de erro"
+   - **✅ Correto**: `comando correto` ou abordagem correta
+   - **Nota**: Explicação do motivo e como evitar
+   ```
+3. **Commit imediato** das instruções atualizadas com mensagem: `docs: add terminal error [tipo do erro] to instructions`
+
+**Objetivo**: Construir uma base de conhecimento cumulativa que evite repetir os mesmos erros, acelerando o desenvolvimento e reduzindo frustrações.
 
 ---
 
