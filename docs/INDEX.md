@@ -2,9 +2,10 @@
 
 ## 🎯 Status do Projeto
 
-- **Fase Atual**: ✅ Planejamento Estratégico Concluído
-- **Próxima Fase**: 🚀 Sprint 0 (Setup & Fundação)
-- **Prazo para Decisão**: 90 dias para validação da hipótese central
+- **Fase Atual**: 🚧 Sprint 0 em Desenvolvimento
+- **Progresso**: Backend Base (Auth + Users + Restaurants) ✅
+- **Próximo**: Módulo Posts + Testes de Integração
+- **Prazo para Validação**: 90 dias para hipótese central
 
 ## 📚 Navegação Rápida
 

@@ -1,7 +1,7 @@
 # FoodConnect - Plataforma de Descoberta Social Gastronômica
 
-> **Status**: Fase de Planejamento Estratégico Concluída ✅  
-> **Próximo Passo**: Início do Desenvolvimento (Sprint 0)  
+> **Status**: Sprint 0 em Desenvolvimento 🚧  
+> **Progresso**: Backend Base Implementado (Auth + Users + Restaurants)  
 > **Última Atualização**: Outubro 2025
 
 ## 🎯 Visão do Projeto
@@ -70,7 +70,26 @@ O **FoodConnect** transforma a experiência gastronômica de um ato puramente tr
 | **H4** | WhatsApp Bot converte leads qualificados             | ≥30% leads → usuários ativos em ≤7 dias          |
 | **H5** | Recomendação semântica gera engagement               | CTR em blocos recomendados ≥20%                  |
 
-## 🛣️ Roadmap 90 Dias
+## � Progresso Atual - Sprint 0
+
+### ✅ **Backend Base Implementado**
+
+| Módulo             | Status                | Endpoints   | Funcionalidades                     |
+| ------------------ | --------------------- | ----------- | ----------------------------------- |
+| **Authentication** | ✅ Completo           | 4 endpoints | JWT, registro, login, perfil        |
+| **Users**          | ✅ Completo           | 6 endpoints | CRUD, busca, paginação              |
+| **Restaurants**    | ✅ Completo           | 7 endpoints | CRUD, geolocalização, busca textual |
+| **Posts**          | 🔄 Em desenvolvimento | -           | Feed social, likes, comentários     |
+
+### 🏗️ **Arquitetura Implementada**
+
+- **Backend**: NestJS + TypeScript + Prisma ORM
+- **Database**: SQLite (dev) → PostgreSQL (prod)
+- **Auth**: JWT com refresh tokens e guards
+- **Validation**: class-validator para todos os DTOs
+- **Logging**: Estruturado com contexto de operações
+
+## �🛣️ Roadmap 90 Dias
 
 | **Mês 1**                 | **Mês 2**               | **Mês 3**                 |
 | ------------------------- | ----------------------- | ------------------------- |
