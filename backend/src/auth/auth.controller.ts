@@ -48,12 +48,22 @@ export class AuthController {
    * @param req - Request object with user data from JWT
    * @returns Current user profile
    */
-  @Get('profile')
   @UseGuards(JwtAuthGuard)
-  getProfile(@Request() req) {
+  @Get('profile')
+  getProfile(@Request() req: any) {
+    const user = req.user as {
+      id: string;
+      email: string;
+      username: string;
+      name: string;
+      createdAt: Date;
+    };
     return {
-      message: 'Profile accessed successfully',
-      user: req.user,
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      name: user.name,
+      createdAt: user.createdAt,
     };
   }
 
