@@ -481,6 +481,12 @@ export class PaginatedResponse<T> extends ApiResponse<T[]> {
 - **✅ Correto**: `cd backend; npm run start:dev` ou separar em comandos individuais
 - **Nota**: PowerShell usa `;` para separar comandos, não `&&`
 
+#### **Comando: Operador && em paths com espaços**
+
+- **❌ Erro**: `cd C:\Users\Jeremias\ Marinho\foodconnect\backend && npx prettier` → "O token '&&' não é um separador de instruções válido"
+- **✅ Correto**: Usar comandos separados ou `;` como separador
+- **Exemplo**: `cd "C:\Users\Jeremias Marinho\foodconnect\backend"; npx prettier --write file.ts`
+
 #### **Comando: Verificar se arquivo/pasta existe**
 
 - **❌ Erro**: `[ -f backend/.git ]` → Sintaxe bash não funciona
@@ -598,13 +604,13 @@ export class PaginatedResponse<T> extends ApiResponse<T[]> {
 ```typescript
 // ✅ SEMPRE seguir esta sequência:
 // 1. Verificar diretório atual
-run_in_terminal("pwd") 
+run_in_terminal("pwd");
 
 // 2. Se não estiver no diretório correto, navegar
-run_in_terminal('cd "C:\Users\Jeremias Marinho\foodconnect\backend"')
+run_in_terminal('cd "C:UsersJeremias Marinho\foodconnect\backend"');
 
 // 3. Então executar o comando desejado
-run_in_terminal("npm run start:dev")
+run_in_terminal("npm run start:dev");
 ```
 
 #### **Diretórios por Tipo de Comando:**
@@ -626,10 +632,12 @@ ls   # Lista arquivos (deve mostrar package.json para npm, .git para git)
 
 ```typescript
 // ✅ SEMPRE usar caminhos absolutos quando em dúvida:
-run_in_terminal('cd "C:\Users\Jeremias Marinho\foodconnect\backend"; npm run start:dev')
+run_in_terminal(
+  'cd "C:UsersJeremias Marinho\foodconnect\backend"; npm run start:dev'
+);
 
 // Ao invés de assumir contexto:
-run_in_terminal("npm run start:dev") // ❌ Pode falhar se não estiver no backend
+run_in_terminal("npm run start:dev"); // ❌ Pode falhar se não estiver no backend
 ```
 
 ## 💰 Estratégia de Orçamento Limitado - Análise de Bibliotecas
