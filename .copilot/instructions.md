@@ -640,6 +640,68 @@ run_in_terminal(
 run_in_terminal("npm run start:dev"); // ❌ Pode falhar se não estiver no backend
 ```
 
+#### **🚨 REGRA CRÍTICA: Preservação de Aplicações em Execução**
+
+**PROBLEMA**: Executar novos comandos no terminal interrompe aplicações que estão rodando (servers, watch mode, etc.)
+
+**REGRA OBRIGATÓRIA**: NUNCA execute comandos em terminal que já possui aplicação rodando
+
+```typescript
+// ❌ ERRADO: Isso mata o servidor que está rodando
+// Terminal já tem npm run start:dev executando
+run_in_terminal("npm run test"); // Mata o servidor!
+
+// ✅ CORRETO: Usar terminal separado
+// 1. Manter servidor rodando no terminal atual
+// 2. Abrir novo terminal para testes
+run_in_terminal("powershell -Command 'npm run test'"); // Novo processo
+```
+
+**PROTOCOLO OBRIGATÓRIO para Testes em Servidor Ativo:**
+
+1. **Identificar se servidor está rodando**: Checar logs do terminal ativo
+2. **Se servidor ativo**: NUNCA usar `run_in_terminal` no mesmo processo
+3. **Para testes**: Usar `powershell -Command` ou explicar necessidade de novo terminal
+4. **Documentar**: "⚠️ Servidor deve continuar rodando em terminal separado"
+
+**Comandos Seguros para Servidor Ativo:**
+
+```typescript
+// ✅ Testes via novo processo PowerShell
+run_in_terminal("powershell -Command 'cd backend; npm run test'");
+
+// ✅ Curl/Invoke-RestMethod para testar APIs
+run_in_terminal(
+  "powershell -Command 'Invoke-RestMethod http://localhost:3000'"
+);
+
+// ✅ Verificações que não interrompem
+run_in_terminal("Get-Process -Name node"); // Verificar se servidor roda
+```
+
+**IDENTIFICAR Servidor Ativo:**
+
+```bash
+# Sinais de que servidor está rodando:
+# - "[Nest] Application successfully started"
+# - "Listening on port 3000"
+# - "Compilation in watch mode"
+# - Processo não finalizou (sem "Command exited")
+```
+
+**NUNCA FAZER quando servidor ativo:**
+
+- `npm run [qualquer-script]`
+- `cd [qualquer-pasta]`
+- Qualquer comando que aguarda input
+- Comandos de build/test diretamente
+
+**SEMPRE FAZER:**
+
+- Usar `powershell -Command` para novos processos
+- Manter servidor intacto durante testes
+- Informar usuário quando servidor precisa continuar
+
 ## 💰 Estratégia de Orçamento Limitado - Análise de Bibliotecas
 
 > **REGRA CRÍTICA**: Fase de testes/validação requer máxima eficiência de custo e tempo
@@ -806,7 +868,7 @@ Quando o Copilot estiver gerando código:
 
 ### **📋 REGRA CRÍTICA: Auto-Documentação de Erros Terminal**
 
-**Sempre que ocorrer um erro de terminal e você descobrir a solução:**
+**Sempre que ocorrer um erro de terminal e você descobir a solução:**
 
 1. **Imediatamente** adicione o erro à seção "Lições Aprendidas - Evitar Erros Comuns"
 2. **Formato obrigatório**:
@@ -822,6 +884,22 @@ Quando o Copilot estiver gerando código:
 3. **Commit imediato** das instruções atualizadas com mensagem: `docs: add terminal error [tipo do erro] to instructions`
 
 **Objetivo**: Construir uma base de conhecimento cumulativa que evite repetir os mesmos erros, acelerando o desenvolvimento e reduzindo frustrações.
+
+## 🚨 Lições Aprendidas - Evitar Erros Comuns
+
+### **Erros de Terminal e Navegação**
+
+#### **Comando: Executar scripts npm em subdiretórios**
+
+- **❌ Erro**: `npm run start:dev` na pasta raiz → `npm error Missing script: "start:dev"`
+- **✅ Correto**: `cd .\backend\; npm run start:dev` ou verificar contexto com `pwd` primeiro
+- **Nota**: PowerShell executa comandos no diretório atual. Sempre confirmar contexto antes de executar scripts npm específicos de subprojetos.
+
+#### **Comando: Navegação entre projetos monorepo**
+
+- **❌ Erro**: Assumir diretório correto sem verificação
+- **✅ Correto**: Sempre usar `pwd` ou `Get-Location` antes de comandos críticos
+- **Nota**: Em monorepos, o contexto de diretório é crítico. Frontend e Backend têm package.json separados com scripts diferentes.
 
 ---
 
