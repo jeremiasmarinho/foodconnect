@@ -79,8 +79,14 @@ export class UsersService {
    * @param updateUserDto - Update data
    * @returns Updated user profile
    */
-  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
-    this.logger.log('Updating user profile', { userId: id, updates: Object.keys(updateUserDto) });
+  async updateUser(
+    id: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
+    this.logger.log('Updating user profile', {
+      userId: id,
+      updates: Object.keys(updateUserDto),
+    });
 
     // Check if user exists
     const existingUser = await this.prisma.user.findUnique({
@@ -100,8 +106,10 @@ export class UsersService {
             {
               OR: [
                 updateUserDto.email ? { email: updateUserDto.email } : {},
-                updateUserDto.username ? { username: updateUserDto.username } : {},
-              ].filter(condition => Object.keys(condition).length > 0),
+                updateUserDto.username
+                  ? { username: updateUserDto.username }
+                  : {},
+              ].filter((condition) => Object.keys(condition).length > 0),
             },
           ],
         },
@@ -197,10 +205,7 @@ export class UsersService {
 
     const users = await this.prisma.user.findMany({
       where: {
-        OR: [
-          { name: { contains: query } },
-          { username: { contains: query } },
-        ],
+        OR: [{ name: { contains: query } }, { username: { contains: query } }],
       },
       select: {
         id: true,

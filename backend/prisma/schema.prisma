@@ -32,8 +32,8 @@ model User {
   posts     Post[]
   likes     Like[]
   comments  Comment[]
-  follows   Follow[] @relation("UserFollows")
-  followers Follow[] @relation("UserFollowers")
+  follows   Follow[]  @relation("UserFollows")
+  followers Follow[]  @relation("UserFollowers")
 
   @@map("users")
 }
@@ -63,12 +63,12 @@ model Restaurant {
 
 // Post model for food discoveries
 model Post {
-  id          String   @id @default(cuid())
-  content     String
-  imageUrl    String?
-  rating      Int? // 1-5 stars
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  content   String
+  imageUrl  String?
+  rating    Int? // 1-5 stars
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   userId       String

@@ -40,7 +40,10 @@ export class UsersController {
    */
   @Put('me')
   @UseGuards(JwtAuthGuard)
-  async updateCurrentUser(@Request() req, @Body() updateUserDto: UpdateUserDto) {
+  async updateCurrentUser(
+    @Request() req,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     this.logger.log('Updating current user profile', { userId: req.user.id });
     return this.usersService.updateUser(req.user.id, updateUserDto);
   }
@@ -72,13 +75,16 @@ export class UsersController {
     @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
   ) {
     this.logger.log('Searching users', { query });
-    
+
     if (!query || query.trim().length < 2) {
       return { data: [], message: 'Query must be at least 2 characters long' };
     }
 
     return {
-      data: await this.usersService.searchUsers(query.trim(), Math.min(limit, 20)),
+      data: await this.usersService.searchUsers(
+        query.trim(),
+        Math.min(limit, 20),
+      ),
     };
   }
 
