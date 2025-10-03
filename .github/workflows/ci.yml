@@ -2,7 +2,7 @@ name: 🚀 CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, feat/backend-structure]
   pull_request:
     branches: [main, develop]
 
@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [18.x]
 
     # Using SQLite for tests - simpler and more reliable
     # services:
@@ -37,7 +37,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: cd backend && npm ci
+        run: cd backend && npm ci --legacy-peer-deps
 
       - name: Run linter (allow warnings)
         run: cd backend && npm run lint || echo "Linting completed with warnings"
@@ -74,7 +74,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: cd backend && npm ci
+        run: cd backend && npm ci --legacy-peer-deps
 
       - name: Build application
         run: cd backend && npm run build

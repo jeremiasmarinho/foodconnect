@@ -14,6 +14,10 @@ async function bootstrap() {
       'exp://localhost:8081', // Expo development
       'exp://192.168.0.110:8081', // Expo network access
       'exp://192.168.0.110:8082', // Expo alternative port
+      'http://192.168.0.110:8081', // Expo HTTP
+      'http://192.168.0.110:19000', // Expo DevTools
+      'http://192.168.0.110:19006', // Expo alternative
+      '*', // Allow all origins for development (remove in production)
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -55,9 +59,12 @@ async function bootstrap() {
     },
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
   console.log(
     `🚀 Application is running on: http://localhost:${process.env.PORT ?? 3000}`,
+  );
+  console.log(
+    `📱 Mobile access: http://192.168.0.110:${process.env.PORT ?? 3000}`,
   );
   console.log(
     `📚 Swagger documentation: http://localhost:${process.env.PORT ?? 3000}/api`,
