@@ -47,8 +47,8 @@ export class UpdatePostDto {
 export class PostResponseDto {
   id: string;
   content: string;
-  imageUrl?: string;
-  rating?: number;
+  imageUrl: string | null;
+  rating: number | null;
   createdAt: Date;
   updatedAt: Date;
   userId: string;
@@ -57,13 +57,13 @@ export class PostResponseDto {
     id: string;
     username: string;
     name: string;
-    avatar?: string;
+    avatar: string | null;
   };
   restaurant: {
     id: string;
     name: string;
     city: string;
-    imageUrl?: string;
+    imageUrl: string | null;
   };
   _count: {
     likes: number;
