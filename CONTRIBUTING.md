@@ -1,9 +1,11 @@
 # Contributing to FoodConnect
 
 ## 🎯 Project Overview
+
 FoodConnect is a social food discovery platform. We're building a community-driven gastronomy experience for Brazil.
 
 ## 📋 Development Setup
+
 1. Follow [docs/quick-start.md](docs/quick-start.md) for initial setup
 2. Read [.copilot/instructions.md](.copilot/instructions.md) for coding standards
 3. Check [docs/development-roadmap.md](docs/development-roadmap.md) for current priorities
@@ -11,6 +13,7 @@ FoodConnect is a social food discovery platform. We're building a community-driv
 ## 🔄 Development Workflow
 
 ### Branching Strategy
+
 - `main` - Production-ready code
 - `develop` - Integration branch
 - `feature/[task-name]` - New features
@@ -18,6 +21,7 @@ FoodConnect is a social food discovery platform. We're building a community-driv
 - `hotfix/[critical-fix]` - Critical production fixes
 
 ### Commit Messages
+
 Use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
@@ -29,6 +33,7 @@ test(feed): add integration tests for post API
 ```
 
 ### Pull Request Process
+
 1. Create feature branch from `develop`
 2. Implement changes following coding standards
 3. Add/update tests (coverage > 80%)
@@ -38,6 +43,7 @@ test(feed): add integration tests for post API
 7. Merge after approval
 
 ## 🧪 Testing Standards
+
 - **Unit Tests**: All services and utilities
 - **Integration Tests**: API endpoints
 - **E2E Tests**: Critical user journeys
@@ -51,6 +57,7 @@ npm run test:cov       # Coverage report
 ```
 
 ## 📊 Code Quality
+
 - **Linting**: ESLint + Prettier
 - **Type Safety**: TypeScript strict mode
 - **Security**: Regular audits
@@ -65,12 +72,14 @@ npm audit              # Security audit
 ```
 
 ## 🎯 Priority Areas (Current Sprint)
+
 1. **Feed Social**: Core posting and interaction features
 2. **WhatsApp Bot**: Lead capture and basic responses
 3. **Search**: Semantic search with embeddings
 4. **Analytics**: Event tracking and metrics
 
 ## 📝 Code Review Guidelines
+
 - **Architecture**: Follows DDD patterns?
 - **Performance**: Optimized queries and caching?
 - **Security**: Input validation and error handling?
@@ -78,32 +87,40 @@ npm audit              # Security audit
 - **Testing**: Adequate coverage and edge cases?
 
 ## 🐛 Bug Reports
+
 Use GitHub Issues with the bug template. Include:
+
 - Steps to reproduce
 - Expected vs actual behavior
 - Environment details
 - Screenshots if applicable
 
 ## 💡 Feature Requests
+
 Use GitHub Issues with the feature template. Include:
+
 - User story format
 - Acceptance criteria
 - Success metrics
 - Priority level
 
 ## ❓ Getting Help
+
 - 📖 Check existing documentation first
 - 🔍 Search GitHub Issues
 - 💬 Create new issue with question
 - 📧 Contact maintainers if urgent
 
 ## 🏆 Recognition
+
 Contributors will be acknowledged in:
+
 - README.md contributors section
 - Release notes
 - Monthly team highlights
 
 ## 📜 Code of Conduct
+
 - Be respectful and inclusive
 - Focus on constructive feedback
 - Help others learn and grow

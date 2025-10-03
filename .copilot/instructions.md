@@ -5,8 +5,9 @@
 ## 🎯 Contexto do Projeto
 
 **FoodConnect** é uma plataforma de descoberta social gastronômica que combina:
+
 - Feed social estilo Instagram para comida
-- IA concierge para recomendações personalizadas  
+- IA concierge para recomendações personalizadas
 - WhatsApp Bot para aquisição de leads
 - Sistema de pedidos/reservas (fase futura)
 
@@ -16,17 +17,19 @@
 ## 📋 Convenções de Código
 
 ### **Linguagens e Frameworks**
+
 - **Backend**: TypeScript + NestJS
 - **Database**: PostgreSQL + TypeORM
 - **Frontend**: React Native (futuro)
 - **Styling**: Seguir padrões do Airbnb TypeScript
 
 ### **Estrutura de Arquivos**
+
 ```
 src/
 ├── auth/           # Autenticação e autorização
 ├── users/          # Gerenciamento de usuários
-├── restaurants/    # Perfis de restaurantes  
+├── restaurants/    # Perfis de restaurantes
 ├── feed/           # Posts sociais e interações
 ├── search/         # Busca semântica + recomendações
 ├── leads/          # Captura via WhatsApp
@@ -35,6 +38,7 @@ src/
 ```
 
 ### **Naming Conventions**
+
 - **Files**: kebab-case (`user-profile.service.ts`)
 - **Classes**: PascalCase (`UserProfileService`)
 - **Methods**: camelCase (`getUserProfile()`)
@@ -44,6 +48,7 @@ src/
 - **Entities**: PascalCase (`User`, `Post`, `Restaurant`)
 
 ### **Padrões de Nomenclatura Específicos**
+
 ```typescript
 // ✅ Correto
 export class UserService {
@@ -62,6 +67,7 @@ export class userservice {
 ## 🏗️ Padrões Arquiteturais
 
 ### **Domain-Driven Design (DDD)**
+
 Organize código seguindo domínios de negócio:
 
 ```typescript
@@ -72,18 +78,18 @@ export class User {
     public readonly email: Email,
     public readonly profile: UserProfile
   ) {}
-  
+
   public updateProfile(newProfile: UserProfile): void {
     // Business logic here
     this.profile = newProfile;
   }
 }
 
-// Application Layer  
+// Application Layer
 @Injectable()
 export class UserService {
   constructor(private userRepository: IUserRepository) {}
-  
+
   async executeCreateUser(command: CreateUserCommand): Promise<User> {
     // Orchestration logic
   }
@@ -91,6 +97,7 @@ export class UserService {
 ```
 
 ### **Event-Driven Architecture**
+
 Use eventos de domínio para desacoplamento:
 
 ```typescript
@@ -113,6 +120,7 @@ export class UserRegisteredHandler {
 ```
 
 ### **Repository Pattern**
+
 Abstraia acesso a dados:
 
 ```typescript
@@ -130,7 +138,7 @@ export class TypeOrmUserRepository implements IUserRepository {
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>
   ) {}
-  
+
   async findById(id: string): Promise<User | null> {
     // Implementation
   }
@@ -140,52 +148,65 @@ export class TypeOrmUserRepository implements IUserRepository {
 ## 🎯 Padrões Específicos do FoodConnect
 
 ### **Feed Social - Padrões**
+
 ```typescript
 // Post Entity
 export class Post {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
-  
+
   @Column()
   content: string;
-  
-  @Column('simple-array')
+
+  @Column("simple-array")
   tags: string[];
-  
-  @Column({ type: 'enum', enum: PostType })
+
+  @Column({ type: "enum", enum: PostType })
   type: PostType;
-  
+
   @CreateDateColumn()
   createdAt: Date;
-  
+
   // Sempre incluir métrica de engajamento
-  @OneToMany(() => PostInteraction, interaction => interaction.post)
+  @OneToMany(() => PostInteraction, (interaction) => interaction.post)
   interactions: PostInteraction[];
 }
 ```
 
 ### **IA e Recomendações - Padrões**
+
 ```typescript
 // Service para IA sempre com interface
 export interface IRecommendationService {
-  generateRecommendations(userId: string, context: RecommendationContext): Promise<Recommendation[]>;
+  generateRecommendations(
+    userId: string,
+    context: RecommendationContext
+  ): Promise<Recommendation[]>;
 }
 
 @Injectable()
 export class SemanticRecommendationService implements IRecommendationService {
-  async generateRecommendations(userId: string, context: RecommendationContext): Promise<Recommendation[]> {
+  async generateRecommendations(
+    userId: string,
+    context: RecommendationContext
+  ): Promise<Recommendation[]> {
     // Sempre logar entrada e saída para debugging
-    this.logger.log(`Generating recommendations for user ${userId}`, { context });
-    
+    this.logger.log(`Generating recommendations for user ${userId}`, {
+      context,
+    });
+
     const recommendations = await this.computeRecommendations(userId, context);
-    
-    this.logger.log(`Generated ${recommendations.length} recommendations`, { userId });
+
+    this.logger.log(`Generated ${recommendations.length} recommendations`, {
+      userId,
+    });
     return recommendations;
   }
 }
 ```
 
 ### **WhatsApp Bot - Padrões**
+
 ```typescript
 // Handler de mensagens sempre com type safety
 export interface WhatsAppMessage {
@@ -199,15 +220,15 @@ export class WhatsAppBotService {
   async processMessage(message: WhatsAppMessage): Promise<WhatsAppResponse> {
     // Sempre validar entrada
     if (!message.from || !message.body) {
-      throw new BadRequestException('Invalid WhatsApp message format');
+      throw new BadRequestException("Invalid WhatsApp message format");
     }
-    
+
     // Log para analytics
-    await this.analyticsService.trackEvent('whatsapp_message_received', {
+    await this.analyticsService.trackEvent("whatsapp_message_received", {
       from: message.from,
-      messageLength: message.body.length
+      messageLength: message.body.length,
     });
-    
+
     return this.generateResponse(message);
   }
 }
@@ -216,6 +237,7 @@ export class WhatsAppBotService {
 ## 🔧 Padrões Técnicos Obrigatórios
 
 ### **Error Handling**
+
 ```typescript
 // ✅ Sempre usar custom exceptions
 export class UserNotFoundException extends NotFoundException {
@@ -234,18 +256,19 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 ```
 
 ### **Validation**
+
 ```typescript
 // ✅ Sempre usar class-validator
 export class CreateUserDto {
   @IsEmail()
   @IsNotEmpty()
   email: string;
-  
+
   @IsString()
   @MinLength(2)
   @MaxLength(50)
   name: string;
-  
+
   @IsOptional()
   @ValidateNested()
   @Type(() => UserPreferencesDto)
@@ -254,20 +277,21 @@ export class CreateUserDto {
 ```
 
 ### **Logging e Observabilidade**
+
 ```typescript
 // ✅ Structured logging sempre
 @Injectable()
 export class SomeService {
   private readonly logger = new Logger(SomeService.name);
-  
+
   async someMethod(param: string): Promise<void> {
-    this.logger.log('Starting operation', { param, timestamp: new Date() });
-    
+    this.logger.log("Starting operation", { param, timestamp: new Date() });
+
     try {
       // operation
-      this.logger.log('Operation completed successfully', { param });
+      this.logger.log("Operation completed successfully", { param });
     } catch (error) {
-      this.logger.error('Operation failed', { param, error: error.message });
+      this.logger.error("Operation failed", { param, error: error.message });
       throw error;
     }
   }
@@ -275,17 +299,23 @@ export class SomeService {
 ```
 
 ### **Database Queries**
+
 ```typescript
 // ✅ Sempre otimizar queries
 @Injectable()
 export class PostService {
   async getFeedPosts(userId: string, limit: number = 20): Promise<Post[]> {
     return this.postRepository
-      .createQueryBuilder('post')
-      .leftJoinAndSelect('post.author', 'author')
-      .leftJoinAndSelect('post.interactions', 'interaction', 'interaction.userId = :userId', { userId })
-      .where('post.isActive = :isActive', { isActive: true })
-      .orderBy('post.createdAt', 'DESC')
+      .createQueryBuilder("post")
+      .leftJoinAndSelect("post.author", "author")
+      .leftJoinAndSelect(
+        "post.interactions",
+        "interaction",
+        "interaction.userId = :userId",
+        { userId }
+      )
+      .where("post.isActive = :isActive", { isActive: true })
+      .orderBy("post.createdAt", "DESC")
       .limit(limit)
       .getMany();
   }
@@ -299,7 +329,10 @@ Todo método importante deve gerar métricas:
 ```typescript
 @Injectable()
 export class MetricsService {
-  async trackEvent(eventName: string, properties: Record<string, any>): Promise<void> {
+  async trackEvent(
+    eventName: string,
+    properties: Record<string, any>
+  ): Promise<void> {
     // Implementação de tracking
   }
 }
@@ -309,15 +342,15 @@ export class MetricsService {
 export class FeedService {
   async createPost(dto: CreatePostDto): Promise<Post> {
     const post = await this.postRepository.save(dto);
-    
+
     // ✅ SEMPRE trackear eventos importantes
-    await this.metricsService.trackEvent('post_created', {
+    await this.metricsService.trackEvent("post_created", {
       postId: post.id,
       authorType: post.authorType,
       tags: post.tags,
-      hasMedia: !!post.mediaUrl
+      hasMedia: !!post.mediaUrl,
     });
-    
+
     return post;
   }
 }
@@ -326,6 +359,7 @@ export class FeedService {
 ## 🚨 Regras Críticas
 
 ### **❌ Nunca Fazer**
+
 - Queries N+1 sem justificativa
 - Hardcode de strings (usar constants)
 - Exceptions genéricas (`throw new Error()`)
@@ -335,6 +369,7 @@ export class FeedService {
 - Código sem type safety
 
 ### **✅ Sempre Fazer**
+
 - Validar inputs com DTOs
 - Logar operações importantes
 - Usar interfaces para contratos
@@ -345,18 +380,18 @@ export class FeedService {
 
 ## 🎨 Convenções de Comentários
 
-```typescript
+````typescript
 /**
  * Calcula recomendações personalizadas para o usuário baseado em:
  * - Histórico de interações
- * - Preferências declaradas  
+ * - Preferências declaradas
  * - Contexto geográfico
  * - Sentiment analysis dos posts curtidos
- * 
+ *
  * @param userId - ID único do usuário
  * @param context - Contexto adicional (localização, hora, etc.)
  * @returns Array de recomendações ordenadas por relevância
- * 
+ *
  * @example
  * ```typescript
  * const recs = await service.generateRecommendations('user-123', {
@@ -370,7 +405,7 @@ async generateRecommendations(userId: string, context: RecommendationContext): P
   // FIXME: Adicionar fallback para quando IA não responde
   // NOTE: Performance crítica - otimizar se tempo > 2s
 }
-```
+````
 
 ## 📱 Padrões de Response/API
 
@@ -379,7 +414,7 @@ async generateRecommendations(userId: string, context: RecommendationContext): P
 export class ApiResponse<T> {
   constructor(
     public readonly data: T,
-    public readonly message: string = 'Success',
+    public readonly message: string = "Success",
     public readonly timestamp: Date = new Date(),
     public readonly requestId?: string
   ) {}
