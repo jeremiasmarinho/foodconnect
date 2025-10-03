@@ -901,6 +901,64 @@ Quando o Copilot estiver gerando código:
 - **✅ Correto**: Sempre usar `pwd` ou `Get-Location` antes de comandos críticos
 - **Nota**: Em monorepos, o contexto de diretório é crítico. Frontend e Backend têm package.json separados com scripts diferentes.
 
+### **Comandos PowerShell - Navegação Confiável**
+
+#### **Comando: Manter contexto de diretório no PowerShell**
+
+- **❌ Erro**: `cd pasta; comando` → contexto não persiste entre comandos
+- **✅ Correto**: Use `Push-Location`, `Set-Location -PassThru`, ou múltiplos comandos separados
+- **Exemplos**:
+
+  ```powershell
+  # ❌ Não funciona consistentemente
+  cd .\backend\; npm run start:dev
+
+  # ✅ Métodos corretos
+  Push-Location .\backend\; npm run start:dev; Pop-Location
+  Set-Location .\backend\; npm run start:dev
+
+  # ✅ Verificação antes da execução
+  Push-Location .\backend\
+  Get-Location  # Confirma contexto
+  npm run start:dev
+  Pop-Location
+  ```
+
+- **Nota**: PowerShell pode resetar contexto entre comandos. Use `Push-Location`/`Pop-Location` para navegação segura ou `Set-Location` explícito.
+
+#### **Comando: Verificação de contexto obrigatória**
+
+- **❌ Erro**: Executar comandos npm sem verificar diretório
+- **✅ Correto**: Sempre verificar contexto antes de npm scripts
+- **Padrão obrigatório**:
+  ```powershell
+  Get-Location        # 1. Verificar onde estou
+  Set-Location .\pasta\  # 2. Navegar explicitamente
+  Get-Location        # 3. Confirmar navegação
+  npm run comando     # 4. Executar comando
+  ```
+- **Nota**: "Missing script" errors são sempre problemas de contexto. package.json está em diretório específico.
+
+#### **ERRO CRÍTICO: PowerShell Context Reset Bug**
+
+- **❌ Problema**: `Set-Location .\backend\` não persiste contexto entre comandos do terminal
+- **🔍 Sintoma**: Terminal mostra `PS C:\Users\Jeremias Marinho\foodconnect>` mesmo após navegar
+- **✅ Solução DEFINITIVA**: Usar terminal interativo separado
+- **Método correto**:
+
+  ```powershell
+  # Método 1: Comando único com &&
+  cd backend && npm run start:dev
+
+  # Método 2: Terminal interativo
+  Start-Process -FilePath "powershell" -ArgumentList "-NoExit", "-Command", "cd C:\Users\Jeremias Marinho\foodconnect\backend; npm run start:dev"
+
+  # Método 3: Executar diretamente no contexto
+  Invoke-Expression "cd .\backend\; npm run start:dev"
+  ```
+
+- **Nota CRÍTICA**: Este é um bug específico do terminal VSCode/PowerShell. Contexto não persiste entre comandos separados no mesmo terminal.
+
 ---
 
 **🎯 Objetivo**: Manter consistência, qualidade e observabilidade durante desenvolvimento acelerado, priorizando bibliotecas consolidadas para maximizar eficiência em orçamento limitado de validação.
