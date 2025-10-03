@@ -74,14 +74,15 @@ O **FoodConnect** transforma a experiência gastronômica de um ato puramente tr
 
 ### ✅ **Backend Base Implementado**
 
-| Módulo | Status | Endpoints | Funcionalidades |
-|--------|--------|-----------|-----------------|
-| **Authentication** | ✅ Completo | 4 endpoints | JWT, registro, login, perfil |
-| **Users** | ✅ Completo | 6 endpoints | CRUD, busca, paginação |
-| **Restaurants** | ✅ Completo | 7 endpoints | CRUD, geolocalização, busca textual |
-| **Posts** | 🔄 Em desenvolvimento | - | Feed social, likes, comentários |
+| Módulo             | Status                | Endpoints   | Funcionalidades                     |
+| ------------------ | --------------------- | ----------- | ----------------------------------- |
+| **Authentication** | ✅ Completo           | 4 endpoints | JWT, registro, login, perfil        |
+| **Users**          | ✅ Completo           | 6 endpoints | CRUD, busca, paginação              |
+| **Restaurants**    | ✅ Completo           | 7 endpoints | CRUD, geolocalização, busca textual |
+| **Posts**          | 🔄 Em desenvolvimento | -           | Feed social, likes, comentários     |
 
 ### 🏗️ **Arquitetura Implementada**
+
 - **Backend**: NestJS + TypeScript + Prisma ORM
 - **Database**: SQLite (dev) → PostgreSQL (prod)
 - **Auth**: JWT com refresh tokens e guards
