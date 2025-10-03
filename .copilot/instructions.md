@@ -585,6 +585,53 @@ export class PaginatedResponse<T> extends ApiResponse<T[]> {
 - **Solução**: Sempre adicionar novos módulos ao imports do AppModule
 - **Pattern**: Criar módulo → exportar serviços → importar no AppModule
 
+### **📁 REGRA CRÍTICA: Verificação de Diretório**
+
+#### **Problema: Comandos executados no diretório errado**
+
+- **❌ Erro Comum**: Executar `npm run start:dev` na raiz ao invés do `/backend`
+- **❌ Consequência**: "Missing script: start:dev" ou execução em contexto errado
+- **✅ Solução OBRIGATÓRIA**: SEMPRE verificar diretório antes de qualquer comando
+
+#### **Protocolo Obrigatório para Comandos Terminal:**
+
+```typescript
+// ✅ SEMPRE seguir esta sequência:
+// 1. Verificar diretório atual
+run_in_terminal("pwd") 
+
+// 2. Se não estiver no diretório correto, navegar
+run_in_terminal('cd "C:\Users\Jeremias Marinho\foodconnect\backend"')
+
+// 3. Então executar o comando desejado
+run_in_terminal("npm run start:dev")
+```
+
+#### **Diretórios por Tipo de Comando:**
+
+- **npm scripts**: Sempre executar em `/backend` (onde está package.json)
+- **git commands**: Sempre executar em `/` (raiz do projeto)
+- **prisma commands**: Sempre executar em `/backend` (onde está schema.prisma)
+- **nest commands**: Sempre executar em `/backend`
+
+#### **Comando de Verificação Rápida:**
+
+```bash
+# ✅ Para verificar se está no lugar certo:
+pwd  # Mostra diretório atual
+ls   # Lista arquivos (deve mostrar package.json para npm, .git para git)
+```
+
+#### **Padrão de Segurança:**
+
+```typescript
+// ✅ SEMPRE usar caminhos absolutos quando em dúvida:
+run_in_terminal('cd "C:\Users\Jeremias Marinho\foodconnect\backend"; npm run start:dev')
+
+// Ao invés de assumir contexto:
+run_in_terminal("npm run start:dev") // ❌ Pode falhar se não estiver no backend
+```
+
 ## 💰 Estratégia de Orçamento Limitado - Análise de Bibliotecas
 
 > **REGRA CRÍTICA**: Fase de testes/validação requer máxima eficiência de custo e tempo
@@ -594,11 +641,13 @@ export class PaginatedResponse<T> extends ApiResponse<T[]> {
 #### **Para CADA funcionalidade, SEMPRE perguntar:**
 
 1. **Existe biblioteca consolidada?**
+
    - Buscar no npm: `npm search [funcionalidade]`
    - Verificar downloads semanais (>100k = consolidada)
    - Checar última atualização (<6 meses = mantida)
 
 2. **Biblioteca vs Implementação própria:**
+
    - **Biblioteca**: Se >80% das necessidades atendidas
    - **Custom**: Se requisitos muito específicos
    - **Híbrido**: Biblioteca + customizações pontuais
@@ -611,26 +660,31 @@ export class PaginatedResponse<T> extends ApiResponse<T[]> {
 #### **Exemplos Práticos por Funcionalidade:**
 
 **🔐 Autenticação JWT:**
+
 - ❌ **Custom**: 2-3 dias desenvolvimento + testes de segurança
 - ✅ **Biblioteca**: `@nestjs/jwt` + `passport` = 4-6 horas
 - **Decisão**: Usar biblioteca consolidada
 
 **📧 Email Service:**
+
 - ❌ **Custom**: Implementar SMTP, templates, queues
 - ✅ **Biblioteca**: `@nestjs-modules/mailer` ou Resend API
 - **Decisão**: Biblioteca + API externa
 
 **📱 WhatsApp Integration:**
+
 - ❌ **Custom**: Implementar WhatsApp Business API do zero
 - ✅ **Biblioteca**: `whatsapp-web.js` ou Twilio SDK
 - **Decisão**: Biblioteca para prototipação rápida
 
 **🤖 IA/ML Features:**
+
 - ❌ **Custom**: Treinar modelos próprios
 - ✅ **API Externa**: OpenAI, Anthropic, Hugging Face
 - **Decisão**: APIs durante validação, custom após scale
 
 **💳 Pagamentos:**
+
 - ❌ **Custom**: Implementar processamento próprio
 - ✅ **Biblioteca**: Stripe SDK, PagSeguro
 - **Decisão**: Sempre usar SDKs consolidados
@@ -641,16 +695,16 @@ export class PaginatedResponse<T> extends ApiResponse<T[]> {
 // Template para análise de bibliotecas
 interface LibraryEvaluation {
   name: string;
-  weeklyDownloads: number;        // >100k = Popular
-  lastUpdated: string;            // <6 meses = Mantida
-  githubStars: number;            // >1k = Confiável
-  openIssues: number;             // <100 = Bem mantida
-  documentation: 'Poor' | 'Good' | 'Excellent';
-  learningCurve: 'Low' | 'Medium' | 'High';
-  bundleSize: string;             // <100kb = Aceitável
-  features: string[];             // % de cobertura das necessidades
-  alternatives: string[];         // Outras opções avaliadas
-  recommendation: 'Use' | 'Avoid' | 'Consider';
+  weeklyDownloads: number; // >100k = Popular
+  lastUpdated: string; // <6 meses = Mantida
+  githubStars: number; // >1k = Confiável
+  openIssues: number; // <100 = Bem mantida
+  documentation: "Poor" | "Good" | "Excellent";
+  learningCurve: "Low" | "Medium" | "High";
+  bundleSize: string; // <100kb = Aceitável
+  features: string[]; // % de cobertura das necessidades
+  alternatives: string[]; // Outras opções avaliadas
+  recommendation: "Use" | "Avoid" | "Consider";
   reasoning: string;
 }
 ```
@@ -658,6 +712,7 @@ interface LibraryEvaluation {
 ### **💡 Estratégias de Implementação Rápida**
 
 #### **Tier 1 - Funcionalidades Core (Usar bibliotecas sempre)**
+
 - Autenticação/Autorização
 - Validação de dados
 - ORM/Database
@@ -666,12 +721,14 @@ interface LibraryEvaluation {
 - File upload/storage
 
 #### **Tier 2 - Funcionalidades Business (Avaliar caso a caso)**
+
 - Recomendações IA
 - Feed algoritmo
 - Search/Filtros
 - Analytics/Métricas
 
 #### **Tier 3 - Funcionalidades Diferencial (Custom quando necessário)**
+
 - UX específica do FoodConnect
 - Algoritmos proprietários
 - Integrações únicas
@@ -681,7 +738,7 @@ interface LibraryEvaluation {
 ```
 □ Funcionalidade está no Tier 1? → Usar biblioteca
 □ Biblioteca tem >50k downloads/semana? → Considerar
-□ Última atualização <6 meses? → OK para usar  
+□ Última atualização <6 meses? → OK para usar
 □ Documentação clara e exemplos? → OK para usar
 □ Cobre >80% dos requisitos? → Usar biblioteca
 □ Time-to-market crítico? → Priorizar biblioteca
@@ -696,20 +753,20 @@ Sempre documentar decisões de bibliotecas:
 ```typescript
 /**
  * DECISION LOG: Authentication Implementation
- * 
+ *
  * Analysis Date: 2025-10-02
  * Options Evaluated:
  * 1. Custom JWT implementation - 3 days dev time
  * 2. @nestjs/jwt + passport - 6 hours integration
  * 3. Auth0 integration - 4 hours + $25/month
- * 
+ *
  * Decision: Option 2 (@nestjs/jwt + passport)
- * Reasoning: 
+ * Reasoning:
  * - Fast implementation (6h vs 3 days)
  * - Battle-tested security
  * - Zero monthly cost
  * - Full control over auth flow
- * 
+ *
  * Alternative for future: Migrate to Auth0 when user base > 1000
  */
 ```
@@ -735,6 +792,8 @@ Quando o Copilot estiver gerando código:
 15. **SEMPRE** avaliar bibliotecas consolidadas antes de implementar custom
 16. **SEMPRE** priorizar time-to-market em fase de validação
 17. **SEMPRE** documentar decisões de arquitetura e bibliotecas
+18. **SEMPRE** executar `pwd` antes de comandos críticos de terminal
+19. **SEMPRE** usar caminhos absolutos quando em dúvida sobre contexto
 
 ---
 
