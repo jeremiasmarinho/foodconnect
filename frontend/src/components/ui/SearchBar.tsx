@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   TextInput,
   TouchableOpacity,
   ViewStyle,
   TextStyle,
+  StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../providers";
@@ -51,31 +52,42 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
-  const getContainerStyle = (): ViewStyle => ({
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.layout.borderRadius.round,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.sm,
-    borderWidth: 1.5,
-    borderColor: isFocused ? theme.colors.primary : theme.colors.border,
-    minHeight: theme.layout.searchBarHeight,
-    ...theme.layout.shadow.small,
-    ...style,
-  });
-
-  const getInputStyle = (): TextStyle => ({
-    flex: 1,
-    fontSize: theme.typography.fontSize.md,
-    color: theme.colors.textPrimary,
-    fontWeight: theme.typography.fontWeight.regular,
-    marginLeft: theme.spacing.sm,
-    marginRight: theme.spacing.sm,
-  });
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: theme.colors.surface,
+          borderRadius: theme.layout.borderRadius.round,
+          paddingHorizontal: theme.spacing.lg,
+          paddingVertical: theme.spacing.sm,
+          borderWidth: 1.5,
+          borderColor: isFocused ? theme.colors.primary : theme.colors.border,
+          minHeight: theme.layout.searchBarHeight,
+          ...theme.layout.shadow.small,
+        },
+        input: {
+          flex: 1,
+          fontSize: theme.typography.fontSize.md,
+          color: theme.colors.textPrimary,
+          fontWeight: theme.typography.fontWeight.regular,
+          marginLeft: theme.spacing.sm,
+          marginRight: theme.spacing.sm,
+        },
+        clearButton: {
+          padding: 2,
+        },
+        filterButton: {
+          marginLeft: theme.spacing.sm,
+          padding: 2,
+        },
+      }),
+    [theme, isFocused]
+  );
 
   return (
-    <View style={getContainerStyle()}>
+    <View style={[styles.container, style]}>
       <Ionicons
         name="search"
         size={20}
@@ -83,7 +95,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       />
 
       <TextInput
-        style={getInputStyle()}
+        style={styles.input}
         placeholder={placeholder}
         placeholderTextColor={theme.colors.textPlaceholder}
         value={value}
@@ -97,7 +109,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       {value && value.length > 0 && (
         <TouchableOpacity
           onPress={() => onChangeText?.("")}
-          style={{ padding: 2 }}
+          style={styles.clearButton}
           activeOpacity={0.7}
         >
           <Ionicons
@@ -111,10 +123,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       {showFilter && (
         <TouchableOpacity
           onPress={onFilterPress}
-          style={{
-            marginLeft: theme.spacing.sm,
-            padding: 2,
-          }}
+          style={styles.filterButton}
           activeOpacity={0.7}
         >
           <Ionicons

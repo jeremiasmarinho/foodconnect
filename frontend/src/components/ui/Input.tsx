@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   TextInput,
   View,
@@ -7,6 +7,7 @@ import {
   ViewStyle,
   TextStyle,
   TouchableOpacity,
+  StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../providers";
@@ -59,94 +60,76 @@ export const Input: React.FC<InputProps> = ({
       : "eye"
     : rightIcon;
 
-  const getContainerStyle = (): ViewStyle => {
-    return {
-      marginBottom: theme.spacing.lg,
-      ...containerStyle,
-    };
-  };
-
-  const getLabelStyle = (): TextStyle => {
-    return {
-      fontSize: theme.typography.fontSize.md,
-      fontWeight: theme.typography.fontWeight.medium,
-      color: theme.colors.textPrimary,
-      marginBottom: theme.spacing.sm,
-      ...labelStyle,
-    };
-  };
-
-  const getInputContainerStyle = (): ViewStyle => {
-    const baseStyle: ViewStyle = {
-      flexDirection: "row",
-      alignItems: "center",
-      minHeight: 48,
-    };
-
-    const variantStyles: Record<string, ViewStyle> = {
-      default: {
-        borderBottomWidth: 1,
-        borderBottomColor: isFocused
-          ? theme.colors.primary
-          : theme.colors.border,
-        backgroundColor: "transparent",
-      },
-      filled: {
-        backgroundColor: theme.colors.surfaceVariant,
-        borderRadius: theme.layout.borderRadius.md,
-        paddingHorizontal: theme.spacing.md,
-        borderWidth: 1,
-        borderColor: isFocused ? theme.colors.primary : "transparent",
-      },
-      outline: {
-        borderWidth: 1.5,
-        borderColor: error
-          ? theme.colors.error
-          : isFocused
-          ? theme.colors.primary
-          : theme.colors.border,
-        borderRadius: theme.layout.borderRadius.md,
-        backgroundColor: theme.colors.surface,
-        paddingHorizontal: theme.spacing.md,
-        ...(!error && isFocused ? theme.layout.shadow.small : {}),
-      },
-    };
-
-    return {
-      ...baseStyle,
-      ...variantStyles[variant],
-    };
-  };
-
-  const getInputStyle = (): TextStyle => {
-    const baseStyle: TextStyle = {
-      flex: 1,
-      fontSize: theme.typography.fontSize.md,
-      color: theme.colors.textPrimary,
-      fontWeight: theme.typography.fontWeight.regular,
-    };
-
-    const variantStyles: Record<string, TextStyle> = {
-      default: {
-        paddingVertical: theme.spacing.sm,
-        paddingHorizontal: leftIcon ? theme.spacing.sm : 0,
-      },
-      filled: {
-        paddingVertical: theme.spacing.md,
-        paddingHorizontal: leftIcon ? theme.spacing.sm : 0,
-      },
-      outline: {
-        paddingVertical: theme.spacing.md,
-        paddingHorizontal: leftIcon ? theme.spacing.sm : 0,
-      },
-    };
-
-    return {
-      ...baseStyle,
-      ...variantStyles[variant],
-      ...inputStyle,
-    };
-  };
+  // Memoize styles to prevent re-renders
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          marginBottom: theme.spacing.lg,
+        },
+        label: {
+          fontSize: theme.typography.fontSize.md,
+          fontWeight: theme.typography.fontWeight.medium,
+          color: theme.colors.textPrimary,
+          marginBottom: theme.spacing.sm,
+        },
+        inputContainer: {
+          flexDirection: "row",
+          alignItems: "center",
+          minHeight: 48,
+        },
+        inputContainerDefault: {
+          borderBottomWidth: 1,
+          borderBottomColor: isFocused
+            ? theme.colors.primary
+            : theme.colors.border,
+          backgroundColor: "transparent",
+        },
+        inputContainerFilled: {
+          backgroundColor: theme.colors.surfaceVariant,
+          borderRadius: theme.layout.borderRadius.md,
+          paddingHorizontal: theme.spacing.md,
+          borderWidth: 1,
+          borderColor: isFocused ? theme.colors.primary : "transparent",
+        },
+        inputContainerOutline: {
+          borderWidth: 1.5,
+          borderColor: error
+            ? theme.colors.error
+            : isFocused
+            ? theme.colors.primary
+            : theme.colors.border,
+          borderRadius: theme.layout.borderRadius.md,
+          backgroundColor: theme.colors.surface,
+          paddingHorizontal: theme.spacing.md,
+          ...(!error && isFocused ? theme.layout.shadow.small : {}),
+        },
+        input: {
+          flex: 1,
+          fontSize: theme.typography.fontSize.md,
+          color: theme.colors.textPrimary,
+          fontWeight: theme.typography.fontWeight.regular,
+          paddingVertical: theme.spacing.md,
+          paddingHorizontal: leftIcon ? theme.spacing.sm : 0,
+        },
+        inputDefault: {
+          paddingVertical: theme.spacing.sm,
+        },
+        leftIcon: {
+          marginRight: theme.spacing.sm,
+        },
+        rightIconButton: {
+          padding: theme.spacing.sm,
+        },
+        helperText: {
+          fontSize: theme.typography.fontSize.sm,
+          color: error ? theme.colors.error : theme.colors.textSecondary,
+          marginTop: theme.spacing.xs,
+          fontWeight: theme.typography.fontWeight.regular,
+        },
+      }),
+    [theme, isFocused, error, leftIcon, variant]
+  );
 
   const getIconColor = () => {
     if (error) return theme.colors.error;
@@ -154,18 +137,28 @@ export const Input: React.FC<InputProps> = ({
     return theme.colors.textTertiary;
   };
 
-  const getHelperTextStyle = (): TextStyle => {
-    return {
-      fontSize: theme.typography.fontSize.sm,
-      color: error ? theme.colors.error : theme.colors.textSecondary,
-      marginTop: theme.spacing.xs,
-      fontWeight: theme.typography.fontWeight.regular,
-    };
+  const getInputContainerStyle = () => {
+    const baseStyle = styles.inputContainer;
+    const variantStyle =
+      variant === "default"
+        ? styles.inputContainerDefault
+        : variant === "filled"
+        ? styles.inputContainerFilled
+        : styles.inputContainerOutline;
+
+    return [baseStyle, variantStyle];
+  };
+
+  const getInputStyle = () => {
+    const baseStyle = styles.input;
+    const variantStyle = variant === "default" ? styles.inputDefault : {};
+
+    return [baseStyle, variantStyle, inputStyle];
   };
 
   return (
-    <View style={getContainerStyle()}>
-      {label && <Text style={getLabelStyle()}>{label}</Text>}
+    <View style={[styles.container, containerStyle]}>
+      {label && <Text style={[styles.label, labelStyle]}>{label}</Text>}
 
       <View style={getInputContainerStyle()}>
         {leftIcon && (
@@ -173,10 +166,10 @@ export const Input: React.FC<InputProps> = ({
             name={leftIcon}
             size={20}
             color={getIconColor()}
-            style={{
-              marginRight: theme.spacing.sm,
-              ...(variant === "default" && { marginLeft: 0 }),
-            }}
+            style={[
+              styles.leftIcon,
+              variant === "default" && { marginLeft: 0 },
+            ]}
           />
         )}
 
@@ -192,10 +185,10 @@ export const Input: React.FC<InputProps> = ({
         {(actualRightIcon || isPassword) && (
           <TouchableOpacity
             onPress={handleRightIconPress}
-            style={{
-              padding: theme.spacing.sm,
-              ...(variant === "default" && { paddingRight: 0 }),
-            }}
+            style={[
+              styles.rightIconButton,
+              variant === "default" && { paddingRight: 0 },
+            ]}
             activeOpacity={0.7}
           >
             <Ionicons
@@ -208,7 +201,7 @@ export const Input: React.FC<InputProps> = ({
       </View>
 
       {(error || helperText) && (
-        <Text style={getHelperTextStyle()}>{error || helperText}</Text>
+        <Text style={styles.helperText}>{error || helperText}</Text>
       )}
     </View>
   );
