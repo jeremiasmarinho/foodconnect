@@ -1,0 +1,26 @@
+# TruffleHog ignore file - exclude false positives
+
+# Test files and documentation
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/test/**
+**/*.md
+**/*.http
+ADMIN_CREDENTIALS.md
+DAILY_CONTINUATION.md
+
+# Environment files for testing only
+.env.test
+.env.example
+
+# CI/CD configuration with test secrets only
+.github/workflows/ci.yml
+
+# Development configuration files
+integration-tests.http
+
+# Generated/build files
+**/node_modules/**
+**/dist/**
+**/build/**

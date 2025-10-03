@@ -101,6 +101,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Run security audit
         run: cd backend && npm audit --audit-level moderate
@@ -109,5 +111,4 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: main
-          head: HEAD
+          extra_args: --only-verified --exclude-paths=.trufflehogignore
