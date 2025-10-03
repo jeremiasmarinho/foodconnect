@@ -1,0 +1,212 @@
+# 🚀 FoodConnect Backend - Integration Tests
+# Testing all 26 endpoints with cross-module flows
+# Base URL: http://localhost:3000
+
+### ===========================================
+### 1. HEALTH CHECK - Test Basic Connection
+### ===========================================
+
+GET http://localhost:3000/
+Accept: application/json
+
+### ===========================================
+### 2. AUTHENTICATION MODULE (4 endpoints)
+### ===========================================
+
+### 2.1 Register New User
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "email": "testuser@foodconnect.com",
+  "password": "TestPassword123!",
+  "username": "testuser",
+  "name": "Test User"
+}
+
+### 2.2 Login User (Get JWT Token)
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@foodconnect.com",
+  "password": "TestPassword123!"
+}
+
+### 2.3 Auth Health Check
+GET http://localhost:3000/auth/health
+Accept: application/json
+
+### 2.4 Get Profile (Protected - Requires JWT)
+GET http://localhost:3000/auth/profile
+Accept: application/json
+Authorization: Bearer {{access_token}}
+
+### ===========================================
+### 3. USERS MODULE (6 endpoints)
+### ===========================================
+
+### 3.1 Get My Profile (Protected)
+GET http://localhost:3000/users/me
+Accept: application/json
+Authorization: Bearer {{access_token}}
+
+### 3.2 Update My Profile (Protected)
+PUT http://localhost:3000/users/me
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "name": "Updated Test User",
+  "bio": "I love food and connecting with restaurants!"
+}
+
+### 3.3 List All Users (Public)
+GET http://localhost:3000/users
+Accept: application/json
+
+### 3.4 Search Users by Name
+GET http://localhost:3000/users/search?name=Test
+Accept: application/json
+
+### 3.5 Get User by ID
+GET http://localhost:3000/users/{{user_id}}
+Accept: application/json
+
+### 3.6 Get User by Username
+GET http://localhost:3000/users/username/testuser
+Accept: application/json
+
+### ===========================================
+### 4. RESTAURANTS MODULE (7 endpoints)
+### ===========================================
+
+### 4.1 Create Restaurant (Protected)
+POST http://localhost:3000/restaurants
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "name": "Pizza Palace",
+  "description": "The best pizza in town with authentic Italian flavors",
+  "address": "123 Main Street, Downtown",
+  "phone": "+1-555-0123",
+  "email": "contact@pizzapalace.com",
+  "category": "Italian",
+  "latitude": 40.7589,
+  "longitude": -73.9851
+}
+
+### 4.2 Get Restaurant by ID
+GET http://localhost:3000/restaurants/{{restaurant_id}}
+Accept: application/json
+
+### 4.3 Update Restaurant (Protected - Owner only)
+PUT http://localhost:3000/restaurants/{{restaurant_id}}
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "description": "Updated: The absolute best pizza in town with authentic Italian flavors and fresh ingredients",
+  "phone": "+1-555-0124"
+}
+
+### 4.4 List All Restaurants
+GET http://localhost:3000/restaurants
+Accept: application/json
+
+### 4.5 Search Restaurants by Query
+GET http://localhost:3000/restaurants/search/query?q=pizza
+Accept: application/json
+
+### 4.6 Find Nearby Restaurants
+GET http://localhost:3000/restaurants/nearby/location?lat=40.7589&lng=-73.9851&radius=5000
+Accept: application/json
+
+### 4.7 Delete Restaurant (Protected - Owner only)
+DELETE http://localhost:3000/restaurants/{{restaurant_id}}
+Authorization: Bearer {{access_token}}
+
+### ===========================================
+### 5. POSTS MODULE (9 endpoints)
+### ===========================================
+
+### 5.1 Create Post (Protected)
+POST http://localhost:3000/posts
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "content": "Just had the most amazing pizza at Pizza Palace! 🍕 The authentic Italian flavors are incredible!",
+  "imageUrl": "https://example.com/pizza-image.jpg",
+  "restaurantId": "{{restaurant_id}}"
+}
+
+### 5.2 Get Post by ID
+GET http://localhost:3000/posts/{{post_id}}
+Accept: application/json
+
+### 5.3 Update Post (Protected - Author only)
+PUT http://localhost:3000/posts/{{post_id}}
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "content": "Updated: Just had the most INCREDIBLE pizza at Pizza Palace! 🍕✨ The authentic Italian flavors blew my mind!"
+}
+
+### 5.4 Get Timeline Feed (Public with pagination)
+GET http://localhost:3000/posts/feed/timeline?page=1&limit=10
+Accept: application/json
+
+### 5.5 Get Posts by User ID
+GET http://localhost:3000/posts/user/{{user_id}}
+Accept: application/json
+
+### 5.6 Get Posts by Restaurant ID
+GET http://localhost:3000/posts/restaurant/{{restaurant_id}}
+Accept: application/json
+
+### 5.7 Like/Unlike Post (Protected)
+POST http://localhost:3000/posts/{{post_id}}/like
+Authorization: Bearer {{access_token}}
+
+### 5.8 Get My Posts (Protected)
+GET http://localhost:3000/posts/me/posts
+Accept: application/json
+Authorization: Bearer {{access_token}}
+
+### 5.9 Delete Post (Protected - Author only)
+DELETE http://localhost:3000/posts/{{post_id}}
+Authorization: Bearer {{access_token}}
+
+### ===========================================
+### 6. CROSS-MODULE INTEGRATION FLOWS
+### ===========================================
+
+### 6.1 Complete User Journey
+# 1. Register → Login → Create Restaurant → Create Post → Like Post → Get Feed
+
+### 6.2 Social Media Flow
+# 1. Multiple users create posts
+# 2. Users like each other's posts  
+# 3. Check feed shows liked posts
+# 4. Verify user profiles show their posts
+
+### 6.3 Restaurant Discovery Flow
+# 1. Create restaurant with location
+# 2. Search nearby restaurants
+# 3. Create posts about restaurant
+# 4. Check restaurant shows its posts
+
+### ===========================================
+### NOTES FOR TESTING:
+### ===========================================
+# 1. Replace {{access_token}} with actual JWT from login response
+# 2. Replace {{user_id}} with actual user ID from registration
+# 3. Replace {{restaurant_id}} with actual restaurant ID from creation
+# 4. Replace {{post_id}} with actual post ID from creation
+# 5. Test both success and error scenarios
+# 6. Verify proper HTTP status codes
+# 7. Check response data structures
+# 8. Validate authentication and authorization

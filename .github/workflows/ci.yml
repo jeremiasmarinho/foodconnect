@@ -14,17 +14,18 @@ jobs:
       matrix:
         node-version: [18.x, 20.x]
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: foodconnect_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    # Using SQLite for tests - simpler and more reliable
+    # services:
+    #   postgres:
+    #     image: postgres:15
+    #     env:
+    #       POSTGRES_PASSWORD: postgres
+    #       POSTGRES_DB: foodconnect_test
+    #     options: >-
+    #       --health-cmd pg_isready
+    #       --health-interval 10s
+    #       --health-timeout 5s
+    #       --health-retries 5
 
     steps:
       - uses: actions/checkout@v3
@@ -41,10 +42,18 @@ jobs:
       - name: Run linter (allow warnings)
         run: cd backend && npm run lint || echo "Linting completed with warnings"
 
+      - name: Generate Prisma Client
+        run: cd backend && npx prisma generate
+
+      - name: Setup test database
+        run: cd backend && npx prisma db push --accept-data-loss
+        env:
+          DATABASE_URL: file:./test.db
+
       - name: Run tests
         run: cd backend && npm run test
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/foodconnect_test
+          DATABASE_URL: file:./test.db
           JWT_SECRET: test-secret
           NODE_ENV: test
 
@@ -70,8 +79,20 @@ jobs:
       - name: Build application
         run: cd backend && npm run build
 
+      - name: Generate Prisma Client for E2E
+        run: cd backend && npx prisma generate
+
+      - name: Setup E2E test database
+        run: cd backend && npx prisma db push --accept-data-loss
+        env:
+          DATABASE_URL: file:./e2e-test.db
+
       - name: Run smoke tests
         run: cd backend && npm run test:e2e
+        env:
+          DATABASE_URL: file:./e2e-test.db
+          JWT_SECRET: test-secret
+          NODE_ENV: test
 
   security:
     runs-on: ubuntu-latest
