@@ -16,7 +16,7 @@ O **FoodConnect** transforma a experiência gastronômica de um ato puramente tr
 ### 📋 **Documentos Estratégicos**
 
 - [`master-strategic-brief.md`](./master-strategic-brief.md) - **DOCUMENTO PRINCIPAL** - Síntese executiva, hipóteses, roadmap 90 dias
-- [`ai-review-comparison.md`](./ai-review-comparison.md) - Comparativo das análises Gemini vs Claude vs ChatGPT
+- [`docs/master-strategic-brief.md`](./docs/master-strategic-brief.md) - Síntese estratégica e análises consolidadas
 - [`foodconnect.md`](./foodconnect.md) - Especificação técnica completa original (1300+ linhas)
 
 ### 🤖 **Análises das IAs**
@@ -149,14 +149,30 @@ Prosseguir para pedidos/reservas **APENAS SE**:
 | **Retenção**    | WAU/MAU              | Session Depth, Tempo até 1ª Interação         |
 | **Relevância**  | CTR Recomendações    | Scroll Depth, % Explorações não-transacionais |
 
-## 📞 Próximos Passos Imediatos
+## � Credenciais de Sistema
 
-1. **Configurar Ambiente** - Node.js, PostgreSQL, VS Code extensions
-2. **Criar Repositório** - Git + estrutura inicial
-3. **Scaffold NestJS** - Módulos base + autenticação
-4. **Modelo de Dados** - Migrações + seed script
-5. **WhatsApp Mock** - Captura de leads básica
-6. **Métricas Mínimas** - Logs estruturados + dashboard simples
+### Usuário Administrador
+
+- **Email**: `admin@foodconnect.com`
+- **Senha**: `FoodConnect2024!`
+- **Acesso**: Login via API ou frontend com permissões totais
+
+## �📞 Próximos Passos Imediatos
+
+1. **Sistema Completo** ✅ - Backend NestJS + Frontend React Native funcionais
+2. **Otimização de Performance** 🚧 - React.memo, useMemo, paginação, cache Redis
+3. **Testes E2E Frontend** - Detox para validação completa mobile
+4. **Deploy em Produção** - AWS/Render com CI/CD automatizado
+5. **Métricas Avançadas** - Analytics detalhados + monitoramento
+
+## 📊 Status Atual
+
+- ✅ **Backend**: 26 endpoints, autenticação JWT, validação completa
+- ✅ **Frontend**: React Native com navegação, componentes reutilizáveis
+- ✅ **Testes**: 44 testes passando, cobertura de unidade e integração
+- ✅ **CI/CD**: GitHub Actions com qualidade gates
+- ✅ **Validação**: Sistema completo de validação client/server-side
+- ✅ **Error Handling**: Tratamento robusto de erros com feedback visual
 
 ---
 
@@ -164,7 +180,7 @@ Prosseguir para pedidos/reservas **APENAS SE**:
 
 - **Desenvolvimento**: Consulte [`development-roadmap.md`](./development-roadmap.md)
 - **Estratégia Completa**: Veja [`master-strategic-brief.md`](./master-strategic-brief.md)
-- **Análises Técnicas**: Confira [`ai-review-comparison.md`](./ai-review-comparison.md)
+- **Guias Técnicos**: [`DATA_VALIDATION_GUIDE.md`](./DATA_VALIDATION_GUIDE.md) e [`ERROR_HANDLING_GUIDE.md`](./ERROR_HANDLING_GUIDE.md)
 
 ---
 
