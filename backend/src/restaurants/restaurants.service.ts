@@ -54,20 +54,94 @@ export class RestaurantsService {
   }
 
   /**
-   * Get restaurant by ID
+   * Get restaurant by ID with optimized queries and caching
    * @param id - Restaurant ID
+   * @param includeRelations - Whether to include related data (posts, menu items)
    * @returns Restaurant details
    */
-  async getRestaurantById(id: string): Promise<RestaurantResponseDto> {
-    this.logger.log('Fetching restaurant by ID', { restaurantId: id });
+  async getRestaurantById(
+    id: string,
+    includeRelations = false,
+  ): Promise<RestaurantResponseDto> {
+    this.logger.log('Fetching restaurant by ID', {
+      restaurantId: id,
+      includeRelations,
+    });
+
+    // Try cache first
+    const cacheKey = this.cacheService.getRestaurantKey(id);
+    const cachedRestaurant =
+      await this.cacheService.get<RestaurantResponseDto>(cacheKey);
+
+    if (cachedRestaurant && !includeRelations) {
+      this.logger.log('Restaurant retrieved from cache', { restaurantId: id });
+      return cachedRestaurant;
+    }
+
+    // Build query with selective includes
+    const includeOptions = includeRelations
+      ? {
+          posts: {
+            select: {
+              id: true,
+              content: true,
+              imageUrl: true,
+              rating: true,
+              createdAt: true,
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  name: true,
+                  avatar: true,
+                },
+              },
+              _count: {
+                select: {
+                  likes: true,
+                  comments: true,
+                },
+              },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 10, // Lazy load only recent posts
+          },
+          menuItems: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              price: true,
+              imageUrl: true,
+              category: true,
+              isAvailable: true,
+            },
+            where: { isAvailable: true }, // Only available items
+            orderBy: { category: 'asc' },
+          },
+          _count: {
+            select: {
+              posts: true,
+              menuItems: true,
+              orders: true,
+            },
+          },
+        }
+      : undefined;
 
     const restaurant = await this.prisma.restaurant.findUnique({
       where: { id },
+      include: includeOptions,
     });
 
     if (!restaurant) {
       this.logger.warn('Restaurant not found', { restaurantId: id });
       throw new NotFoundException(`Restaurant with ID ${id} not found`);
+    }
+
+    // Cache basic restaurant data for 10 minutes
+    if (!includeRelations) {
+      await this.cacheService.set(cacheKey, restaurant, 600);
     }
 
     return restaurant;

@@ -9,8 +9,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // User model for authentication and profile
@@ -28,13 +28,20 @@ model User {
   password String
 
   // Relations
-  posts     Post[]
-  likes     Like[]
-  comments  Comment[]
-  follows   Follow[]  @relation("UserFollows")
-  followers Follow[]  @relation("UserFollowers")
-  orders    Order[]
+  posts             Post[]
+  likes             Like[]
+  comments          Comment[]
+  follows           Follow[]           @relation("UserFollows")
+  followers         Follow[]           @relation("UserFollowers")
+  orders            Order[]
+  notifications     Notification[]
+  pushSubscriptions PushSubscription[]
 
+  // Indexes for common queries
+  @@index([email]) // Login queries
+  @@index([username]) // Profile lookups
+  @@index([name]) // Search by name
+  @@index([createdAt]) // Sort by join date
   @@map("users")
 }
 
@@ -71,6 +78,14 @@ model Restaurant {
   menuItems MenuItem[]
   orders    Order[]
 
+  // Indexes for common queries
+  @@index([name]) // Search by name
+  @@index([city, state]) // Location-based searches
+  @@index([category]) // Filter by category
+  @@index([cuisine]) // Filter by cuisine
+  @@index([rating]) // Sort by rating
+  @@index([isOpen]) // Filter by open status
+  @@index([createdAt]) // Sort by creation date
   @@map("restaurants")
 }
 
@@ -91,6 +106,13 @@ model Post {
   likes        Like[]
   comments     Comment[]
 
+  // Indexes for common queries
+  @@index([userId]) // Posts by user
+  @@index([restaurantId]) // Posts by restaurant
+  @@index([createdAt]) // Feed sorting by date
+  @@index([rating]) // Sort by rating
+  @@index([userId, createdAt]) // User's posts chronologically
+  @@index([restaurantId, createdAt]) // Restaurant's posts chronologically
   @@map("posts")
 }
 
@@ -104,6 +126,8 @@ model Like {
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
+  @@index([postId]) // Count likes per post
+  @@index([userId]) // User's liked posts
   @@map("likes")
 }
 
@@ -118,6 +142,9 @@ model Comment {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
+  @@index([postId]) // Comments for a post
+  @@index([userId]) // User's comments
+  @@index([postId, createdAt]) // Comments chronologically
   @@map("comments")
 }
 
@@ -151,6 +178,11 @@ model MenuItem {
   restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   orderItems   OrderItem[]
 
+  @@index([restaurantId]) // Menu items by restaurant
+  @@index([category]) // Filter by category
+  @@index([isAvailable]) // Available items
+  @@index([price]) // Sort by price
+  @@index([restaurantId, category]) // Restaurant menu by category
   @@map("menu_items")
 }
 
@@ -174,6 +206,12 @@ model Order {
   restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   orderItems   OrderItem[]
 
+  @@index([userId]) // User's orders
+  @@index([restaurantId]) // Restaurant's orders
+  @@index([status]) // Filter by status
+  @@index([createdAt]) // Sort by date
+  @@index([userId, createdAt]) // User's order history
+  @@index([restaurantId, status]) // Restaurant's orders by status
   @@map("orders")
 }
 
@@ -191,4 +229,48 @@ model OrderItem {
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
 
   @@map("order_items")
+}
+
+// Notification model for real-time notifications
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String // 'like', 'comment', 'order', 'order-status', 'new-post', 'follow'
+  title     String
+  message   String
+  data      String    @default("{}") // JSON string for additional data
+  read      Boolean   @default(false)
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for performance
+  @@index([userId]) // User's notifications
+  @@index([userId, read]) // Unread notifications
+  @@index([userId, createdAt]) // Notifications by date
+  @@index([type]) // Filter by notification type
+  @@map("notifications")
+}
+
+// Push Subscription model for web push notifications
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String
+  p256dh    String // Public key for encryption
+  auth      String // Authentication secret
+  userAgent String? // Browser/device info
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@unique([userId, endpoint]) // Prevent duplicate subscriptions
+  @@index([userId]) // User's subscriptions
+  @@map("push_subscriptions")
 }

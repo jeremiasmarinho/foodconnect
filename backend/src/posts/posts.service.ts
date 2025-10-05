@@ -10,12 +10,18 @@ import {
   PaginationQueryDto,
   PaginatedResponseDto,
 } from '../common/dto/pagination.dto';
+import { CacheService } from '../cache/cache.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PostsService {
   private readonly logger = new Logger(PostsService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cacheService: CacheService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   /**
    * Create a new post
@@ -81,39 +87,74 @@ export class PostsService {
   }
 
   /**
-   * Get post by ID with full details
+   * Get post by ID with optimized queries and caching
    * @param id - Post ID
+   * @param includeComments - Whether to include comments (default: false for performance)
    * @returns Post with user, restaurant, likes and comments count
    */
-  async getPostById(id: string): Promise<PostResponseDto> {
-    this.logger.log('Fetching post by ID', { postId: id });
+  async getPostById(
+    id: string,
+    includeComments = false,
+  ): Promise<PostResponseDto> {
+    this.logger.log('Fetching post by ID', { postId: id, includeComments });
+
+    // Try cache first for basic post data
+    const cacheKey = `post:${id}:${includeComments ? 'with-comments' : 'basic'}`;
+    const cachedPost = await this.cacheService.get<PostResponseDto>(cacheKey);
+
+    if (cachedPost) {
+      this.logger.log('Post retrieved from cache', { postId: id });
+      return cachedPost;
+    }
+
+    const baseInclude = {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          avatar: true,
+        },
+      },
+      restaurant: {
+        select: {
+          id: true,
+          name: true,
+          city: true,
+          imageUrl: true,
+        },
+      },
+      _count: {
+        select: {
+          likes: true,
+          comments: true,
+        },
+      },
+    };
+
+    const includeOptions = includeComments
+      ? {
+          ...baseInclude,
+          comments: {
+            take: 10, // Limit comments for performance
+            orderBy: { createdAt: 'desc' as const },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  name: true,
+                  avatar: true,
+                },
+              },
+            },
+          },
+        }
+      : baseInclude;
 
     const post = await this.prisma.post.findUnique({
       where: { id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            name: true,
-            avatar: true,
-          },
-        },
-        restaurant: {
-          select: {
-            id: true,
-            name: true,
-            city: true,
-            imageUrl: true,
-          },
-        },
-        _count: {
-          select: {
-            likes: true,
-            comments: true,
-          },
-        },
-      },
+      include: includeOptions,
     });
 
     if (!post) {
@@ -121,6 +162,10 @@ export class PostsService {
       throw new NotFoundException(`Post with ID ${id} not found`);
     }
 
+    // Cache for 5 minutes (posts can change frequently with likes/comments)
+    await this.cacheService.set(cacheKey, post, 300);
+
+    this.logger.log('Post retrieved from database and cached', { postId: id });
     return post;
   }
 
@@ -235,7 +280,7 @@ export class PostsService {
   }
 
   /**
-   * Get feed posts with pagination and filtering
+   * Get feed posts with pagination and filtering with caching
    * @param query - Pagination and filter query parameters
    * @param userId - Optional user ID for personalized feed
    * @returns Paginated posts feed
@@ -253,6 +298,24 @@ export class PostsService {
     } = query;
 
     this.logger.log('Fetching posts feed', { page, limit, search, userId });
+
+    // Generate cache key based on query parameters
+    const cacheKey = `feed:${userId || 'public'}:${page}:${limit}:${search || 'all'}:${sortBy}:${sortOrder}`;
+
+    // Try cache first for frequently accessed feeds
+    const cachedFeed =
+      await this.cacheService.get<PaginatedResponseDto<PostResponseDto>>(
+        cacheKey,
+      );
+    if (cachedFeed) {
+      this.logger.log('Feed retrieved from cache', {
+        page,
+        limit,
+        search,
+        userId: userId || 'public',
+      });
+      return cachedFeed;
+    }
 
     const skip = (page - 1) * limit;
     const where: { [key: string]: unknown } = {};
@@ -309,7 +372,20 @@ export class PostsService {
       this.prisma.post.count({ where }),
     ]);
 
-    return new PaginatedResponseDto(posts, total, page, limit);
+    const result = new PaginatedResponseDto(posts, total, page, limit);
+
+    // Cache feed for 2 minutes (feeds change frequently)
+    await this.cacheService.set(cacheKey, result, 120);
+
+    this.logger.log('Feed retrieved from database and cached', {
+      page,
+      limit,
+      search,
+      userId: userId || 'public',
+      totalPosts: total,
+    });
+
+    return result;
   }
 
   /**
@@ -495,6 +571,9 @@ export class PostsService {
           },
         });
 
+        // Send notification to post owner
+        await this.notificationsService.notifyPostLike(postId, userId);
+
         this.logger.log('Post liked', { postId, userId });
 
         return {
@@ -504,6 +583,69 @@ export class PostsService {
       }
     } catch (error) {
       this.logger.error('Failed to toggle like', {
+        postId,
+        userId,
+        error: error.message,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Add comment to a post
+   * @param postId - Post ID
+   * @param userId - User ID who is commenting
+   * @param content - Comment content
+   * @returns Created comment with user data
+   */
+  async addComment(postId: string, userId: string, content: string) {
+    this.logger.log('Adding comment to post', { postId, userId });
+
+    // Check if post exists
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      throw new NotFoundException(`Post with ID ${postId} not found`);
+    }
+
+    try {
+      // Create the comment
+      const comment = await this.prisma.comment.create({
+        data: {
+          content,
+          userId,
+          postId,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              name: true,
+              avatar: true,
+            },
+          },
+        },
+      });
+
+      // Send notification to post owner
+      await this.notificationsService.notifyPostComment(
+        postId,
+        userId,
+        content,
+      );
+
+      this.logger.log('Comment added successfully', {
+        postId,
+        userId,
+        commentId: comment.id,
+      });
+
+      return comment;
+    } catch (error) {
+      this.logger.error('Failed to add comment', {
         postId,
         userId,
         error: error.message,

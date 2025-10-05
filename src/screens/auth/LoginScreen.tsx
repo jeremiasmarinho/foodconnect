@@ -39,23 +39,26 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     password: "",
   };
 
-  const handleLogin = useCallback(async (values: LoginFormData) => {
-    try {
-      const response = await api.post("/auth/login", values);
-      const { access_token, user } = response.data;
+  const handleLogin = useCallback(
+    async (values: LoginFormData) => {
+      try {
+        const response = await api.post("/auth/login", values);
+        const { access_token, user } = response.data;
 
-      showSuccess("Login realizado com sucesso!");
+        showSuccess("Login realizado com sucesso!");
 
-      if (onLoginSuccess) {
-        onLoginSuccess(access_token, user);
+        if (onLoginSuccess) {
+          onLoginSuccess(access_token, user);
+        }
+      } catch (error) {
+        showError(error);
       }
-    } catch (error) {
-      showError(error);
-    }
-  }, [showSuccess, showError, onLoginSuccess]);
+    },
+    [showSuccess, showError, onLoginSuccess]
+  );
 
   const togglePasswordVisibility = useCallback(() => {
-    setShowPassword(prev => !prev);
+    setShowPassword((prev) => !prev);
   }, []);
 
   return (

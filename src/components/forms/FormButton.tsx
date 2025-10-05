@@ -19,124 +19,126 @@ interface FormButtonProps extends TouchableOpacityProps {
   rightIcon?: React.ReactNode;
 }
 
-const FormButton: React.FC<FormButtonProps> = React.memo(({
-  title,
-  loading = false,
-  variant = "primary",
-  size = "medium",
-  fullWidth = true,
-  leftIcon,
-  rightIcon,
-  disabled,
-  style,
-  ...touchableProps
-}) => {
-  const isDisabled = disabled || loading;
+const FormButton: React.FC<FormButtonProps> = React.memo(
+  ({
+    title,
+    loading = false,
+    variant = "primary",
+    size = "medium",
+    fullWidth = true,
+    leftIcon,
+    rightIcon,
+    disabled,
+    style,
+    ...touchableProps
+  }) => {
+    const isDisabled = disabled || loading;
 
-  const getBackgroundColor = () => {
-    if (isDisabled) return colors.disabled;
+    const getBackgroundColor = () => {
+      if (isDisabled) return colors.disabled;
 
-    switch (variant) {
-      case "primary":
-        return colors.primary;
-      case "secondary":
-        return colors.secondary;
-      case "danger":
-        return colors.error;
-      case "outline":
-        return "transparent";
-      default:
-        return colors.primary;
-    }
-  };
+      switch (variant) {
+        case "primary":
+          return colors.primary;
+        case "secondary":
+          return colors.secondary;
+        case "danger":
+          return colors.error;
+        case "outline":
+          return "transparent";
+        default:
+          return colors.primary;
+      }
+    };
 
-  const getTextColor = () => {
-    if (isDisabled) return "#FFFFFF";
+    const getTextColor = () => {
+      if (isDisabled) return "#FFFFFF";
 
-    switch (variant) {
-      case "outline":
-        return colors.primary;
-      default:
-        return "#FFFFFF";
-    }
-  };
+      switch (variant) {
+        case "outline":
+          return colors.primary;
+        default:
+          return "#FFFFFF";
+      }
+    };
 
-  const getBorderColor = () => {
-    if (variant === "outline") {
-      return isDisabled ? colors.disabled : colors.primary;
-    }
-    return "transparent";
-  };
+    const getBorderColor = () => {
+      if (variant === "outline") {
+        return isDisabled ? colors.disabled : colors.primary;
+      }
+      return "transparent";
+    };
 
-  const getButtonSize = () => {
-    switch (size) {
-      case "small":
-        return { paddingVertical: 8, paddingHorizontal: 16 };
-      case "large":
-        return { paddingVertical: 16, paddingHorizontal: 24 };
-      default:
-        return { paddingVertical: 12, paddingHorizontal: 20 };
-    }
-  };
+    const getButtonSize = () => {
+      switch (size) {
+        case "small":
+          return { paddingVertical: 8, paddingHorizontal: 16 };
+        case "large":
+          return { paddingVertical: 16, paddingHorizontal: 24 };
+        default:
+          return { paddingVertical: 12, paddingHorizontal: 20 };
+      }
+    };
 
-  const getFontSize = () => {
-    switch (size) {
-      case "small":
-        return 14;
-      case "large":
-        return 18;
-      default:
-        return 16;
-    }
-  };
+    const getFontSize = () => {
+      switch (size) {
+        case "small":
+          return 14;
+        case "large":
+          return 18;
+        default:
+          return 16;
+      }
+    };
 
-  return (
-    <TouchableOpacity
-      {...touchableProps}
-      disabled={isDisabled}
-      style={[
-        styles.button,
-        {
-          backgroundColor: getBackgroundColor(),
-          borderColor: getBorderColor(),
-          ...getButtonSize(),
-        },
-        fullWidth && styles.fullWidth,
-        variant === "outline" && styles.outline,
-        isDisabled && styles.disabled,
-        style,
-      ]}
-    >
-      <View style={styles.content}>
-        {loading ? (
-          <ActivityIndicator
-            size="small"
-            color={getTextColor()}
-            style={styles.loader}
-          />
-        ) : (
-          <>
-            {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
+    return (
+      <TouchableOpacity
+        {...touchableProps}
+        disabled={isDisabled}
+        style={[
+          styles.button,
+          {
+            backgroundColor: getBackgroundColor(),
+            borderColor: getBorderColor(),
+            ...getButtonSize(),
+          },
+          fullWidth && styles.fullWidth,
+          variant === "outline" && styles.outline,
+          isDisabled && styles.disabled,
+          style,
+        ]}
+      >
+        <View style={styles.content}>
+          {loading ? (
+            <ActivityIndicator
+              size="small"
+              color={getTextColor()}
+              style={styles.loader}
+            />
+          ) : (
+            <>
+              {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
 
-            <Text
-              style={[
-                styles.text,
-                {
-                  color: getTextColor(),
-                  fontSize: getFontSize(),
-                },
-              ]}
-            >
-              {title}
-            </Text>
+              <Text
+                style={[
+                  styles.text,
+                  {
+                    color: getTextColor(),
+                    fontSize: getFontSize(),
+                  },
+                ]}
+              >
+                {title}
+              </Text>
 
-            {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
-          </>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
-});
+              {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
+            </>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   button: {

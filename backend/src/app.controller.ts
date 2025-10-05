@@ -9,12 +9,12 @@ export class AppController {
 
   @Get()
   @ApiOperation({
-    summary: 'Health check endpoint',
-    description: 'Returns a simple message to verify the API is running',
+    summary: 'Welcome endpoint',
+    description: 'Returns a welcome message',
   })
   @ApiResponse({
     status: 200,
-    description: 'API is running successfully',
+    description: 'Welcome message',
     schema: {
       type: 'string',
       example: 'Hello World!',
@@ -22,5 +22,30 @@ export class AppController {
   })
   getHello(): string {
     return this.appService.getHello();
+  }
+
+  @Get('health')
+  @ApiOperation({
+    summary: 'Health check endpoint',
+    description: 'Returns application health status and system information',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Application health status',
+    schema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string', example: 'ok' },
+        timestamp: { type: 'string', example: '2025-10-05T22:00:00.000Z' },
+        uptime: { type: 'number', example: 123.456 },
+        environment: { type: 'string', example: 'production' },
+        version: { type: 'string', example: '1.0.0' },
+        database: { type: 'string', example: 'connected' },
+        cache: { type: 'string', example: 'connected' },
+      },
+    },
+  })
+  getHealth() {
+    return this.appService.getHealthStatus();
   }
 }
