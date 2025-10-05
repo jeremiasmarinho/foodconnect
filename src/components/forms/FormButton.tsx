@@ -19,7 +19,7 @@ interface FormButtonProps extends TouchableOpacityProps {
   rightIcon?: React.ReactNode;
 }
 
-const FormButton: React.FC<FormButtonProps> = ({
+const FormButton: React.FC<FormButtonProps> = React.memo(({
   title,
   loading = false,
   variant = "primary",
@@ -136,7 +136,7 @@ const FormButton: React.FC<FormButtonProps> = ({
       </View>
     </TouchableOpacity>
   );
-};
+});
 
 const styles = StyleSheet.create({
   button: {

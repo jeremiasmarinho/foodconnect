@@ -21,7 +21,7 @@ interface PostCardProps {
   style?: ViewStyle;
 }
 
-export const PostCard: React.FC<PostCardProps> = ({
+export const PostCard: React.FC<PostCardProps> = React.memo(({
   post,
   onPress,
   onUserPress,
@@ -313,4 +313,4 @@ export const PostCard: React.FC<PostCardProps> = ({
       </View>
     </TouchableOpacity>
   );
-};
+});

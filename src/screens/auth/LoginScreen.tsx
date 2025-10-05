@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -39,7 +39,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     password: "",
   };
 
-  const handleLogin = async (values: LoginFormData) => {
+  const handleLogin = useCallback(async (values: LoginFormData) => {
     try {
       const response = await api.post("/auth/login", values);
       const { access_token, user } = response.data;
@@ -52,11 +52,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     } catch (error) {
       showError(error);
     }
-  };
+  }, [showSuccess, showError, onLoginSuccess]);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const togglePasswordVisibility = useCallback(() => {
+    setShowPassword(prev => !prev);
+  }, []);
 
   return (
     <ScrollView

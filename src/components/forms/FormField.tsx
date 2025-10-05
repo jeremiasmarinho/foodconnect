@@ -29,7 +29,7 @@ interface FormFieldProps
   helperText?: string;
 }
 
-const FormField: React.FC<FormFieldProps> = ({
+const FormField: React.FC<FormFieldProps> = React.memo(({
   name,
   label,
   placeholder,
@@ -126,7 +126,7 @@ const FormField: React.FC<FormFieldProps> = ({
       )}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

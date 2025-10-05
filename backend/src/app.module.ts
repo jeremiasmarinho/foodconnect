@@ -11,9 +11,11 @@ import { MenuItemsModule } from './menu-items/menu-items.module';
 import { OrdersModule } from './orders/orders.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { CacheConfigModule } from './cache/cache.module';
 
 @Module({
   imports: [
+    CacheConfigModule,
     PrismaModule,
     AuthModule,
     UsersModule,

@@ -12,6 +12,7 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
+import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RestaurantsService } from './restaurants.service';
 import {
@@ -266,35 +267,19 @@ export class RestaurantsController {
   }
 
   /**
-   * Get all restaurants with pagination and filtering (Public endpoint for discovery)
-   * GET /restaurants?page=1&limit=20&city=São Paulo&state=SP
+   * Get all restaurants with pagination and filters
+   * GET /restaurants?page=1&limit=20&search=pizza&sortBy=rating&sortOrder=desc
    */
   @Get()
-  async getRestaurants(
-    @Query('page') page: string = '1',
-    @Query('limit') limit: string = '20',
-    @Query('city') city?: string,
-    @Query('state') state?: string,
-  ) {
-    this.logger.log('Fetching restaurants list', {
-      page: parseInt(page),
-      limit: parseInt(limit),
-      city,
-      state,
-    });
+  async getRestaurants(@Query() query: PaginationQueryDto) {
+    this.logger.log('Fetching restaurants list', query);
 
-    const result = await this.restaurantsService.getRestaurants(
-      parseInt(page),
-      parseInt(limit),
-      city,
-      state,
-    );
+    const result = await this.restaurantsService.getRestaurants(query);
 
     return {
-      success: true,
       message: 'Restaurants retrieved successfully',
       data: result.data,
-      pagination: result.pagination,
+      meta: result.meta,
     };
   }
 

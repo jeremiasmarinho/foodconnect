@@ -5,12 +5,20 @@ import {
   UpdateRestaurantDto,
   RestaurantResponseDto,
 } from './dto/restaurant.dto';
+import {
+  PaginationQueryDto,
+  PaginatedResponseDto,
+} from '../common/dto/pagination.dto';
+import { CacheService } from '../cache/cache.service';
 
 @Injectable()
 export class RestaurantsService {
   private readonly logger = new Logger(RestaurantsService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cacheService: CacheService,
+  ) {}
 
   /**
    * Create a new restaurant
@@ -143,35 +151,69 @@ export class RestaurantsService {
   }
 
   /**
-   * Get all restaurants with pagination and optional filtering
-   * @param page - Page number
-   * @param limit - Items per page
-   * @param city - Filter by city
-   * @param state - Filter by state
+   * Get all restaurants with pagination and filtering
+   * @param query - Pagination and filter query parameters
    * @returns Paginated restaurants list
    */
   async getRestaurants(
-    page: number = 1,
-    limit: number = 20,
-    city?: string,
-    state?: string,
-  ) {
-    this.logger.log('Fetching restaurants list', {
+    query: PaginationQueryDto,
+  ): Promise<PaginatedResponseDto<RestaurantResponseDto>> {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = query;
+
+    // Generate cache key
+    const cacheKey = this.cacheService.getRestaurantsKey(
       page,
       limit,
-      city,
-      state,
+      search,
+      sortBy,
+      sortOrder,
+    );
+
+    // Try to get from cache first
+    const cachedResult =
+      await this.cacheService.get<PaginatedResponseDto<RestaurantResponseDto>>(
+        cacheKey,
+      );
+    if (cachedResult) {
+      this.logger.log('Restaurants retrieved from cache', { cacheKey });
+      return cachedResult;
+    }
+
+    this.logger.log('Fetching restaurants from database', {
+      page,
+      limit,
+      search,
+      sortBy,
+      sortOrder,
     });
 
     const skip = (page - 1) * limit;
-    const where: any = {};
+    const where: { [key: string]: unknown } = {};
 
-    if (city) {
-      where.city = { contains: city };
+    // Add search functionality
+    if (search && search.trim()) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { cuisine: { contains: search, mode: 'insensitive' } },
+        { city: { contains: search, mode: 'insensitive' } },
+      ];
     }
 
-    if (state) {
-      where.state = { contains: state };
+    // Set up ordering
+    const orderBy: { [key: string]: string } = {};
+    if (sortBy === 'rating') {
+      orderBy.rating = sortOrder;
+    } else if (sortBy === 'name') {
+      orderBy.name = sortOrder;
+    } else {
+      orderBy.createdAt = sortOrder;
     }
 
     const [restaurants, total] = await Promise.all([
@@ -179,23 +221,25 @@ export class RestaurantsService {
         skip,
         take: limit,
         where,
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy,
       }),
       this.prisma.restaurant.count({ where }),
     ]);
 
-    return {
-      data: restaurants,
-      pagination: {
-        page,
-        limit,
-        total,
-        hasNext: skip + limit < total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+    const result = new PaginatedResponseDto(restaurants, total, page, limit);
+
+    // Cache the result for 5 minutes
+    await this.cacheService.set(cacheKey, result, 300);
+
+    this.logger.log('Restaurants fetched and cached successfully', {
+      total,
+      page,
+      limit,
+      resultsCount: restaurants.length,
+      cacheKey,
+    });
+
+    return result;
   }
 
   /**

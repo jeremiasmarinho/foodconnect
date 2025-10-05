@@ -6,6 +6,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostDto, UpdatePostDto, PostResponseDto } from './dto/post.dto';
+import {
+  PaginationQueryDto,
+  PaginatedResponseDto,
+} from '../common/dto/pagination.dto';
 
 @Injectable()
 export class PostsService {
@@ -231,24 +235,52 @@ export class PostsService {
   }
 
   /**
-   * Get feed posts with pagination (all posts ordered by creation date)
-   * @param page - Page number
-   * @param limit - Items per page
+   * Get feed posts with pagination and filtering
+   * @param query - Pagination and filter query parameters
    * @param userId - Optional user ID for personalized feed
    * @returns Paginated posts feed
    */
-  async getFeed(page: number = 1, limit: number = 20, userId?: string) {
-    this.logger.log('Fetching posts feed', { page, limit, userId });
+  async getFeed(
+    query: PaginationQueryDto,
+    userId?: string,
+  ): Promise<PaginatedResponseDto<PostResponseDto>> {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = query;
+
+    this.logger.log('Fetching posts feed', { page, limit, search, userId });
 
     const skip = (page - 1) * limit;
+    const where: { [key: string]: unknown } = {};
+
+    // Add search functionality
+    if (search && search.trim()) {
+      where.OR = [
+        { content: { contains: search, mode: 'insensitive' } },
+        { restaurant: { name: { contains: search, mode: 'insensitive' } } },
+      ];
+    }
+
+    // Set up ordering
+    const orderBy: { [key: string]: string } = {};
+    if (sortBy === 'rating') {
+      orderBy.rating = sortOrder;
+    } else if (sortBy === 'likes') {
+      orderBy.likesCount = sortOrder;
+    } else {
+      orderBy.createdAt = sortOrder;
+    }
 
     const [posts, total] = await Promise.all([
       this.prisma.post.findMany({
         skip,
         take: limit,
-        orderBy: {
-          createdAt: 'desc',
-        },
+        where,
+        orderBy,
         include: {
           user: {
             select: {
@@ -274,19 +306,10 @@ export class PostsService {
           },
         },
       }),
-      this.prisma.post.count(),
+      this.prisma.post.count({ where }),
     ]);
 
-    return {
-      data: posts,
-      pagination: {
-        page,
-        limit,
-        total,
-        hasNext: skip + limit < total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+    return new PaginatedResponseDto(posts, total, page, limit);
   }
 
   /**

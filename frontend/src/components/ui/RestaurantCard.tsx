@@ -19,7 +19,7 @@ interface RestaurantCardProps {
   onPress?: () => void;
 }
 
-export const RestaurantCard: React.FC<RestaurantCardProps> = ({
+export const RestaurantCard: React.FC<RestaurantCardProps> = React.memo(({
   restaurant,
   onPress,
 }) => {
@@ -207,4 +207,4 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
       </View>
     </TouchableOpacity>
   );
-};
+});

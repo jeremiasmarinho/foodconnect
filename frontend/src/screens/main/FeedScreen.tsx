@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -21,29 +21,42 @@ export const FeedScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Using mock data for now - replace with real API call when backend is connected
-  const posts = mockPosts;
+  const allPosts = mockPosts;
   const isLoading = false;
   const isError = false;
 
-  const handlePostPress = (post: Post) => {
+  // Memoize filtered posts based on search query
+  const filteredPosts = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return allPosts;
+    }
+    
+    return allPosts.filter(post => 
+      post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.restaurant?.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [allPosts, searchQuery]);
+
+  const handlePostPress = useCallback((post: Post) => {
     // TODO: Navigate to post detail
     console.log("Post pressed:", post.id);
-  };
+  }, []);
 
-  const handleUserPress = (user: User) => {
+  const handleUserPress = useCallback((user: User) => {
     // TODO: Navigate to user profile
     console.log("User pressed:", user.id);
-  };
+  }, []);
 
-  const handleRestaurantPress = (restaurantId: string) => {
+  const handleRestaurantPress = useCallback((restaurantId: string) => {
     // TODO: Navigate to restaurant detail
     console.log("Restaurant pressed:", restaurantId);
-  };
+  }, []);
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
     // TODO: Implement search
     console.log("Search:", query);
-  };
+  }, []);
 
   const handleLogout = async () => {
     Alert.alert("Sair", "Tem certeza que deseja sair da sua conta?", [
@@ -62,7 +75,7 @@ export const FeedScreen: React.FC = () => {
     ]);
   };
 
-  const renderHeader = () => (
+  const renderHeader = useCallback(() => (
     <View
       style={{
         flexDirection: "row",
@@ -112,9 +125,9 @@ export const FeedScreen: React.FC = () => {
         />
       </TouchableOpacity>
     </View>
-  );
+  ), [theme, user?.name, handleLogout]);
 
-  const renderSearchBar = () => (
+  const renderSearchBar = useCallback(() => (
     <View
       style={{
         paddingHorizontal: theme.spacing.lg,
@@ -134,9 +147,9 @@ export const FeedScreen: React.FC = () => {
         }}
       />
     </View>
-  );
+  ), [theme.spacing.lg, handleSearch]);
 
-  const renderPost = ({ item }: { item: Post }) => (
+  const renderPost = useCallback(({ item }: { item: Post }) => (
     <View style={{ paddingHorizontal: theme.spacing.lg }}>
       <PostCard
         post={item}
@@ -145,14 +158,14 @@ export const FeedScreen: React.FC = () => {
         onRestaurantPress={handleRestaurantPress}
       />
     </View>
-  );
+  ), [theme.spacing.lg, handlePostPress, handleUserPress, handleRestaurantPress]);
 
-  const renderFooter = () => {
+  const renderFooter = useCallback(() => {
     // Mock loading footer - would show when loading more posts
     return null;
-  };
+  }, []);
 
-  const renderEmpty = () => (
+  const renderEmpty = useCallback(() => (
     <View
       style={{
         flex: 1,
@@ -191,7 +204,7 @@ export const FeedScreen: React.FC = () => {
         Seja o primeiro a compartilhar uma experiência gastronômica incrível!
       </Text>
     </View>
-  );
+  ), [theme]);
 
   if (isLoading) {
     return (
@@ -232,7 +245,7 @@ export const FeedScreen: React.FC = () => {
       }}
     >
       <FlatList
-        data={posts}
+        data={filteredPosts}
         renderItem={renderPost}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={() => (
@@ -261,7 +274,7 @@ export const FeedScreen: React.FC = () => {
         onEndReachedThreshold={0.5}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={
-          posts.length === 0 ? { flex: 1 } : { paddingBottom: theme.spacing.xl }
+          filteredPosts.length === 0 ? { flex: 1 } : { paddingBottom: theme.spacing.xl }
         }
       />
     </SafeAreaView>
