@@ -1,23 +1,27 @@
 import React from "react";
-import { StatusBar, setStatusBarHidden } from "expo-status-bar";
-import { QueryProvider, AuthProvider, ThemeProvider } from "./src/providers";
-import { CartProvider } from "./src/providers/CartProvider";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import {
+  AuthProvider,
+  CartProvider,
+  QueryProvider,
+  ThemeProvider,
+} from "./src/providers";
 import { RootNavigator } from "./src/navigation";
-
-// Hide status bar immediately
-setStatusBarHidden(true, "none");
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <QueryProvider>
-        <AuthProvider>
-          <CartProvider>
-            <RootNavigator />
-            <StatusBar style="light" hidden={true} />
-          </CartProvider>
-        </AuthProvider>
-      </QueryProvider>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <CartProvider>
+              <RootNavigator />
+              <StatusBar style="auto" />
+            </CartProvider>
+          </AuthProvider>
+        </QueryProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }

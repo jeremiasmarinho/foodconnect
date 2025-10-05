@@ -2,7 +2,13 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { MainTabParamList } from "../types";
-import { FeedScreen, DiscoverScreen, ProfileScreen } from "../screens/main";
+import {
+  FeedScreen,
+  DiscoverScreen,
+  ProfileScreen,
+  CartScreen,
+  OrderHistoryScreen,
+} from "../screens/main";
 import { useTheme } from "../providers";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -20,6 +26,10 @@ export const MainNavigator: React.FC = () => {
             iconName = focused ? "home" : "home-outline";
           } else if (route.name === "Discover") {
             iconName = focused ? "search" : "search-outline";
+          } else if (route.name === "Cart") {
+            iconName = focused ? "bag" : "bag-outline";
+          } else if (route.name === "Orders") {
+            iconName = focused ? "receipt" : "receipt-outline";
           } else if (route.name === "Profile") {
             iconName = focused ? "person" : "person-outline";
           } else {
@@ -31,11 +41,16 @@ export const MainNavigator: React.FC = () => {
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textTertiary,
         headerShown: false,
+        tabBarShowLabel: true,
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: "500",
+        },
         tabBarStyle: {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.border,
-          height: theme.layout.tabBarHeight,
-          paddingBottom: 8,
+          height: 85,
+          paddingBottom: 10,
           paddingTop: 8,
           ...theme.layout.shadow.small,
         },
@@ -44,12 +59,22 @@ export const MainNavigator: React.FC = () => {
       <Tab.Screen
         name="Feed"
         component={FeedScreen}
-        options={{ tabBarLabel: "Feed" }}
+        options={{ tabBarLabel: "Home" }}
       />
       <Tab.Screen
         name="Discover"
         component={DiscoverScreen}
-        options={{ tabBarLabel: "Descobrir" }}
+        options={{ tabBarLabel: "Buscar" }}
+      />
+      <Tab.Screen
+        name="Cart"
+        component={CartScreen}
+        options={{ tabBarLabel: "Carrinho" }}
+      />
+      <Tab.Screen
+        name="Orders"
+        component={OrderHistoryScreen}
+        options={{ tabBarLabel: "Pedidos" }}
       />
       <Tab.Screen
         name="Profile"

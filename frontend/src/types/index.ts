@@ -151,7 +151,8 @@ export type AuthStackParamList = {
 export type MainTabParamList = {
   Feed: undefined;
   Discover: undefined;
-  Create: undefined;
+  Cart: undefined;
+  Orders: undefined;
   Profile: undefined;
 };
 
