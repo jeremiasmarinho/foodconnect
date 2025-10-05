@@ -1,5 +1,6 @@
-import { renderHook, waitFor } from "@testing-library/react-native";
+import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
 import { useAuth, useLogin, useRegister, useLogout } from "../useAuth";
 import { authService } from "../../services/auth";
 

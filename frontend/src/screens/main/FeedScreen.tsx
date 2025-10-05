@@ -13,22 +13,17 @@ import { useTheme, useAuth } from "../../providers";
 import { PostCard, SearchBar, Loading, ErrorView } from "../../components/ui";
 import { useFeedPosts } from "../../hooks";
 import { Post, User } from "../../types";
+import { mockPosts, mockUsers } from "../../data/mockData";
 
 export const FeedScreen: React.FC = () => {
   const { theme } = useTheme();
   const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const {
-    posts,
-    isLoading,
-    isError,
-    error,
-    refetch,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useFeedPosts();
+  // Using mock data for now - replace with real API call when backend is connected
+  const posts = mockPosts;
+  const isLoading = false;
+  const isError = false;
 
   const handlePostPress = (post: Post) => {
     // TODO: Navigate to post detail
@@ -96,7 +91,8 @@ export const FeedScreen: React.FC = () => {
             color: theme.colors.textSecondary,
           }}
         >
-          Olá, {user?.name?.split(" ")[0]}! 👋
+          Olá, {user?.name?.split(" ")[0] || "Foodie"}! 🍕 Descubra novos
+          sabores
         </Text>
       </View>
 
@@ -104,7 +100,7 @@ export const FeedScreen: React.FC = () => {
         onPress={handleLogout}
         style={{
           padding: theme.spacing.sm,
-          borderRadius: theme.layout.borderRadius.round,
+          borderRadius: 20,
           backgroundColor: theme.colors.surfaceVariant,
         }}
         activeOpacity={0.7}
@@ -152,18 +148,8 @@ export const FeedScreen: React.FC = () => {
   );
 
   const renderFooter = () => {
-    if (!isFetchingNextPage) return null;
-
-    return (
-      <View
-        style={{
-          paddingVertical: theme.spacing.lg,
-          alignItems: "center",
-        }}
-      >
-        <Loading size="small" />
-      </View>
-    );
+    // Mock loading footer - would show when loading more posts
+    return null;
   };
 
   const renderEmpty = () => (
@@ -260,15 +246,17 @@ export const FeedScreen: React.FC = () => {
         refreshControl={
           <RefreshControl
             refreshing={false}
-            onRefresh={refetch}
+            onRefresh={() => {
+              // Mock refresh - would reload posts from API
+              console.log("Refreshing feed...");
+            }}
             colors={[theme.colors.primary]}
             tintColor={theme.colors.primary}
           />
         }
         onEndReached={() => {
-          if (hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-          }
+          // Mock load more - would fetch next page of posts
+          console.log("Loading more posts...");
         }}
         onEndReachedThreshold={0.5}
         showsVerticalScrollIndicator={false}

@@ -99,27 +99,40 @@ export const PostCard: React.FC<PostCardProps> = ({
           }}
           activeOpacity={0.7}
         >
-          <View
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: theme.colors.primary,
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: theme.spacing.md,
-            }}
-          >
-            <Text
+          {post.author?.avatar ? (
+            <Image
+              source={{ uri: post.author.avatar }}
               style={{
-                color: theme.colors.textOnPrimary,
-                fontSize: theme.typography.fontSize.md,
-                fontWeight: theme.typography.fontWeight.semibold,
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                marginRight: theme.spacing.md,
+              }}
+              resizeMode="cover"
+            />
+          ) : (
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: theme.colors.primary,
+                alignItems: "center",
+                justifyContent: "center",
+                marginRight: theme.spacing.md,
               }}
             >
-              {post.author?.name?.charAt(0).toUpperCase() || "?"}
-            </Text>
-          </View>
+              <Text
+                style={{
+                  color: theme.colors.textOnPrimary,
+                  fontSize: theme.typography.fontSize.md,
+                  fontWeight: theme.typography.fontWeight.semibold,
+                }}
+              >
+                {post.author?.name?.charAt(0).toUpperCase() || "?"}
+              </Text>
+            </View>
+          )}
 
           <View style={{ flex: 1 }}>
             <Text

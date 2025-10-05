@@ -8,11 +8,12 @@ import {
   Platform,
   ScrollView,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../types";
 import { Button, Input } from "../../components/ui";
-import { useAuth } from "../../providers";
+import { useAuth, useTheme } from "../../providers";
 
 type RegisterScreenProps = NativeStackScreenProps<
   AuthStackParamList,
@@ -39,6 +40,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
   }>({});
 
   const { register } = useAuth();
+  const { theme } = useTheme();
 
   const updateFormData = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -113,18 +115,50 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { padding: theme.spacing.xl },
+          ]}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <Text style={styles.title}>Criar Conta</Text>
-            <Text style={styles.subtitle}>Junte-se ao FoodConnect</Text>
+            <View
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                backgroundColor: theme.colors.primary,
+                justifyContent: "center",
+                alignItems: "center",
+                marginBottom: theme.spacing.lg,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 36,
+                  fontWeight: "bold",
+                  color: "white",
+                }}
+              >
+                👨‍🍳
+              </Text>
+            </View>
+            <Text style={[styles.title, { color: theme.colors.textPrimary }]}>
+              Criar Conta
+            </Text>
+            <Text
+              style={[styles.subtitle, { color: theme.colors.textSecondary }]}
+            >
+              Junte-se à comunidade food lovers
+            </Text>
           </View>
 
           <View style={styles.form}>
@@ -134,7 +168,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
               onChangeText={(value: string) => updateFormData("name", value)}
               error={errors.name}
               leftIcon="person-outline"
-              placeholder="Seu nome completo"
+              placeholder="Maria Silva"
             />
 
             <Input
@@ -146,7 +180,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
               error={errors.username}
               autoCapitalize="none"
               leftIcon="at-outline"
-              placeholder="username"
+              placeholder="maria_foodie"
             />
 
             <Input
@@ -157,7 +191,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
               keyboardType="email-address"
               autoCapitalize="none"
               leftIcon="mail-outline"
-              placeholder="seu@email.com"
+              placeholder="maria@exemplo.com"
             />
 
             <Input
@@ -168,7 +202,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
               }
               error={errors.password}
               secureTextEntry
-              placeholder="Escolha uma senha"
+              placeholder="••••••••"
             />
 
             <Input
@@ -179,8 +213,58 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
               }
               error={errors.confirmPassword}
               secureTextEntry
-              placeholder="Digite a senha novamente"
+              placeholder="••••••••"
             />
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: theme.spacing.md,
+                marginBottom: theme.spacing.lg,
+              }}
+            >
+              <TouchableOpacity
+                style={{
+                  width: 20,
+                  height: 20,
+                  borderWidth: 2,
+                  borderColor: theme.colors.primary,
+                  borderRadius: 4,
+                  marginRight: theme.spacing.sm,
+                  backgroundColor: theme.colors.primary,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{ color: "white", fontSize: 12, fontWeight: "bold" }}
+                >
+                  ✓
+                </Text>
+              </TouchableOpacity>
+              <Text
+                style={{
+                  flex: 1,
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.textSecondary,
+                  lineHeight: 18,
+                }}
+              >
+                Concordo com os{" "}
+                <Text
+                  style={{ color: theme.colors.primary, fontWeight: "bold" }}
+                >
+                  Termos de Uso
+                </Text>{" "}
+                e{" "}
+                <Text
+                  style={{ color: theme.colors.primary, fontWeight: "bold" }}
+                >
+                  Política de Privacidade
+                </Text>
+              </Text>
+            </View>
 
             <Button
               title="Criar Conta"
@@ -191,12 +275,16 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Já tem uma conta? </Text>
+            <Text
+              style={[styles.footerText, { color: theme.colors.textSecondary }]}
+            >
+              Já tem uma conta?
+            </Text>
             <Button
               title="Fazer login"
               onPress={() => navigation.navigate("Login")}
               variant="outline"
-              size="small"
+              fullWidth
             />
           </View>
         </ScrollView>

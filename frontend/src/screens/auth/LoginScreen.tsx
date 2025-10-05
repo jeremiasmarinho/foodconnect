@@ -7,6 +7,7 @@ import {
   Platform,
   ScrollView,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../types";
@@ -88,6 +89,27 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               marginBottom: theme.spacing.xxxxl,
             }}
           >
+            <View
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                backgroundColor: theme.colors.primary,
+                justifyContent: "center",
+                alignItems: "center",
+                marginBottom: theme.spacing.lg,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 36,
+                  fontWeight: "bold",
+                  color: "white",
+                }}
+              >
+                🍽️
+              </Text>
+            </View>
             <Text
               style={{
                 fontSize: theme.typography.fontSize.xxxxxl,
@@ -103,9 +125,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 fontSize: theme.typography.fontSize.lg,
                 color: theme.colors.textSecondary,
                 textAlign: "center",
+                paddingHorizontal: theme.spacing.lg,
               }}
             >
-              Descubra sabores incríveis
+              Conecte-se aos melhores sabores da sua cidade
             </Text>
           </View>
 
@@ -118,7 +141,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               keyboardType="email-address"
               autoCapitalize="none"
               leftIcon="mail-outline"
-              placeholder="seu@email.com"
+              placeholder="maria@exemplo.com"
             />
 
             <Input
@@ -127,15 +150,29 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               onChangeText={setPassword}
               error={errors.password}
               secureTextEntry
-              placeholder="Sua senha"
+              placeholder="••••••••"
             />
+
+            <TouchableOpacity
+              style={{ alignSelf: "flex-end", marginTop: theme.spacing.sm }}
+            >
+              <Text
+                style={{
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.primary,
+                  fontWeight: theme.typography.fontWeight.medium,
+                }}
+              >
+                Esqueceu a senha?
+              </Text>
+            </TouchableOpacity>
 
             <Button
               title="Entrar"
               onPress={handleLogin}
               loading={loading}
               fullWidth
-              style={{ marginTop: theme.spacing.md }}
+              style={{ marginTop: theme.spacing.xl }}
             />
           </View>
 
@@ -147,14 +184,71 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 marginBottom: theme.spacing.md,
               }}
             >
-              Não tem uma conta?
+              Novo no FoodConnect?
             </Text>
             <Button
-              title="Criar conta"
+              title="Criar conta gratuita"
               onPress={() => navigation.navigate("Register")}
               variant="outline"
               fullWidth
             />
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: theme.spacing.xl,
+                paddingHorizontal: theme.spacing.lg,
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  height: 1,
+                  backgroundColor: theme.colors.border,
+                }}
+              />
+              <Text
+                style={{
+                  marginHorizontal: theme.spacing.md,
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.textSecondary,
+                }}
+              >
+                ou use uma conta demo
+              </Text>
+              <View
+                style={{
+                  flex: 1,
+                  height: 1,
+                  backgroundColor: theme.colors.border,
+                }}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={{
+                marginTop: theme.spacing.md,
+                padding: theme.spacing.sm,
+                borderRadius: 8,
+                backgroundColor: theme.colors.surface,
+              }}
+              onPress={() => {
+                setEmail("admin@foodconnect.com");
+                setPassword("FoodConnect2024!");
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.primary,
+                  textAlign: "center",
+                  fontWeight: theme.typography.fontWeight.medium,
+                }}
+              >
+                🎭 Usar conta admin (admin@foodconnect.com)
+              </Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

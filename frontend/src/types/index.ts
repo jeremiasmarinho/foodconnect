@@ -6,6 +6,7 @@ export interface User {
   name: string;
   username: string;
   bio?: string;
+  avatar?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -29,10 +30,15 @@ export interface Restaurant {
   category?: string; // pizza, burger, sushi, etc.
   cuisine?: string; // Italian, Japanese, Brazilian, etc.
   rating?: number; // Average rating
+  reviewCount?: number; // Number of reviews
   deliveryTime?: string; // "25-35 min"
   deliveryFee?: number; // Delivery fee in currency
   minimumOrder?: number; // Minimum order value
   isOpen?: boolean;
+  priceRange?: "low" | "medium" | "high";
+  openingHours?: Record<string, string>;
+  features?: string[];
+  tags?: string[];
 
   createdAt: string;
   updatedAt?: string;
@@ -42,8 +48,10 @@ export interface Post {
   id: string;
   content: string;
   imageUrl?: string;
+  userId: string;
   authorId: string;
   author?: User;
+  user?: User;
   restaurantId?: string;
   restaurant?: Restaurant;
   likesCount: number;
@@ -192,4 +200,39 @@ export interface PostCardProps {
 export interface RestaurantCardProps {
   restaurant: Restaurant;
   onPress?: (restaurantId: string) => void;
+}
+
+// Additional types for mock data
+export interface Review {
+  id: string;
+  userId: string;
+  restaurantId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt?: string;
+  user?: User;
+}
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image?: string;
+  category: string;
+  isVegetarian?: boolean;
+  isVegan?: boolean;
+  isGlutenFree?: boolean;
+  isAvailable: boolean;
+  preparationTime?: string;
+  calories?: number;
+  allergens?: string[];
+}
+
+export interface MenuCategory {
+  id: string;
+  name: string;
+  description?: string;
+  items: MenuItem[];
 }

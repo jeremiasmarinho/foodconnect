@@ -14,17 +14,13 @@ import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "../../providers";
 import { SearchBar, RestaurantCard, Header } from "../../components";
 import { useRestaurants } from "../../hooks";
+import {
+  mockRestaurants,
+  restaurantCategories,
+  popularSearches,
+} from "../../data/mockData";
 
-const CATEGORIES = [
-  { id: "all", name: "Todos", icon: "restaurant-outline" },
-  { id: "pizza", name: "Pizza", icon: "pizza-outline" },
-  { id: "burger", name: "Burger", icon: "fast-food-outline" },
-  { id: "sushi", name: "Sushi", icon: "fish-outline" },
-  { id: "coffee", name: "Café", icon: "cafe-outline" },
-  { id: "dessert", name: "Sobremesa", icon: "ice-cream-outline" },
-  { id: "healthy", name: "Saudável", icon: "leaf-outline" },
-  { id: "brazilian", name: "Brasileira", icon: "restaurant-outline" },
-];
+// Categories are now imported from mockData
 
 export const DiscoverScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -33,29 +29,41 @@ export const DiscoverScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
-  const {
-    data: restaurants,
-    isLoading,
-    refetch,
-  } = useRestaurants({
-    page: 1,
-    limit: 20,
+  // Using mock data for now - replace with real API call when backend is connected
+  const isLoading = false;
+
+  // Filter restaurants based on category and search query
+  const filteredRestaurants = mockRestaurants.filter((restaurant) => {
+    const matchesCategory =
+      selectedCategory === "all" || restaurant.category === selectedCategory;
+    const matchesSearch =
+      searchQuery === "" ||
+      restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      restaurant.cuisine?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      restaurant.description?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchesCategory && matchesSearch;
   });
 
-  const allRestaurants = restaurants ?? [];
+  const allRestaurants = filteredRestaurants;
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await refetch();
+    // Simulate API call delay
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     setRefreshing(false);
-  }, [refetch]);
+  }, []);
 
   const loadMore = () => {
     // TODO: Implement pagination when backend supports it
     console.log("Load more restaurants");
   };
 
-  const renderCategory = ({ item }: { item: (typeof CATEGORIES)[0] }) => (
+  const renderCategory = ({
+    item,
+  }: {
+    item: (typeof restaurantCategories)[0];
+  }) => (
     <TouchableOpacity
       style={[
         styles.categoryItem,
@@ -99,14 +107,7 @@ export const DiscoverScreen: React.FC = () => {
 
   const renderRestaurant = ({ item }: { item: any }) => (
     <RestaurantCard
-      id={item.id}
-      name={item.name}
-      cuisine={item.cuisine}
-      rating={item.rating}
-      deliveryTime={item.deliveryTime}
-      deliveryFee={item.deliveryFee}
-      image={item.imageUrl}
-      description={item.description}
+      restaurant={item}
       onPress={() => {
         // @ts-ignore - Navigation will be properly typed when integrated
         navigation.navigate("RestaurantDetail", { restaurantId: item.id });
@@ -162,7 +163,7 @@ export const DiscoverScreen: React.FC = () => {
             Categorias
           </Text>
           <FlatList
-            data={CATEGORIES}
+            data={restaurantCategories}
             renderItem={renderCategory}
             keyExtractor={(item) => item.id}
             horizontal
@@ -178,7 +179,8 @@ export const DiscoverScreen: React.FC = () => {
           >
             {selectedCategory === "all"
               ? "Todos os Restaurantes"
-              : CATEGORIES.find((c) => c.id === selectedCategory)?.name}
+              : restaurantCategories.find((c) => c.id === selectedCategory)
+                  ?.name}
             {allRestaurants.length > 0 && (
               <Text
                 style={[

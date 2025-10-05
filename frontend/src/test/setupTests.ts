@@ -31,9 +31,13 @@ jest.mock("@react-navigation/native", () => ({
   useFocusEffect: jest.fn(),
 }));
 
-// Mock do react-native-vector-icons
-jest.mock("react-native-vector-icons/MaterialIcons", () => "MaterialIcons");
-jest.mock("react-native-vector-icons/Ionicons", () => "Ionicons");
+// Mock do @expo/vector-icons
+jest.mock("@expo/vector-icons", () => ({
+  MaterialIcons: "MaterialIcons",
+  Ionicons: "Ionicons",
+  FontAwesome: "FontAwesome",
+  AntDesign: "AntDesign",
+}));
 
 // Mock do Async Storage
 jest.mock("@react-native-async-storage/async-storage", () => ({

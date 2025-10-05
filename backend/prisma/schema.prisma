@@ -33,6 +33,7 @@ model User {
   comments  Comment[]
   follows   Follow[]  @relation("UserFollows")
   followers Follow[]  @relation("UserFollowers")
+  orders    Order[]
 
   @@map("users")
 }
@@ -66,7 +67,9 @@ model Restaurant {
   updatedAt DateTime @updatedAt
 
   // Relations
-  posts Post[]
+  posts     Post[]
+  menuItems MenuItem[]
+  orders    Order[]
 
   @@map("restaurants")
 }
@@ -129,4 +132,63 @@ model Follow {
 
   @@unique([followerId, followingId])
   @@map("follows")
+}
+
+// Menu Item model - Items available in restaurants
+model MenuItem {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  imageUrl    String?
+  category    String // appetizer, main, dessert, beverage
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  restaurantId String
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orderItems   OrderItem[]
+
+  @@map("menu_items")
+}
+
+// Order model - Customer orders
+model Order {
+  id              String   @id @default(cuid())
+  status          String   @default("pending") // pending, confirmed, preparing, ready, delivered, cancelled
+  total           Float
+  deliveryFee     Float    @default(0)
+  subtotal        Float
+  notes           String?
+  deliveryAddress String?
+  estimatedTime   String? // "25-35 min"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurantId String
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orderItems   OrderItem[]
+
+  @@map("orders")
+}
+
+// Order Item model - Items within an order
+model OrderItem {
+  id       String  @id @default(cuid())
+  quantity Int
+  price    Float // Price at time of order
+  notes    String? // Special instructions
+
+  // Relations
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
 }

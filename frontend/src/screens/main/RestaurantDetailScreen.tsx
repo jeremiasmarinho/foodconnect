@@ -14,6 +14,11 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import { useTheme } from "../../providers";
 import { Button, Card } from "../../components";
 import { useRestaurant } from "../../hooks";
+import {
+  mockRestaurants,
+  mockMenuCategories,
+  mockReviews,
+} from "../../data/mockData";
 
 const { width } = Dimensions.get("window");
 
@@ -30,7 +35,11 @@ export const RestaurantDetailScreen: React.FC = () => {
     "menu"
   );
 
-  const { data: restaurant, isLoading } = useRestaurant(restaurantId);
+  // Using mock data for now - replace with real API call when backend is connected
+  const restaurant = mockRestaurants.find((r) => r.id === restaurantId);
+  const isLoading = false;
+  const menuCategories = mockMenuCategories[restaurantId] || [];
+  const reviews = mockReviews[restaurantId] || [];
 
   if (isLoading) {
     return (
@@ -253,32 +262,118 @@ export const RestaurantDetailScreen: React.FC = () => {
       case "menu":
         return (
           <View style={styles.contentContainer}>
-            <Card style={styles.menuCard}>
-              <View style={styles.menuHeader}>
-                <Ionicons
-                  name="restaurant-outline"
-                  size={24}
-                  color={theme.colors.primary}
-                />
+            {menuCategories.length > 0 ? (
+              menuCategories.map((category) => (
+                <Card key={category.id} style={styles.menuCard}>
+                  <View style={styles.menuHeader}>
+                    <Ionicons
+                      name="restaurant-outline"
+                      size={24}
+                      color={theme.colors.primary}
+                    />
+                    <Text
+                      style={[
+                        styles.menuTitle,
+                        { color: theme.colors.textPrimary },
+                      ]}
+                    >
+                      {category.name}
+                    </Text>
+                  </View>
+                  {category.description && (
+                    <Text
+                      style={[
+                        styles.menuDescription,
+                        { color: theme.colors.textSecondary },
+                      ]}
+                    >
+                      {category.description}
+                    </Text>
+                  )}
+                  {category.items.map((item) => (
+                    <View key={item.id} style={styles.menuItem}>
+                      <View style={styles.menuItemContent}>
+                        <View style={styles.menuItemInfo}>
+                          <Text
+                            style={[
+                              styles.menuItemName,
+                              { color: theme.colors.textPrimary },
+                            ]}
+                          >
+                            {item.name}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.menuItemDescription,
+                              { color: theme.colors.textSecondary },
+                            ]}
+                          >
+                            {item.description}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.menuItemPrice,
+                              { color: theme.colors.primary },
+                            ]}
+                          >
+                            R$ {item.price.toFixed(2)}
+                          </Text>
+                          {item.isVegetarian && (
+                            <View style={styles.menuItemTags}>
+                              <Text
+                                style={[
+                                  styles.menuItemTag,
+                                  {
+                                    color: "#4CAF50",
+                                    backgroundColor: "#E8F5E8",
+                                  },
+                                ]}
+                              >
+                                🌱 Vegetariano
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                        {item.image && (
+                          <Image
+                            source={{ uri: item.image }}
+                            style={styles.menuItemImage}
+                            resizeMode="cover"
+                          />
+                        )}
+                      </View>
+                    </View>
+                  ))}
+                </Card>
+              ))
+            ) : (
+              <Card style={styles.menuCard}>
+                <View style={styles.menuHeader}>
+                  <Ionicons
+                    name="restaurant-outline"
+                    size={24}
+                    color={theme.colors.primary}
+                  />
+                  <Text
+                    style={[
+                      styles.menuTitle,
+                      { color: theme.colors.textPrimary },
+                    ]}
+                  >
+                    Cardápio
+                  </Text>
+                </View>
                 <Text
                   style={[
-                    styles.menuTitle,
-                    { color: theme.colors.textPrimary },
+                    styles.menuDescription,
+                    { color: theme.colors.textSecondary },
                   ]}
                 >
-                  Cardápio
+                  Cardápio em breve! Entre em contato com o restaurante para
+                  mais informações.
                 </Text>
-              </View>
-              <Text
-                style={[
-                  styles.menuDescription,
-                  { color: theme.colors.textSecondary },
-                ]}
-              >
-                Em breve você poderá ver o cardápio completo deste restaurante
-                com todos os pratos disponíveis, preços e ingredientes.
-              </Text>
-            </Card>
+              </Card>
+            )}
           </View>
         );
 
@@ -409,16 +504,101 @@ export const RestaurantDetailScreen: React.FC = () => {
                 >
                   Avaliações
                 </Text>
+                {restaurant?.rating && restaurant?.reviewCount && (
+                  <View style={styles.reviewsSummary}>
+                    <Text
+                      style={[
+                        styles.reviewsRating,
+                        { color: theme.colors.primary },
+                      ]}
+                    >
+                      ⭐ {restaurant.rating.toFixed(1)}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.reviewsCount,
+                        { color: theme.colors.textSecondary },
+                      ]}
+                    >
+                      ({restaurant.reviewCount} avaliações)
+                    </Text>
+                  </View>
+                )}
               </View>
-              <Text
-                style={[
-                  styles.reviewsDescription,
-                  { color: theme.colors.textSecondary },
-                ]}
-              >
-                Em breve você poderá ver as avaliações e comentários de outros
-                usuários sobre este restaurante.
-              </Text>
+
+              {reviews.length > 0 ? (
+                reviews.map((review) => (
+                  <View key={review.id} style={styles.reviewItem}>
+                    <View style={styles.reviewHeader}>
+                      <View style={styles.reviewerInfo}>
+                        {review.user?.avatar ? (
+                          <Image
+                            source={{ uri: review.user.avatar }}
+                            style={styles.reviewerAvatar}
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <View style={styles.reviewerAvatar}>
+                            <Text style={styles.reviewerInitial}>
+                              {review.user?.name.charAt(0).toUpperCase()}
+                            </Text>
+                          </View>
+                        )}
+                        <View style={styles.reviewerDetails}>
+                          <Text
+                            style={[
+                              styles.reviewerName,
+                              { color: theme.colors.textPrimary },
+                            ]}
+                          >
+                            {review.user?.name}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.reviewDate,
+                              { color: theme.colors.textSecondary },
+                            ]}
+                          >
+                            {new Date(review.createdAt).toLocaleDateString(
+                              "pt-BR"
+                            )}
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={styles.reviewRating}>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Ionicons
+                            key={star}
+                            name={
+                              star <= review.rating ? "star" : "star-outline"
+                            }
+                            size={16}
+                            color="#FFD700"
+                          />
+                        ))}
+                      </View>
+                    </View>
+                    <Text
+                      style={[
+                        styles.reviewComment,
+                        { color: theme.colors.textPrimary },
+                      ]}
+                    >
+                      {review.comment}
+                    </Text>
+                  </View>
+                ))
+              ) : (
+                <Text
+                  style={[
+                    styles.reviewsDescription,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
+                  Ainda não há avaliações para este restaurante. Seja o primeiro
+                  a avaliar!
+                </Text>
+              )}
             </Card>
           </View>
         );
@@ -677,5 +857,115 @@ const styles = StyleSheet.create({
   },
   orderButton: {
     marginBottom: 0,
+  },
+  menuItem: {
+    marginBottom: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.1)",
+  },
+  menuItemContent: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  menuItemInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  menuItemName: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  menuItemDescription: {
+    fontSize: 14,
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  menuItemPrice: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  menuItemTags: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  menuItemTag: {
+    fontSize: 12,
+    fontWeight: "500",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 8,
+    marginBottom: 4,
+  },
+  menuItemImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+  },
+  reviewsSummary: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: "auto",
+  },
+  reviewsRating: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginRight: 8,
+  },
+  reviewsCount: {
+    fontSize: 14,
+  },
+  reviewItem: {
+    marginBottom: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.1)",
+  },
+  reviewHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  reviewerInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  reviewerAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#E3F2FD",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  reviewerInitial: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#1976D2",
+  },
+  reviewerDetails: {
+    flex: 1,
+  },
+  reviewerName: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  reviewDate: {
+    fontSize: 12,
+  },
+  reviewRating: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  reviewComment: {
+    fontSize: 14,
+    lineHeight: 20,
   },
 });

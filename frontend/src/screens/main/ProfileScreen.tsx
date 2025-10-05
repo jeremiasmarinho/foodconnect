@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "../../providers";
 import { Button, Card, Header } from "../../components";
 import { useCurrentUser, useLogout } from "../../hooks";
+import { mockUsers, mockPosts } from "../../data/mockData";
 
 const { width } = Dimensions.get("window");
 const imageSize = (width - 48) / 3; // 3 columns with 16px margins
@@ -26,22 +27,24 @@ export const ProfileScreen: React.FC = () => {
   const logoutMutation = useLogout();
   const [activeTab, setActiveTab] = useState<"posts" | "liked">("posts");
 
-  // Mock data - replace with real data from API
+  // Using mock data for now - replace with real data from API
+  const currentUser = mockUsers[0]; // Using first mock user as current user
+
+  // User posts from mock data - filter posts by current user
+  const userPosts = mockPosts.filter((post) => post.userId === currentUser.id);
+
   const mockUser = {
-    id: "1",
-    name: user?.name || "João Silva",
-    username: user?.username || "@joaosilva",
-    email: user?.email || "joao@example.com",
-    bio: "Apaixonado por gastronomia 🍕 | Sempre em busca dos melhores sabores | São Paulo, SP",
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
-    postsCount: 24,
+    ...currentUser,
+    name: user?.name || currentUser.name,
+    username: user?.username || currentUser.username,
+    email: user?.email || currentUser.email,
+    postsCount: userPosts.length,
     followersCount: 156,
     followingCount: 89,
-    joinedDate: "2024-01-15",
+    joinedDate: "Janeiro de 2024",
   };
 
-  const mockPosts = [
+  const mockPostsGrid = [
     {
       id: "1",
       imageUrl:
@@ -111,7 +114,24 @@ export const ProfileScreen: React.FC = () => {
     >
       {/* Avatar and Info */}
       <View style={styles.profileInfo}>
-        <Image source={{ uri: mockUser.avatar }} style={styles.avatar} />
+        {mockUser.avatar ? (
+          <Image source={{ uri: mockUser.avatar }} style={styles.avatar} />
+        ) : (
+          <View
+            style={[
+              styles.avatar,
+              {
+                backgroundColor: theme.colors.primary,
+                justifyContent: "center",
+                alignItems: "center",
+              },
+            ]}
+          >
+            <Text style={{ color: "white", fontSize: 32, fontWeight: "bold" }}>
+              {mockUser.name.charAt(0).toUpperCase()}
+            </Text>
+          </View>
+        )}
         <View style={styles.userInfo}>
           <Text style={[styles.userName, { color: theme.colors.textPrimary }]}>
             {mockUser.name}
@@ -165,6 +185,46 @@ export const ProfileScreen: React.FC = () => {
             style={[styles.statLabel, { color: theme.colors.textSecondary }]}
           >
             Seguindo
+          </Text>
+        </View>
+      </View>
+
+      {/* Additional Info */}
+      <View style={styles.additionalInfo}>
+        <View style={styles.infoItem}>
+          <Ionicons
+            name="calendar-outline"
+            size={16}
+            color={theme.colors.textSecondary}
+          />
+          <Text
+            style={[styles.infoText, { color: theme.colors.textSecondary }]}
+          >
+            Membro desde {mockUser.joinedDate}
+          </Text>
+        </View>
+        <View style={styles.infoItem}>
+          <Ionicons
+            name="location-outline"
+            size={16}
+            color={theme.colors.textSecondary}
+          />
+          <Text
+            style={[styles.infoText, { color: theme.colors.textSecondary }]}
+          >
+            São Paulo, SP
+          </Text>
+        </View>
+        <View style={styles.infoItem}>
+          <Ionicons
+            name="restaurant-outline"
+            size={16}
+            color={theme.colors.textSecondary}
+          />
+          <Text
+            style={[styles.infoText, { color: theme.colors.textSecondary }]}
+          >
+            {userPosts.length} experiências gastronômicas compartilhadas
           </Text>
         </View>
       </View>
@@ -292,24 +352,28 @@ export const ProfileScreen: React.FC = () => {
 
   const renderEmptyPosts = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons
-        name="camera-outline"
-        size={64}
-        color={theme.colors.textSecondary}
-      />
+      <View style={styles.emptyIconContainer}>
+        <Ionicons
+          name={activeTab === "posts" ? "restaurant-outline" : "heart-outline"}
+          size={64}
+          color={theme.colors.primary}
+        />
+      </View>
       <Text style={[styles.emptyTitle, { color: theme.colors.textPrimary }]}>
-        {activeTab === "posts" ? "Nenhum post ainda" : "Nenhuma curtida ainda"}
+        {activeTab === "posts"
+          ? "Suas aventuras gastronômicas"
+          : "Posts favoritos"}
       </Text>
       <Text
         style={[styles.emptySubtitle, { color: theme.colors.textSecondary }]}
       >
         {activeTab === "posts"
-          ? "Compartilhe suas experiências gastronômicas!"
-          : "Posts que você curtiu aparecerão aqui"}
+          ? "Compartilhe fotos dos pratos que você experimentou e inspire outros food lovers!"
+          : "Quando você curtir posts de outros usuários, eles aparecerão aqui para você revisitar"}
       </Text>
       {activeTab === "posts" && (
         <Button
-          title="Criar primeiro post"
+          title="📸 Compartilhar experiência"
           onPress={() => {
             // TODO: Navigate to create post
             console.log("Navigate to create post");
@@ -343,9 +407,14 @@ export const ProfileScreen: React.FC = () => {
 
         <View style={styles.contentContainer}>
           {activeTab === "posts" &&
-            (mockPosts.length > 0 ? (
+            (userPosts.length > 0 ? (
               <FlatList
-                data={mockPosts}
+                data={userPosts.map((post) => ({
+                  id: post.id,
+                  imageUrl: post.imageUrl,
+                  likesCount: post.likesCount,
+                  commentsCount: post.commentsCount || 0,
+                }))}
                 renderItem={renderPostItem}
                 keyExtractor={(item) => item.id}
                 numColumns={3}
@@ -525,5 +594,26 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     padding: 8,
+  },
+  additionalInfo: {
+    marginBottom: 16,
+  },
+  infoItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  infoText: {
+    fontSize: 14,
+    marginLeft: 8,
+  },
+  emptyIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "rgba(74, 144, 226, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 24,
   },
 });
