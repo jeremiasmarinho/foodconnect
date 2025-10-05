@@ -30,5 +30,11 @@
   "workspaces": [
     "backend",
     "frontend"
-  ]
+  ],
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "axios": "^1.12.2",
+    "formik": "^2.4.6",
+    "yup": "^1.7.1"
+  }
 }

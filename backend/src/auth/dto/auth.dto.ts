@@ -4,8 +4,14 @@ import {
   IsString,
   MinLength,
   MaxLength,
+  IsOptional,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsStrongPassword,
+  IsPhone,
+} from '../../common/validators/custom-validators';
 
 export class RegisterDto {
   @ApiProperty({
@@ -13,44 +19,54 @@ export class RegisterDto {
     example: 'john.doe@example.com',
     format: 'email',
   })
-  @IsEmail()
-  @IsNotEmpty()
+  @IsEmail({}, { message: 'Email deve ter um formato válido' })
+  @IsNotEmpty({ message: 'Email é obrigatório' })
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.toLowerCase().trim() : value,
+  )
   email: string;
 
   @ApiProperty({
     description: 'User full name',
-    example: 'John Doe',
+    example: 'João Silva',
     minLength: 2,
-    maxLength: 50,
+    maxLength: 100,
   })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(2)
-  @MaxLength(50)
+  @IsString({ message: 'Nome deve ser um texto' })
+  @IsNotEmpty({ message: 'Nome é obrigatório' })
+  @MinLength(2, { message: 'Nome deve ter pelo menos 2 caracteres' })
+  @MaxLength(100, { message: 'Nome deve ter no máximo 100 caracteres' })
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : value,
+  )
   name: string;
 
   @ApiProperty({
-    description: 'Unique username',
-    example: 'johndoe',
-    minLength: 3,
-    maxLength: 20,
+    description: 'User phone number',
+    example: '(11) 99999-9999',
+    minLength: 10,
+    maxLength: 15,
   })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(3)
-  @MaxLength(20)
-  username: string;
+  @IsString({ message: 'Telefone deve ser um texto' })
+  @IsNotEmpty({ message: 'Telefone é obrigatório' })
+  @IsPhone({ message: 'Telefone deve ter um formato válido' })
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.replace(/[^\d]/g, '') : value,
+  )
+  phone: string;
 
   @ApiProperty({
     description: 'User password',
-    example: 'strongPassword123',
-    minLength: 6,
+    example: 'MinhaSenh@123',
+    minLength: 8,
     maxLength: 100,
   })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(6)
-  @MaxLength(100)
+  @IsString({ message: 'Senha deve ser um texto' })
+  @IsNotEmpty({ message: 'Senha é obrigatória' })
+  @IsStrongPassword({
+    message:
+      'Senha deve conter pelo menos 8 caracteres, incluindo maiúscula, minúscula e número',
+  })
   password: string;
 }
 
