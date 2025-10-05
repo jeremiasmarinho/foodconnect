@@ -21,6 +21,11 @@
     "test:e2e:cov": "jest --config ./test/jest-e2e.json --coverage",
     "test:all": "npm test && npm run test:e2e",
     "test:all:cov": "npm run test:cov && npm run test:e2e:cov",
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "test:e2e:ci": "jest --config ./test/jest-e2e.json --ci --watchAll=false",
+    "ci:quality": "npm run lint && npm run build",
+    "ci:test": "npm run test:ci && npm run test:e2e:ci",
+    "ci:all": "npm run ci:quality && npm run ci:test",
     "seed:admin": "ts-node scripts/create-admin.ts",
     "db:seed": "npm run seed:admin"
   },

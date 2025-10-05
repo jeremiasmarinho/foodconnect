@@ -1,23 +1,21 @@
-# Pull Request Template
+## 🎯 Descrição
 
-## 🎯 What does this PR do?
+Breve descrição das mudanças implementadas.
 
-**Brief description of the changes**
+## 🔗 Issues Relacionadas
 
-## 🔗 Related Issues
+- Closes #[issue_number]
+- Related to #[issue_number]
 
-- Closes #[issue number]
-- Related to #[issue number]
+## 📋 Tipo de Mudança
 
-## 🧪 Type of Change
-
-- [ ] 🐛 Bug fix
-- [ ] ✨ New feature
-- [ ] 🔄 Refactoring
-- [ ] 📚 Documentation update
-- [ ] 🎨 Style/UI changes
-- [ ] ⚡ Performance improvement
-- [ ] 🔧 Configuration change
+- [ ] 🐛 Bug fix (mudança que corrige um problema)
+- [ ] ✨ Nova funcionalidade (mudança que adiciona funcionalidade)
+- [ ] � Breaking change (correção ou funcionalidade que causaria falha em funcionalidade existente)
+- [ ] � Mudança de documentação
+- [ ] 🔧 Refatoração (mudança de código que não corrige bug nem adiciona funcionalidade)
+- [ ] ⚡ Melhoria de performance
+- [ ] 🧪 Adição ou modificação de testes
 
 ## 📋 Checklist
 

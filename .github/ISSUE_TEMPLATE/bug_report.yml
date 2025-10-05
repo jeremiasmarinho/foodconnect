@@ -1,0 +1,109 @@
+name: 🐛 Bug Report
+description: Reportar um bug ou problema
+title: "[BUG] "
+labels: ["bug", "needs-triage"]
+assignees:
+  - jeremiasmarinho
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por reportar um bug! Por favor, preencha as informações abaixo.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Descrição do Bug
+      description: Uma descrição clara e concisa do bug
+      placeholder: O que aconteceu?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 🔄 Passos para Reproduzir
+      description: Passos para reproduzir o comportamento
+      placeholder: |
+        1. Vá para '...'
+        2. Clique em '...'
+        3. Role para baixo até '...'
+        4. Veja o erro
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ Comportamento Esperado
+      description: Descrição clara do que deveria acontecer
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: ❌ Comportamento Atual
+      description: Descrição clara do que está acontecendo
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 🎯 Componente Afetado
+      description: Qual parte do sistema está com problema?
+      options:
+        - Backend API
+        - Frontend Mobile
+        - Database
+        - Authentication
+        - CI/CD
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 🚨 Severidade
+      description: Qual o impacto do bug?
+      options:
+        - Critical (Sistema não funciona)
+        - High (Funcionalidade importante quebrada)
+        - Medium (Funcionalidade menor quebrada)
+        - Low (Problema cosmético)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🌍 Ambiente
+      description: Informações sobre o ambiente
+      placeholder: |
+        - OS: [e.g. Windows 11]
+        - Browser: [e.g. Chrome 120]
+        - Device: [e.g. iPhone 12]
+        - App Version: [e.g. 1.0.0]
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📋 Logs/Screenshots
+      description: Adicione logs de erro ou screenshots se aplicável
+      placeholder: Cole logs ou arraste screenshots aqui
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Checklist
+      description: Confirme que você verificou
+      options:
+        - label: Busquei por issues similares antes de criar este
+          required: true
+        - label: Testei na última versão disponível
+          required: true
+        - label: Incluí todas as informações necessárias
+          required: true

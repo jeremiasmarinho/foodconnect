@@ -1,3 +1,5 @@
+import "@testing-library/jest-native/extend-expect";
+
 // Simple global mocks for testing
 global.fetch = jest.fn();
 

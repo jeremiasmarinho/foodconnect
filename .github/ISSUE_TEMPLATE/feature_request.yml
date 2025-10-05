@@ -1,0 +1,96 @@
+name: ✨ Feature Request
+description: Sugerir uma nova funcionalidade
+title: "[FEATURE] "
+labels: ["enhancement", "needs-triage"]
+assignees:
+  - jeremiasmarinho
+body:
+  - type: markdown
+    attributes:
+      value: |
+        💡 Obrigado por sugerir uma nova funcionalidade! Vamos entender sua ideia.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🎯 Problema/Necessidade
+      description: Que problema esta funcionalidade resolveria?
+      placeholder: "Como usuário, eu preciso de... porque..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Solução Proposta
+      description: Descrição clara da funcionalidade desejada
+      placeholder: "Eu gostaria que..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternativas Consideradas
+      description: Outras soluções que você considerou
+      placeholder: "Também pensei em..."
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 🎯 Componente
+      description: Onde esta funcionalidade se encaixaria?
+      options:
+        - Backend API
+        - Frontend Mobile
+        - Database
+        - Authentication
+        - User Experience
+        - Performance
+        - Documentation
+        - DevOps/CI-CD
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: ⭐ Prioridade
+      description: Qual a importância desta funcionalidade?
+      options:
+        - Critical (Bloqueante para MVP)
+        - High (Importante para versão 1.0)
+        - Medium (Melhoria significativa)
+        - Low (Nice to have)
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: ✅ Critérios de Aceitação
+      description: Como saberemos que esta funcionalidade está completa?
+      placeholder: |
+        - [ ] Usuário pode fazer X
+        - [ ] Sistema valida Y
+        - [ ] Interface mostra Z
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: 🎨 Mockups/Wireframes
+      description: Adicione designs ou wireframes se tiver
+      placeholder: "Cole links ou arraste imagens aqui"
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Checklist
+      options:
+        - label: Esta funcionalidade alinha com os objetivos do produto
+          required: true
+        - label: Considerei o impacto na experiência do usuário
+          required: true
+        - label: Pensei sobre a viabilidade técnica
+          required: true

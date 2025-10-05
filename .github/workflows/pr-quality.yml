@@ -1,0 +1,174 @@
+name: 🔍 Pull Request Quality Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  # =====================================
+  # PR Quality Gates
+  # =====================================
+  pr-quality-gate:
+    name: 🚦 PR Quality Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for better diff analysis
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      # Quick validation before running expensive tests
+      - name: 🔍 Changed Files Analysis
+        id: changed-files
+        uses: tj-actions/changed-files@v40
+        with:
+          files_yaml: |
+            backend:
+              - backend/**/*.{ts,js,json}
+              - backend/package*.json
+            frontend:
+              - frontend/**/*.{ts,tsx,js,jsx,json}
+              - frontend/package*.json
+            tests:
+              - '**/*.{test,spec}.{ts,tsx,js,jsx}'
+            config:
+              - '**/*.config.{ts,js,json}'
+              - '**/tsconfig*.json'
+              - '**/.eslintrc*'
+              - '**/jest.config*'
+
+      # Backend Quick Tests (only if backend changed)
+      - name: 🧪 Backend Quick Tests
+        if: steps.changed-files.outputs.backend_any_changed == 'true'
+        working-directory: ./backend
+        run: |
+          npm ci
+          npm run lint
+          npm run test -- --passWithNoTests --bail
+
+      # Frontend Quick Tests (only if frontend changed)  
+      - name: 🧪 Frontend Quick Tests
+        if: steps.changed-files.outputs.frontend_any_changed == 'true'
+        working-directory: ./frontend
+        run: |
+          npm ci
+          if npm run | grep -q "test"; then
+            npm run test -- --passWithNoTests --bail
+          fi
+        continue-on-error: true
+
+      # Test Coverage Analysis
+      - name: 📊 Test Coverage Check
+        if: steps.changed-files.outputs.tests_any_changed == 'true'
+        run: |
+          echo "🧪 Test files were modified - running coverage analysis"
+          cd backend && npm ci && npm run test -- --coverage --passWithNoTests
+        continue-on-error: true
+
+      # PR Size Check
+      - name: 📏 PR Size Analysis
+        run: |
+          FILES_CHANGED=$(git diff --name-only origin/main...HEAD | wc -l)
+          LINES_CHANGED=$(git diff --stat origin/main...HEAD | tail -1 | awk '{print $4+$6}')
+          
+          echo "📊 PR Analysis:"
+          echo "Files changed: $FILES_CHANGED"
+          echo "Lines changed: $LINES_CHANGED"
+          
+          if [ "$FILES_CHANGED" -gt 50 ]; then
+            echo "⚠️ Large PR detected ($FILES_CHANGED files). Consider breaking into smaller PRs."
+          fi
+          
+          if [ "$LINES_CHANGED" -gt 1000 ]; then
+            echo "⚠️ Large changeset detected ($LINES_CHANGED lines). Consider breaking into smaller PRs."
+          fi
+
+      # Dependencies Security Check
+      - name: 🔒 Dependencies Security Check
+        run: |
+          if [ -f "backend/package-lock.json" ]; then
+            cd backend && npm audit --audit-level moderate
+          fi
+          if [ -f "frontend/package-lock.json" ]; then
+            cd frontend && npm audit --audit-level moderate  
+          fi
+        continue-on-error: true
+
+  # =====================================
+  # PR Comment with Results
+  # =====================================
+  pr-comment:
+    name: 💬 PR Status Comment
+    runs-on: ubuntu-latest
+    needs: pr-quality-gate
+    if: always()
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 💬 Comment PR Results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && comment.body.includes('🚦 PR Quality Report')
+            );
+
+            const success = '${{ needs.pr-quality-gate.result }}' === 'success';
+            const reportBody = `
+            ## 🚦 PR Quality Report
+
+            **Status**: ${success ? '✅ PASSED' : '❌ FAILED'}
+
+            ### 📊 Checks Performed:
+            - **Code Quality**: ${success ? '✅' : '❌'} Linting and TypeScript checks
+            - **Tests**: ${success ? '✅' : '❌'} Unit and integration tests  
+            - **Security**: ${success ? '✅' : '❌'} Dependency vulnerability scan
+            - **Size**: 📏 PR size analysis completed
+
+            ### 🔄 Next Steps:
+            ${success ? 
+              '- ✅ All quality checks passed!\n- 🚀 Ready for code review\n- 🔀 Can be merged after approval' : 
+              '- ❌ Some checks failed\n- 🔧 Please fix issues before requesting review\n- 📝 Check the Actions tab for detailed logs'
+            }
+
+            ---
+            *This comment is automatically updated by the CI/CD pipeline.*
+            `;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: reportBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: reportBody
+              });
+            }

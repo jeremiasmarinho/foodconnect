@@ -1,6 +1,6 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
-import { Loading } from "../Loading";
+import { Loading } from "./Loading";
 
 // Mock do provider de tema
 const mockUseTheme = {
@@ -15,7 +15,7 @@ const mockUseTheme = {
   },
 };
 
-jest.mock("../../../providers", () => ({
+jest.mock("../../providers", () => ({
   useTheme: () => mockUseTheme,
 }));
 
