@@ -11,7 +11,7 @@ describe("Connection Diagnostics", () => {
   });
 
   test("should identify correct API configuration", () => {
-    expect(API_CONFIG.BASE_URL).toBe("http://localhost:3001");
+    expect(API_CONFIG.BASE_URL).toBe("http://localhost:3002");
     expect(API_CONFIG.BASE_URL).not.toBe("http://localhost:3000");
     console.log("✅ API Configuration is correct:", API_CONFIG.BASE_URL);
   });

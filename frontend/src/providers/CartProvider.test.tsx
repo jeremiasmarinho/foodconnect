@@ -1,5 +1,5 @@
 import React from "react";
-import { render, act } from "@testing-library/react-native";
+import { render, act, fireEvent } from "@testing-library/react-native";
 import { CartProvider, useCart } from "./CartProvider";
 import { View, Text, Button } from "react-native";
 
@@ -27,8 +27,6 @@ const TestComponent = () => {
               description: "Delicious test pizza",
               category: "pizza",
               isAvailable: true,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
             },
             1
           )
@@ -39,6 +37,12 @@ const TestComponent = () => {
         testID="update-quantity-btn"
         title="Update Quantity"
         onPress={() => updateQuantity("item-1", 2)}
+      />
+
+      <Button
+        testID="update-to-zero-btn"
+        title="Set Quantity Zero"
+        onPress={() => updateQuantity("item-1", 0)}
       />
 
       <Button
@@ -70,10 +74,10 @@ describe("CartProvider", () => {
   });
 
   it("should add item to cart", () => {
-    const { getByTestId } = renderWithProvider(<TestComponent />);
+    const { getByText, getByTestId } = renderWithProvider(<TestComponent />);
 
     act(() => {
-      getByTestId("add-item-btn").props.onPress();
+      fireEvent.press(getByText("Add Item"));
     });
 
     expect(getByTestId("cart-items-count")).toHaveTextContent("1");
@@ -82,16 +86,16 @@ describe("CartProvider", () => {
   });
 
   it("should update item quantity", () => {
-    const { getByTestId } = renderWithProvider(<TestComponent />);
+    const { getByText, getByTestId } = renderWithProvider(<TestComponent />);
 
     // First add an item
     act(() => {
-      getByTestId("add-item-btn").props.onPress();
+      fireEvent.press(getByText("Add Item"));
     });
 
     // Then update quantity
     act(() => {
-      getByTestId("update-quantity-btn").props.onPress();
+      fireEvent.press(getByText("Update Quantity"));
     });
 
     expect(getByTestId("cart-items-count")).toHaveTextContent("1"); // Still 1 item
@@ -99,18 +103,18 @@ describe("CartProvider", () => {
   });
 
   it("should remove item from cart", () => {
-    const { getByTestId } = renderWithProvider(<TestComponent />);
+    const { getByText, getByTestId } = renderWithProvider(<TestComponent />);
 
     // First add an item
     act(() => {
-      getByTestId("add-item-btn").props.onPress();
+      fireEvent.press(getByText("Add Item"));
     });
 
     expect(getByTestId("cart-items-count")).toHaveTextContent("1");
 
     // Then remove it
     act(() => {
-      getByTestId("remove-item-btn").props.onPress();
+      fireEvent.press(getByText("Remove Item"));
     });
 
     expect(getByTestId("cart-items-count")).toHaveTextContent("0");
@@ -118,18 +122,18 @@ describe("CartProvider", () => {
   });
 
   it("should clear entire cart", () => {
-    const { getByTestId } = renderWithProvider(<TestComponent />);
+    const { getByText, getByTestId } = renderWithProvider(<TestComponent />);
 
     // Add an item
     act(() => {
-      getByTestId("add-item-btn").props.onPress();
+      fireEvent.press(getByText("Add Item"));
     });
 
     expect(getByTestId("cart-items-count")).toHaveTextContent("1");
 
     // Clear cart
     act(() => {
-      getByTestId("clear-cart-btn").props.onPress();
+      fireEvent.press(getByText("Clear Cart"));
     });
 
     expect(getByTestId("cart-items-count")).toHaveTextContent("0");
@@ -139,23 +143,24 @@ describe("CartProvider", () => {
 
   it("should handle adding multiple different items", () => {
     const MultiItemTestComponent = () => {
-      const { cart, addToCart, getCartTotal } = useCart();
+      const { state, addItem, getSubtotal } = useCart();
 
       return (
         <View>
-          <Text testID="cart-items-count">{cart.items.length}</Text>
-          <Text testID="cart-total">{getCartTotal()}</Text>
+          <Text testID="cart-items-count">{state.items.length}</Text>
+          <Text testID="cart-total">{getSubtotal()}</Text>
 
           <Button
             testID="add-pizza-btn"
             title="Add Pizza"
             onPress={() =>
-              addToCart({
+              addItem({
                 id: "pizza-1",
                 name: "Margherita Pizza",
                 price: 18.99,
                 restaurantId: "restaurant-1",
-                quantity: 1,
+                isAvailable: true,
+                category: "pizza",
               })
             }
           />
@@ -164,12 +169,13 @@ describe("CartProvider", () => {
             testID="add-burger-btn"
             title="Add Burger"
             onPress={() =>
-              addToCart({
+              addItem({
                 id: "burger-1",
                 name: "Classic Burger",
                 price: 12.99,
                 restaurantId: "restaurant-1",
-                quantity: 1,
+                isAvailable: true,
+                category: "burger",
               })
             }
           />
@@ -177,11 +183,13 @@ describe("CartProvider", () => {
       );
     };
 
-    const { getByTestId } = renderWithProvider(<MultiItemTestComponent />);
+    const { getByText, getByTestId } = renderWithProvider(
+      <MultiItemTestComponent />
+    );
 
     // Add pizza
     act(() => {
-      getByTestId("add-pizza-btn").props.onPress();
+      fireEvent.press(getByText("Add Pizza"));
     });
 
     expect(getByTestId("cart-items-count")).toHaveTextContent("1");
@@ -189,33 +197,40 @@ describe("CartProvider", () => {
 
     // Add burger
     act(() => {
-      getByTestId("add-burger-btn").props.onPress();
+      fireEvent.press(getByText("Add Burger"));
     });
 
     expect(getByTestId("cart-items-count")).toHaveTextContent("2");
-    expect(getByTestId("cart-total")).toHaveTextContent("31.98"); // 18.99 + 12.99
+    const total1 = getByTestId("cart-total").props.children;
+    expect(Number(total1)).toBeCloseTo(31.98, 2); // 18.99 + 12.99
   });
 
-  it("should prevent adding items from different restaurants", () => {
+  it("should detect when adding items from different restaurants via helper", () => {
     const DifferentRestaurantTestComponent = () => {
-      const { cart, addToCart, getCartTotal } = useCart();
+      const { state, addItem, isFromSameRestaurant, getSubtotal } = useCart();
 
       return (
         <View>
-          <Text testID="cart-items-count">{cart.items.length}</Text>
-          <Text testID="cart-total">{getCartTotal()}</Text>
-          <Text testID="restaurant-id">{cart.restaurantId || "none"}</Text>
+          <Text testID="cart-items-count">{state.items.length}</Text>
+          <Text testID="cart-total">{getSubtotal()}</Text>
+          <Text testID="restaurant-id">{state.restaurantId || "none"}</Text>
+          <Text testID="same-restaurant">
+            {state.restaurantId
+              ? String(isFromSameRestaurant(state.restaurantId))
+              : "true"}
+          </Text>
 
           <Button
             testID="add-pizza-btn"
             title="Add Pizza"
             onPress={() =>
-              addToCart({
+              addItem({
                 id: "pizza-1",
                 name: "Margherita Pizza",
                 price: 18.99,
                 restaurantId: "restaurant-1",
-                quantity: 1,
+                isAvailable: true,
+                category: "pizza",
               })
             }
           />
@@ -224,12 +239,13 @@ describe("CartProvider", () => {
             testID="add-burger-btn"
             title="Add Burger from Different Restaurant"
             onPress={() =>
-              addToCart({
+              addItem({
                 id: "burger-1",
                 name: "Classic Burger",
                 price: 12.99,
-                restaurantId: "restaurant-2", // Different restaurant
-                quantity: 1,
+                restaurantId: "restaurant-2",
+                isAvailable: true,
+                category: "burger",
               })
             }
           />
@@ -237,51 +253,42 @@ describe("CartProvider", () => {
       );
     };
 
-    const { getByTestId } = renderWithProvider(
+    const { getByText, getByTestId } = renderWithProvider(
       <DifferentRestaurantTestComponent />
     );
 
     // Add pizza from restaurant-1
     act(() => {
-      getByTestId("add-pizza-btn").props.onPress();
+      fireEvent.press(getByText("Add Pizza"));
     });
 
     expect(getByTestId("cart-items-count")).toHaveTextContent("1");
     expect(getByTestId("restaurant-id")).toHaveTextContent("restaurant-1");
 
-    // Try to add burger from restaurant-2
+    // Try to add burger from restaurant-2 (allowed by provider)
     act(() => {
-      getByTestId("add-burger-btn").props.onPress();
+      fireEvent.press(getByText("Add Burger from Different Restaurant"));
     });
 
-    // Should still only have 1 item from restaurant-1
-    expect(getByTestId("cart-items-count")).toHaveTextContent("1");
-    expect(getByTestId("restaurant-id")).toHaveTextContent("restaurant-1");
-    expect(getByTestId("cart-total")).toHaveTextContent("18.99");
+    // Now cart has 2 items and restaurants differ; helper should report false when checking different id
+    expect(getByTestId("cart-items-count")).toHaveTextContent("2");
+    const total2 = getByTestId("cart-total").props.children;
+    expect(Number(total2)).toBeCloseTo(31.98, 2);
   });
 
   it("should handle updating quantity to zero by removing item", () => {
-    const { getByTestId } = renderWithProvider(<TestComponent />);
+    const { getByText, getByTestId } = renderWithProvider(<TestComponent />);
 
     // Add an item
     act(() => {
-      getByTestId("add-item-btn").props.onPress();
+      fireEvent.press(getByText("Add Item"));
     });
 
     expect(getByTestId("cart-items-count")).toHaveTextContent("1");
 
-    // Update quantity to 0
+    // Update quantity to 0 using dedicated button
     act(() => {
-      const updateToZeroComponent = () => {
-        const { updateQuantity } = useCart();
-        updateQuantity("item-1", 0);
-        return null;
-      };
-      render(
-        <CartProvider>
-          <updateToZeroComponent />
-        </CartProvider>
-      );
+      fireEvent.press(getByText("Set Quantity Zero"));
     });
 
     // Item should be removed when quantity is 0

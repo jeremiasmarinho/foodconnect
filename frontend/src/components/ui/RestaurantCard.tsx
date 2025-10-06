@@ -48,7 +48,7 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = React.memo(
       image: {
         width: "100%",
         height: "100%",
-        backgroundColor: theme.colors.placeholder,
+        backgroundColor: theme.colors.textPlaceholder,
       },
       imagePlaceholder: {
         width: "100%",
@@ -69,7 +69,7 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = React.memo(
       name: {
         fontSize: 16,
         fontWeight: "600",
-        color: theme.colors.text,
+        color: theme.colors.textPrimary,
         flex: 1,
         marginRight: theme.spacing.xs,
       },
@@ -116,7 +116,7 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = React.memo(
       ratingText: {
         fontSize: 14,
         fontWeight: "600",
-        color: theme.colors.text,
+        color: theme.colors.textPrimary,
         marginLeft: theme.spacing.xs,
       },
       deliveryFee: {

@@ -7,11 +7,16 @@ const LazyLoadingComponent: React.FC = () => (
   </div>
 );
 
-// Lazy loaded screens
-export const LazyHomeScreen = lazy(() => import("../screens/main/HomeScreen"));
+// Lazy loaded screens – map to existing files/exports
+// Feed acts as Home
+export const LazyHomeScreen = lazy(() =>
+  import("../screens/main/FeedScreen").then((m) => ({ default: m.FeedScreen }))
+);
 
-export const LazyProfileScreen = lazy(
-  () => import("../screens/main/ProfileScreen")
+export const LazyProfileScreen = lazy(() =>
+  import("../screens/main/ProfileScreen").then((m) => ({
+    default: m.ProfileScreen,
+  }))
 );
 
 export const LazyOrderHistoryScreen = lazy(
@@ -22,8 +27,10 @@ export const LazyOrderDetailsScreen = lazy(
   () => import("../screens/main/OrderDetailsScreen")
 );
 
-export const LazyRestaurantDetailsScreen = lazy(
-  () => import("../screens/restaurant/RestaurantDetailsScreen")
+export const LazyRestaurantDetailsScreen = lazy(() =>
+  import("../screens/main/RestaurantDetailScreen").then((m) => ({
+    default: m.RestaurantDetailScreen,
+  }))
 );
 
 export const LazyRestaurantMenuScreen = lazy(
@@ -32,13 +39,7 @@ export const LazyRestaurantMenuScreen = lazy(
 
 export const LazyCartScreen = lazy(() => import("../screens/main/CartScreen"));
 
-export const LazySettingsScreen = lazy(
-  () => import("../screens/main/SettingsScreen")
-);
-
-export const LazyNotificationsScreen = lazy(
-  () => import("../screens/main/NotificationsScreen")
-);
+// Removed Settings and Notifications placeholders (files don't exist)
 
 // HOC to wrap lazy components with Suspense
 export const withLazySuspense = <P extends object>(

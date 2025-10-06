@@ -64,36 +64,36 @@ describe("CartProvider", () => {
   });
 
   it("should add item to cart", () => {
-    const { getByTestId } = renderWithProvider();
+    const { getByText, getByTestId } = renderWithProvider();
 
-    fireEvent.press(getByTestId("add-item-btn"));
+    fireEvent.press(getByText("Add Item"));
 
     expect(getByTestId("item-count")).toHaveTextContent("1");
     expect(getByTestId("subtotal")).toHaveTextContent("18.99");
   });
 
   it("should remove item from cart", () => {
-    const { getByTestId } = renderWithProvider();
+    const { getByText, getByTestId } = renderWithProvider();
 
     // Add item first
-    fireEvent.press(getByTestId("add-item-btn"));
+    fireEvent.press(getByText("Add Item"));
     expect(getByTestId("item-count")).toHaveTextContent("1");
 
     // Then remove it
-    fireEvent.press(getByTestId("remove-item-btn"));
+    fireEvent.press(getByText("Remove Item"));
     expect(getByTestId("item-count")).toHaveTextContent("0");
     expect(getByTestId("subtotal")).toHaveTextContent("0.00");
   });
 
   it("should clear entire cart", () => {
-    const { getByTestId } = renderWithProvider();
+    const { getByText, getByTestId } = renderWithProvider();
 
     // Add item first
-    fireEvent.press(getByTestId("add-item-btn"));
+    fireEvent.press(getByText("Add Item"));
     expect(getByTestId("item-count")).toHaveTextContent("1");
 
     // Clear cart
-    fireEvent.press(getByTestId("clear-cart-btn"));
+    fireEvent.press(getByText("Clear Cart"));
     expect(getByTestId("item-count")).toHaveTextContent("0");
     expect(getByTestId("subtotal")).toHaveTextContent("0.00");
   });

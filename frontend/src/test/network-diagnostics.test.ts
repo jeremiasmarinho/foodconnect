@@ -13,7 +13,7 @@ describe("Network Diagnostics - ERR_ADDRESS_UNREACHABLE Fix", () => {
 
   test("should validate API configuration consistency", () => {
     // Check if API config is using correct port
-    expect(API_CONFIG.BASE_URL).toContain("3001");
+    expect(API_CONFIG.BASE_URL).toContain("3002");
     expect(API_CONFIG.BASE_URL).not.toContain("3000");
 
     console.log("✅ API Configuration validated - using port 3001");

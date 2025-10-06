@@ -82,7 +82,7 @@ describe("API Connectivity Tests", () => {
     expect(baseUrl).toMatch(/^https?:\/\//);
 
     // Check if it's pointing to correct port
-    expect(baseUrl).toContain("3001");
+    expect(baseUrl).toContain("3002");
     expect(baseUrl).not.toContain("3000"); // Common mistake
   });
 

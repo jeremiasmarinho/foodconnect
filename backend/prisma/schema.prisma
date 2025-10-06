@@ -44,6 +44,9 @@ model User {
   achievements            UserAchievement[]
   favoriteEstablishments  FavoriteEstablishment[]
   taggedInPosts           PostTag[]                // Posts where user is tagged
+  stories                 Story[]                  // User's stories
+  storyViews              StoryView[]              // Stories user has viewed
+  highlightedStories      HighlightedStory[]       // User's highlighted stories
 
   // Indexes for common queries
   @@index([email]) // Login queries
@@ -86,6 +89,7 @@ model Establishment {
   menuItems        MenuItem[]
   orders           Order[]
   favoritedByUsers FavoriteEstablishment[]
+  stories          Story[]  // Stories tagged at this establishment
 
   // Indexes for common queries
   @@index([name]) // Search by name
@@ -426,4 +430,71 @@ model FavoriteEstablishment {
   @@index([userId]) // User's favorites
   @@index([establishmentId]) // Establishment's fans
   @@map("favorite_establishments")
+}
+
+// Story model for temporary posts (24h)
+model Story {
+  id        String    @id @default(cuid())
+  userId    String
+  content   String?   // Optional text content
+  mediaUrl  String    // Image or video URL (required for stories)
+  mediaType String    @default("image") // "image" or "video"
+  createdAt DateTime  @default(now())
+  expiresAt DateTime  // Auto-calculated: createdAt + 24h
+  isActive  Boolean   @default(true)
+  
+  // Optional location and establishment
+  establishmentId String?
+  location        String? // JSON: { lat, lng, address }
+  
+  // Relations
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  establishment Establishment? @relation(fields: [establishmentId], references: [id], onDelete: SetNull)
+  views         StoryView[]
+  highlights    HighlightedStory[]
+  
+  // Indexes
+  @@index([userId]) // User's stories
+  @@index([expiresAt]) // Cleanup expired stories
+  @@index([isActive]) // Active stories only
+  @@map("stories")
+}
+
+// StoryView model to track who viewed each story
+model StoryView {
+  id      String   @id @default(cuid())
+  storyId String
+  userId  String
+  viewedAt DateTime @default(now())
+  
+  // Relations
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([storyId, userId]) // User can only view a story once (tracked)
+  @@index([storyId]) // Story's views
+  @@index([userId]) // User's viewed stories
+  @@map("story_views")
+}
+
+// HighlightedStory model for stories saved permanently to profile
+model HighlightedStory {
+  id          String   @id @default(cuid())
+  userId      String
+  storyId     String
+  title       String   // Custom title for the highlight
+  coverImage  String?  // Custom cover image URL
+  createdAt   DateTime @default(now())
+  order       Int      @default(0) // Order in profile
+  
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([userId, storyId]) // Each story can only be highlighted once per user
+  @@index([userId]) // User's highlights
+  @@index([order]) // Ordering
+  @@map("highlighted_stories")
 }

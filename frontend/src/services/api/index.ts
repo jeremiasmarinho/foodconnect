@@ -7,6 +7,8 @@ import {
   Post,
   Restaurant,
   CreatePostRequest,
+  CreateCommentRequest,
+  CreateRestaurantRequest,
   UpdateUserRequest,
   PaginatedResponse,
 } from "../../types";
@@ -99,12 +101,8 @@ export const postsApi = {
 
 // Restaurants API
 export const restaurantsApi = {
-  createRestaurant: (
-    data: Omit<
-      Restaurant,
-      "id" | "ownerId" | "owner" | "createdAt" | "updatedAt"
-    >
-  ): Promise<Restaurant> => apiClient.post("/restaurants", data),
+  createRestaurant: (data: CreateRestaurantRequest): Promise<Restaurant> =>
+    apiClient.post("/restaurants", data),
 
   getRestaurant: (id: string): Promise<Restaurant> =>
     apiClient.get(`/restaurants/${id}`),
@@ -131,6 +129,33 @@ export const restaurantsApi = {
     radius?: number;
   }): Promise<Restaurant[]> =>
     apiClient.get("/restaurants/nearby/location", { params }),
+};
+
+// Stories API
+export const storiesApi = {
+  getStoriesForUser: (userId: string): Promise<any[]> =>
+    apiClient.get(`/stories/feed/${userId}`),
+
+  getUserStories: (userId: string): Promise<any[]> =>
+    apiClient.get(`/stories/user/${userId}`),
+
+  createStory: (data: any): Promise<any> => apiClient.post("/stories", data),
+
+  markStoryAsViewed: (
+    storyId: string,
+    data: { userId: string }
+  ): Promise<void> => apiClient.post(`/stories/${storyId}/view`, data),
+
+  getStoryMetrics: (storyId: string): Promise<any> =>
+    apiClient.get(`/stories/${storyId}/metrics`),
+
+  deleteStory: (storyId: string): Promise<void> =>
+    apiClient.delete(`/stories/${storyId}`),
+
+  toggleHighlight: (
+    storyId: string,
+    data: { isHighlighted: boolean }
+  ): Promise<any> => apiClient.patch(`/stories/${storyId}/highlight`, data),
 };
 
 // App API

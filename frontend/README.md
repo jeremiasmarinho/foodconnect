@@ -1,6 +1,6 @@
 # 🎨 FoodConnect Frontend - React Native/Expo
 
-## � Current Status
+## Current Status
 
 ✅ **Frontend Foundation Complete** - All core architecture and authentication implemented!
 
@@ -21,7 +21,7 @@
 - Post creation and interactions
 - User profile management
 
-## �📱 Architecture Overview
+## 📱 Architecture Overview
 
 **Tech Stack:**
 
@@ -92,6 +92,41 @@ frontend/
 1. Install dependencies: `npm install`
 2. Start development server: `npm run web` or `npm run android`
 3. Access Swagger API: `http://localhost:3000/api`
+
+## 🧰 Scripts
+
+- start: Expo Dev server (platform selection)
+- web: Expo for Web
+- android / ios: Open on device/emulator
+- test: Run Jest test suites
+- test:ci: Run Jest in CI mode with coverage
+- typecheck: TypeScript type check without emitting
+- ci: Run typecheck + tests (for pipelines)
+- ci:all: Run lint + tests (lint placeholder for now)
+
+## 🔗 Version Compatibility (Expo SDK 54)
+
+This app pins React and test renderer versions to match Expo SDK 54 expectations to avoid warnings and ensure stable tooling:
+
+- react: 19.1.0
+- react-dom: 19.1.0
+- react-test-renderer: 19.1.0
+- jest: ~29.7.0
+
+Notes:
+
+- If you see compatibility warnings in the Expo banner, ensure the above versions are installed (they are pinned in `package.json` and enforced via `overrides`).
+- React Native version is managed by Expo; keep SDK upgrades coordinated (update React versions accordingly).
+
+## ✅ CI
+
+Use the consolidated script that verifies types and tests:
+
+- `npm run ci` — runs TypeScript typecheck and Jest in CI mode
+
+For broader checks (once linting is configured):
+
+- `npm run ci:all` — runs lint and tests
 
 ## 📋 Key Features to Implement
 

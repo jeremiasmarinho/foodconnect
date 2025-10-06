@@ -1,4 +1,5 @@
 import React from "react";
+import { SimpleStoriesContainer } from "../../components/Stories";
 import {
   View,
   Text,
@@ -13,7 +14,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../providers";
 import { Loading, EmptyState } from "../../components/ui";
 import { Post } from "../../components/Post";
-import { Stories } from "../../components/Stories";
 import { CreatePostButton } from "../../components/CreatePostButton";
 import { usePost } from "../../hooks/usePost";
 import { LIGHT_THEME } from "../../constants/theme";
@@ -34,7 +34,7 @@ export const FeedScreen: React.FC = () => {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      <Text style={styles.logo}>FoodConnect</Text>
+      <Text style={styles.logo}>FeedConnect</Text>
       <View style={styles.headerActions}>
         <TouchableOpacity style={styles.headerButton}>
           <Ionicons
@@ -54,19 +54,8 @@ export const FeedScreen: React.FC = () => {
     </View>
   );
 
-  const handleStoryPress = (story: any) => {
-    console.log("Story pressed:", story);
-    // TODO: Navigate to story viewer
-  };
-
-  const handleAddStoryPress = () => {
-    console.log("Add story pressed");
-    // TODO: Navigate to story creation
-  };
-
   const handleCreatePostPress = () => {
     console.log("Create post pressed");
-    // TODO: Navigate to create post screen
   };
 
   const renderPost = ({ item }: { item: any }) => (
@@ -82,19 +71,14 @@ export const FeedScreen: React.FC = () => {
 
   const renderEmpty = () => (
     <EmptyState
+      title="Nenhum post ainda"
+      description="Seja o primeiro a compartilhar algo!"
       icon="restaurant-outline"
-      title="Nenhum post encontrado"
-      description="Siga mais pessoas para ver posts no seu feed"
     />
   );
 
   if (loading && posts.length === 0) {
-    return (
-      <SafeAreaView style={styles.container}>
-        {renderHeader()}
-        <Loading />
-      </SafeAreaView>
-    );
+    return <Loading />;
   }
 
   return (
@@ -120,10 +104,10 @@ export const FeedScreen: React.FC = () => {
         }
         ListHeaderComponent={() => (
           <View>
-            <Stories
-              onStoryPress={handleStoryPress}
-              onAddStoryPress={handleAddStoryPress}
-            />
+            {/* Stories Section */}
+            <SimpleStoriesContainer currentUserId={user?.id || "temp-user"} />
+
+            {/* Create Post Button */}
             <CreatePostButton
               userAvatar={user?.avatar}
               onPress={handleCreatePostPress}
@@ -143,7 +127,7 @@ export const FeedScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: LIGHT_THEME.background,
+    backgroundColor: LIGHT_THEME.surface,
   },
   header: {
     flexDirection: "row",
@@ -153,13 +137,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: LIGHT_THEME.surface,
     borderBottomWidth: 1,
-    borderBottomColor: LIGHT_THEME.surfaceVariant,
+    borderBottomColor: LIGHT_THEME.border,
   },
   logo: {
     fontSize: 24,
     fontWeight: "bold",
     color: LIGHT_THEME.primary,
-    fontFamily: "System", // Use custom font if available
   },
   headerActions: {
     flexDirection: "row",
@@ -167,9 +150,8 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     marginLeft: 16,
-    padding: 4,
+    padding: 8,
   },
-
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
@@ -177,6 +159,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: LIGHT_THEME.surfaceVariant,
+    backgroundColor: LIGHT_THEME.border,
   },
 });

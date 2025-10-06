@@ -15,6 +15,7 @@ import { CacheConfigModule } from './cache/cache.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { UploadModule } from './upload/upload.module';
 import { SeedModule } from './seed/seed.module';
+import { StoriesModule } from './stories/stories.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { SeedModule } from './seed/seed.module';
     NotificationsModule,
     UploadModule,
     SeedModule,
+    StoriesModule,
   ],
   controllers: [AppController],
   providers: [

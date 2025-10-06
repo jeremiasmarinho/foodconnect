@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Direct React Test</title>
+    <script
+      crossorigin
+      src="https://unpkg.com/react@19.1.0/umd/react.development.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@19.1.0/umd/react-dom.development.js"
+    ></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState } = React;
+
+      function DirectReactApp() {
+        const [count, setCount] = useState(0);
+        const [message, setMessage] = useState("Direct React funcionando!");
+
+        console.log("DirectReactApp renderizando - count:", count);
+
+        return (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "100vh",
+              backgroundColor: "#f5f5f5",
+              fontFamily: "Arial, sans-serif",
+              padding: "20px",
+            }}
+          >
+            <h1
+              style={{
+                fontSize: "24px",
+                fontWeight: "bold",
+                marginBottom: "20px",
+                color: "#333",
+              }}
+            >
+              🧪 Direct React Test (SEM EXPO)
+            </h1>
+
+            <p
+              style={{
+                fontSize: "16px",
+                textAlign: "center",
+                marginBottom: "20px",
+                color: "#666",
+              }}
+            >
+              {message}
+            </p>
+
+            <div
+              style={{
+                backgroundColor: "#fff",
+                padding: "20px",
+                borderRadius: "10px",
+                marginBottom: "30px",
+                border: "2px solid #4CAF50",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "20px",
+                  fontWeight: "bold",
+                  color: "#4CAF50",
+                }}
+              >
+                Count: {count}
+              </span>
+            </div>
+
+            <button
+              style={{
+                backgroundColor: "#4CAF50",
+                color: "white",
+                padding: "15px 30px",
+                borderRadius: "10px",
+                border: "none",
+                fontSize: "16px",
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                setCount(count + 1);
+                setMessage(`Botão clicado ${count + 1} vezes!`);
+              }}
+            >
+              + Incrementar
+            </button>
+          </div>
+        );
+      }
+
+      ReactDOM.render(<DirectReactApp />, document.getElementById("root"));
+    </script>
+  </body>
+</html>

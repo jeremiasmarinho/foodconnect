@@ -1,27 +1,33 @@
 import React from "react";
-import { StatusBar } from "expo-status-bar";
+import { StatusBar } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import {
-  AuthProvider,
-  CartProvider,
   QueryProvider,
+  AuthProvider,
   ThemeProvider,
+  CartProvider,
 } from "./src/providers";
-import { RootNavigator } from "./src/navigation";
+import { RootNavigator } from "./src/navigation/RootNavigator";
+import ErrorBoundary from "./src/components/ErrorBoundary/ErrorBoundary";
+import { ErrorProvider } from "./src/contexts/ErrorContext";
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <QueryProvider>
-          <AuthProvider>
-            <CartProvider>
-              <RootNavigator />
-              <StatusBar style="auto" />
-            </CartProvider>
-          </AuthProvider>
-        </QueryProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <ErrorProvider>
+        <SafeAreaProvider>
+          <ThemeProvider>
+            <QueryProvider>
+              <AuthProvider>
+                <CartProvider>
+                  <RootNavigator />
+                  <StatusBar barStyle="dark-content" />
+                </CartProvider>
+              </AuthProvider>
+            </QueryProvider>
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </ErrorProvider>
+    </ErrorBoundary>
   );
 }

@@ -25,7 +25,8 @@
     "db:seed": "cd backend && npm run db:seed"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "typescript": "~5.9.2"
   },
   "workspaces": [
     "backend",

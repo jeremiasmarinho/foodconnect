@@ -75,6 +75,7 @@ export const mockUsers: User[] = [
 export const mockRestaurants: Restaurant[] = [
   {
     id: "1",
+    type: "RESTAURANT",
     name: "Bella Napoli",
     description:
       "Autêntica culinária italiana com ingredientes importados diretamente da Itália. Massa fresca feita diariamente.",
@@ -91,7 +92,7 @@ export const mockRestaurants: Restaurant[] = [
     longitude: -46.6333,
     category: "italian",
     cuisine: "Italiana",
-    priceRange: "medium",
+    priceRange: 2,
     rating: 4.8,
     reviewCount: 127,
     isOpen: true,
@@ -106,9 +107,11 @@ export const mockRestaurants: Restaurant[] = [
     },
     features: ["delivery", "takeout", "dine_in", "wifi", "parking"],
     tags: ["pizza", "pasta", "romantic", "family_friendly"],
+    createdAt: "2024-01-01T00:00:00Z",
   },
   {
     id: "2",
+    type: "RESTAURANT",
     name: "Burger Station",
     description:
       "Os melhores hambúrguers artesanais da cidade! Carne 100% bovina, pães brioche e batatas rústicas.",
@@ -124,7 +127,7 @@ export const mockRestaurants: Restaurant[] = [
     longitude: -46.6565,
     category: "burger",
     cuisine: "Americana",
-    priceRange: "medium",
+    priceRange: 2,
     rating: 4.6,
     reviewCount: 89,
     isOpen: true,
@@ -138,10 +141,12 @@ export const mockRestaurants: Restaurant[] = [
       sunday: "18:00-01:00",
     },
     features: ["delivery", "takeout", "dine_in"],
-    tags: ["burger", "casual", "craft_beer"],
+    tags: ["burgers", "fries", "casual", "family_friendly"],
+    createdAt: "2024-01-02T00:00:00Z",
   },
   {
     id: "3",
+    type: "RESTAURANT",
     name: "Sushi Zen",
     description:
       "Experiência autêntica da culinária japonesa. Peixes frescos e sushiman com mais de 15 anos de experiência.",
@@ -157,7 +162,7 @@ export const mockRestaurants: Restaurant[] = [
     longitude: -46.6347,
     category: "sushi",
     cuisine: "Japonesa",
-    priceRange: "high",
+    priceRange: 3,
     rating: 4.9,
     reviewCount: 203,
     isOpen: false,
@@ -171,10 +176,12 @@ export const mockRestaurants: Restaurant[] = [
       sunday: "18:00-22:00",
     },
     features: ["dine_in", "takeout", "wifi", "valet_parking"],
-    tags: ["sushi", "premium", "romantic", "business"],
+    tags: ["sushi", "sashimi", "japanese", "fresh"],
+    createdAt: "2024-01-03T00:00:00Z",
   },
   {
     id: "4",
+    type: "RESTAURANT",
     name: "Green Bowl",
     description:
       "Comida saudável e saborosa! Bowls nutritivos, saladas frescas e sucos naturais para uma vida mais equilibrada.",
@@ -190,7 +197,7 @@ export const mockRestaurants: Restaurant[] = [
     longitude: -46.6727,
     category: "healthy",
     cuisine: "Saudável",
-    priceRange: "medium",
+    priceRange: 2,
     rating: 4.7,
     reviewCount: 156,
     isOpen: true,
@@ -205,9 +212,11 @@ export const mockRestaurants: Restaurant[] = [
     },
     features: ["delivery", "takeout", "dine_in", "wifi", "vegan_options"],
     tags: ["healthy", "vegan", "organic", "bowl"],
+    createdAt: "2024-01-04T00:00:00Z",
   },
   {
     id: "5",
+    type: "RESTAURANT",
     name: "Café Central",
     description:
       "O melhor café da região! Grãos especiais, doces artesanais e ambiente aconchegante para trabalhar ou relaxar.",
@@ -223,7 +232,7 @@ export const mockRestaurants: Restaurant[] = [
     longitude: -46.6679,
     category: "coffee",
     cuisine: "Café",
-    priceRange: "low",
+    priceRange: 1,
     rating: 4.5,
     reviewCount: 94,
     isOpen: true,
@@ -238,9 +247,11 @@ export const mockRestaurants: Restaurant[] = [
     },
     features: ["takeout", "dine_in", "wifi", "work_friendly"],
     tags: ["coffee", "cozy", "work", "dessert"],
+    createdAt: "2024-01-05T00:00:00Z",
   },
   {
     id: "6",
+    type: "RESTAURANT",
     name: "Churrascaria Gaúcha",
     description:
       "Tradição do sul! Carnes nobres, buffet completo e o verdadeiro chimarrão gaúcho em ambiente familiar.",
@@ -256,7 +267,7 @@ export const mockRestaurants: Restaurant[] = [
     longitude: -46.6892,
     category: "brazilian",
     cuisine: "Brasileira",
-    priceRange: "high",
+    priceRange: 3,
     rating: 4.4,
     reviewCount: 78,
     isOpen: true,
@@ -271,6 +282,7 @@ export const mockRestaurants: Restaurant[] = [
     },
     features: ["dine_in", "parking", "family_friendly"],
     tags: ["bbq", "family", "traditional", "meat"],
+    createdAt: "2024-01-06T00:00:00Z",
   },
 ];
 
@@ -481,6 +493,16 @@ export const mockPosts: Post[] = [
       "Noite perfeita no Bella Napoli! A pizza margherita estava divina 🍕✨",
     imageUrl:
       "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=600&h=600&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=600&h=600&fit=crop",
+    ],
+    postType: "FOOD",
+    user: {
+      id: mockUsers[0].id,
+      username: mockUsers[0].username,
+      name: mockUsers[0].name,
+      avatar: mockUsers[0].avatar,
+    },
     createdAt: "2024-09-25T20:30:00Z",
     likesCount: 24,
     commentsCount: 5,
@@ -497,6 +519,16 @@ export const mockPosts: Post[] = [
       "Experiência incrível no Sushi Zen! O sashimi estava fresquíssimo 🍣",
     imageUrl:
       "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=600&h=600&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=600&h=600&fit=crop",
+    ],
+    postType: "FOOD",
+    user: {
+      id: mockUsers[1].id,
+      username: mockUsers[1].username,
+      name: mockUsers[1].name,
+      avatar: mockUsers[1].avatar,
+    },
     createdAt: "2024-09-24T19:15:00Z",
     likesCount: 31,
     commentsCount: 8,
@@ -513,6 +545,16 @@ export const mockPosts: Post[] = [
       "Almoço saudável e delicioso! Este bowl de quinoa estava perfeito 🥗",
     imageUrl:
       "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=600&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=600&fit=crop",
+    ],
+    postType: "FOOD",
+    user: {
+      id: mockUsers[2].id,
+      username: mockUsers[2].username,
+      name: mockUsers[2].name,
+      avatar: mockUsers[2].avatar,
+    },
     createdAt: "2024-09-23T13:45:00Z",
     likesCount: 18,
     commentsCount: 3,
@@ -528,6 +570,16 @@ export const mockPosts: Post[] = [
     content: "Esse bacon burger é simplesmente épico! Não consegui resistir 🍔",
     imageUrl:
       "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=600&h=600&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=600&h=600&fit=crop",
+    ],
+    postType: "FOOD",
+    user: {
+      id: mockUsers[0].id,
+      username: mockUsers[0].username,
+      name: mockUsers[0].name,
+      avatar: mockUsers[0].avatar,
+    },
     createdAt: "2024-09-22T21:00:00Z",
     likesCount: 27,
     commentsCount: 6,
@@ -543,6 +595,16 @@ export const mockPosts: Post[] = [
     content: "Café da manhã perfeito! Esse cappuccino está no ponto ideal ☕",
     imageUrl:
       "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&h=600&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&h=600&fit=crop",
+    ],
+    postType: "FOOD",
+    user: {
+      id: mockUsers[1].id,
+      username: mockUsers[1].username,
+      name: mockUsers[1].name,
+      avatar: mockUsers[1].avatar,
+    },
     createdAt: "2024-09-21T09:30:00Z",
     likesCount: 15,
     commentsCount: 2,
@@ -559,6 +621,16 @@ export const mockPosts: Post[] = [
       "A harmonização entre o vinho Chianti e a lasanha estava sublime! 🍷✨",
     imageUrl:
       "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=600&h=600&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=600&h=600&fit=crop",
+    ],
+    postType: "FOOD",
+    user: {
+      id: mockUsers[3].id,
+      username: mockUsers[3].username,
+      name: mockUsers[3].name,
+      avatar: mockUsers[3].avatar,
+    },
     createdAt: "2024-09-20T21:15:00Z",
     likesCount: 32,
     commentsCount: 7,
@@ -575,6 +647,16 @@ export const mockPosts: Post[] = [
       "Descobri o doce perfeito para acompanhar o café! Esse bolo de cenoura é incrível 🧁",
     imageUrl:
       "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&h=600&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&h=600&fit=crop",
+    ],
+    postType: "FOOD",
+    user: {
+      id: mockUsers[4].id,
+      username: mockUsers[4].username,
+      name: mockUsers[4].name,
+      avatar: mockUsers[4].avatar,
+    },
     createdAt: "2024-09-19T15:45:00Z",
     likesCount: 28,
     commentsCount: 4,
@@ -591,6 +673,16 @@ export const mockPosts: Post[] = [
       "Churrasco de domingo em família! A picanha estava no ponto perfeito 🥩",
     imageUrl:
       "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&h=600&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&h=600&fit=crop",
+    ],
+    postType: "FOOD",
+    user: {
+      id: mockUsers[5].id,
+      username: mockUsers[5].username,
+      name: mockUsers[5].name,
+      avatar: mockUsers[5].avatar,
+    },
     createdAt: "2024-09-18T14:20:00Z",
     likesCount: 41,
     commentsCount: 9,
