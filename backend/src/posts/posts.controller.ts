@@ -13,6 +13,7 @@ import {
   HttpStatus,
   HttpCode,
   ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PostsService } from './posts.service';
@@ -129,16 +130,114 @@ export class PostsController {
    * GET /posts/feed?page=1&limit=20
    */
   @Get('feed/timeline')
-  async getFeed(@Query() query: PaginationQueryDto) {
-    this.logger.log('Fetching posts feed', { query });
+  async getFeed(
+    @Query() query: PaginationQueryDto,
+    @Query('userId') userId?: string,
+  ) {
+    this.logger.log('Fetching posts feed', { query, userId });
 
-    const result = await this.postsService.getFeed(query);
+    const result = await this.postsService.getFeed(query, userId);
 
     return {
       success: true,
       message: 'Feed retrieved successfully',
       data: result.data,
       meta: result.meta,
+    };
+  }
+
+  /**
+   * Get filtered feed
+   * GET /posts/feed/filtered?cuisine=italiana&city=São Paulo&minRating=4
+   */
+  @Get('feed/filtered')
+  async getFilteredFeed(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @Query('search') search?: string,
+    @Query('cuisine') cuisine?: string,
+    @Query('city') city?: string,
+    @Query('state') state?: string,
+    @Query('minRating') minRating?: string,
+    @Query('minLikes') minLikes?: string,
+    @Query('timeFilter') timeFilter?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
+    @Query('userId') userId?: string,
+  ) {
+    const query = {
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+      search,
+      cuisine,
+      city,
+      state,
+      minRating: minRating ? parseFloat(minRating) : undefined,
+      minLikes: minLikes ? parseInt(minLikes, 10) : undefined,
+      timeFilter,
+      sortBy,
+      sortOrder,
+    };
+
+    this.logger.log('Fetching filtered posts feed', { query, userId });
+
+    const result = await this.postsService.getFeedWithFilters(query, userId);
+
+    return {
+      success: true,
+      message: 'Filtered feed retrieved successfully',
+      data: result.data,
+      meta: result.meta,
+      filters: {
+        cuisine,
+        city,
+        state,
+        minRating,
+        minLikes,
+        timeFilter,
+        sortBy,
+        sortOrder,
+      },
+    };
+  }
+
+  /**
+   * Get personalized feed based on user interactions
+   * GET /posts/feed/personalized?page=1&limit=10&userId=xxx
+   */
+  @Get('feed/personalized')
+  async getPersonalizedFeed(
+    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
+    @Query('search') search?: string,
+    @Query('userId') userId?: string,
+  ) {
+    if (!userId) {
+      throw new BadRequestException(
+        'User ID is required for personalized feed',
+      );
+    }
+
+    const query = {
+      page,
+      limit: Math.min(limit, 50),
+      search,
+    };
+
+    this.logger.log('Fetching personalized feed', { query, userId });
+
+    const result = await this.postsService.getPersonalizedFeed(query, userId);
+
+    return {
+      success: true,
+      message: 'Personalized feed retrieved successfully',
+      data: result.data,
+      meta: result.meta,
+      personalization: {
+        userId,
+        algorithm: 'interaction-based',
+        version: '1.0',
+      },
     };
   }
 
@@ -211,7 +310,7 @@ export class PostsController {
   ): Promise<{
     success: boolean;
     message: string;
-    liked: boolean;
+    data: any;
   }> {
     this.logger.log('Toggling post like', {
       postId,
@@ -223,7 +322,40 @@ export class PostsController {
     return {
       success: true,
       message: result.message,
-      liked: result.liked,
+      data: result,
+    };
+  }
+
+  /**
+   * Test Like/Unlike a post (without auth for testing)
+   * POST /posts/:id/like/test?userId=xxx
+   */
+  @Post(':id/like/test')
+  @HttpCode(HttpStatus.OK)
+  async testToggleLike(
+    @Param('id') postId: string,
+    @Query('userId') userId: string,
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data: any;
+  }> {
+    this.logger.log('Testing post like toggle', { postId, userId });
+
+    if (!userId) {
+      return {
+        success: false,
+        message: 'userId query parameter is required',
+        data: null,
+      };
+    }
+
+    const result = await this.postsService.toggleLike(postId, userId);
+
+    return {
+      success: true,
+      message: result.message,
+      data: result,
     };
   }
 
@@ -284,6 +416,40 @@ export class PostsController {
       req.user.id,
       content,
     );
+
+    return {
+      success: true,
+      message: 'Comment added successfully',
+      data: comment,
+    };
+  }
+
+  /**
+   * Test Add comment to a post (without auth for testing)
+   * POST /posts/:id/comment/test?userId=xxx&content=xxx
+   */
+  @Post(':id/comment/test')
+  @HttpCode(HttpStatus.CREATED)
+  async testAddComment(
+    @Param('id') postId: string,
+    @Query('userId') userId: string,
+    @Query('content') content: string,
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data: any;
+  }> {
+    this.logger.log('Testing add comment to post', { postId, userId, content });
+
+    if (!userId || !content) {
+      return {
+        success: false,
+        message: 'userId and content query parameters are required',
+        data: null,
+      };
+    }
+
+    const comment = await this.postsService.addComment(postId, userId, content);
 
     return {
       success: true,

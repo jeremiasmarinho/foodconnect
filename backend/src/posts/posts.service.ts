@@ -12,6 +12,7 @@ import {
 } from '../common/dto/pagination.dto';
 import { CacheService } from '../cache/cache.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { DateUtils } from '../common/utils/date.utils';
 
 @Injectable()
 export class PostsService {
@@ -280,7 +281,501 @@ export class PostsService {
   }
 
   /**
-   * Get feed posts with pagination and filtering with caching
+   * Get feed posts with advanced filtering and pagination
+   * @param query - Advanced filter query parameters
+   * @param userId - Optional user ID for personalized feed
+   * @returns Paginated posts feed with filters
+   */
+  async getFeedWithFilters(
+    query: any,
+    userId?: string,
+  ): Promise<PaginatedResponseDto<PostResponseDto>> {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      cuisine,
+      city,
+      state,
+      minRating,
+      minLikes,
+      timeFilter,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = query;
+
+    // Convert string parameters to numbers
+    const pageNum = typeof page === 'string' ? parseInt(page, 10) : page;
+    const limitNum = typeof limit === 'string' ? parseInt(limit, 10) : limit;
+    const minRatingNum =
+      typeof minRating === 'string' ? parseFloat(minRating) : minRating;
+    const minLikesNum =
+      typeof minLikes === 'string' ? parseInt(minLikes, 10) : minLikes;
+
+    this.logger.log('Fetching filtered posts feed', {
+      page: pageNum,
+      limit: limitNum,
+      search,
+      cuisine,
+      city,
+      state,
+      minRating: minRatingNum,
+      minLikes: minLikesNum,
+      timeFilter,
+      sortBy,
+      sortOrder,
+      userId,
+    });
+
+    const skip = (pageNum - 1) * limitNum;
+    const where: any = {};
+
+    // Text search
+    if (search && search.trim()) {
+      where.OR = [
+        { content: { contains: search } },
+        { restaurant: { name: { contains: search } } },
+      ];
+    }
+
+    // Restaurant filters
+    // Post rating filter
+    if (minRatingNum) {
+      where.rating = { gte: minRatingNum };
+    }
+
+    // Restaurant filters
+    const restaurantWhere: any = {};
+    if (cuisine) {
+      restaurantWhere.cuisine = { contains: cuisine };
+    }
+    if (city) {
+      restaurantWhere.city = { contains: city };
+    }
+    if (state) {
+      restaurantWhere.state = { contains: state };
+    }
+
+    if (Object.keys(restaurantWhere).length > 0) {
+      where.restaurant = restaurantWhere;
+    }
+
+    // Time filters
+    if (timeFilter && timeFilter !== 'all') {
+      const now = new Date();
+      let timeThreshold: Date;
+
+      switch (timeFilter) {
+        case 'today':
+          timeThreshold = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+          );
+          break;
+        case 'week':
+          timeThreshold = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'month':
+          timeThreshold = new Date(now.getFullYear(), now.getMonth(), 1);
+          break;
+        default:
+          timeThreshold = new Date(0);
+      }
+
+      where.createdAt = { gte: timeThreshold };
+    }
+
+    // Set up ordering
+    let orderBy: any = {};
+    if (sortBy === 'rating') {
+      orderBy = { rating: sortOrder };
+    } else if (sortBy === 'likes') {
+      orderBy = { likes: { _count: sortOrder } };
+    } else if (sortBy === 'comments') {
+      orderBy = { comments: { _count: sortOrder } };
+    } else {
+      orderBy = { createdAt: sortOrder };
+    }
+
+    const [posts, total] = await Promise.all([
+      this.prisma.post.findMany({
+        skip,
+        take: limit,
+        where,
+        orderBy,
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              name: true,
+              avatar: true,
+              bio: true,
+            },
+          },
+          restaurant: {
+            select: {
+              id: true,
+              name: true,
+              city: true,
+              state: true,
+              imageUrl: true,
+              cuisine: true,
+              rating: true,
+            },
+          },
+          likes: userId
+            ? {
+                where: { userId },
+                select: { id: true },
+              }
+            : false,
+          comments: {
+            take: 3,
+            orderBy: { createdAt: 'asc' },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  name: true,
+                  avatar: true,
+                },
+              },
+            },
+          },
+          _count: {
+            select: {
+              likes: true,
+              comments: true,
+            },
+          },
+        },
+      }),
+      this.prisma.post.count({ where }),
+    ]);
+
+    // Apply likes filter after query (if needed)
+    let filteredPosts = posts;
+    if (minLikesNum) {
+      filteredPosts = posts.filter((post) => post._count.likes >= minLikesNum);
+    }
+
+    // Process posts to add computed fields
+    const processedPosts = filteredPosts.map((post) => ({
+      ...post,
+      isLikedByUser: userId ? post.likes && post.likes.length > 0 : false,
+      timeAgo: DateUtils.timeAgo(post.createdAt),
+    }));
+
+    const result = new PaginatedResponseDto(
+      processedPosts,
+      total,
+      pageNum,
+      limitNum,
+    );
+
+    this.logger.log('Filtered feed retrieved', {
+      totalFound: total,
+      filteredCount: processedPosts.length,
+      appliedFilters: {
+        cuisine,
+        city,
+        state,
+        minRating: minRatingNum,
+        minLikes: minLikesNum,
+        timeFilter,
+      },
+    });
+
+    return result;
+  }
+
+  /**
+   * Get personalized feed based on user interactions and preferences
+   * @param query - Pagination and search parameters
+   * @param userId - User ID for personalization
+   * @returns Personalized paginated posts feed
+   */
+  async getPersonalizedFeed(
+    query: PaginationQueryDto,
+    userId: string,
+  ): Promise<PaginatedResponseDto<PostResponseDto>> {
+    const { page = 1, limit = 10, search } = query;
+
+    this.logger.log('Fetching personalized feed', {
+      page,
+      limit,
+      search,
+      userId,
+    });
+
+    const skip = (page - 1) * limit;
+
+    // Get user's interaction data for personalization
+    const userInteractions = await this.getUserInteractionData(userId);
+
+    // Get posts with basic ordering (will be re-sorted by personalization score)
+    const personalizedPosts = await this.prisma.post.findMany({
+      skip: 0, // Get more posts for better personalization
+      take: limit * 3, // Get 3x posts to have better selection for personalization
+      where:
+        search && search.trim()
+          ? {
+              OR: [
+                { content: { contains: search } },
+                {
+                  restaurant: {
+                    OR: [
+                      { name: { contains: search } },
+                      { cuisine: { contains: search } },
+                      { city: { contains: search } },
+                    ],
+                  },
+                },
+                { user: { username: { contains: search } } },
+              ],
+            }
+          : undefined,
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            name: true,
+            avatar: true,
+            bio: true,
+          },
+        },
+        restaurant: {
+          select: {
+            id: true,
+            name: true,
+            city: true,
+            state: true,
+            imageUrl: true,
+            cuisine: true,
+            rating: true,
+          },
+        },
+        likes: userId
+          ? {
+              where: { userId },
+              select: { id: true },
+            }
+          : false,
+        comments: {
+          take: 3,
+          orderBy: { createdAt: 'asc' },
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Get total count for pagination
+    const total = await this.prisma.post.count({
+      where:
+        search && search.trim()
+          ? {
+              OR: [
+                { content: { contains: search } },
+                {
+                  restaurant: {
+                    OR: [
+                      { name: { contains: search } },
+                      { cuisine: { contains: search } },
+                      { city: { contains: search } },
+                    ],
+                  },
+                },
+                { user: { username: { contains: search } } },
+              ],
+            }
+          : undefined,
+    });
+
+    // Apply personalization scoring and re-sort
+    const scoredPosts = this.scorePostsForPersonalization(
+      personalizedPosts,
+      userInteractions,
+    );
+
+    const processedPosts = scoredPosts.map((post) => ({
+      ...post,
+      isLikedByUser: userId ? post.likes && post.likes.length > 0 : false,
+      timeAgo: DateUtils.timeAgo(post.createdAt),
+    }));
+
+    const result = new PaginatedResponseDto(processedPosts, total, page, limit);
+
+    this.logger.log('Personalized feed retrieved', {
+      totalFound: total,
+      userId,
+      personalizedFactors: {
+        favoriteCuisines: userInteractions.favoriteCuisines,
+        interactedRestaurants: userInteractions.interactedRestaurants.length,
+        likedPosts: userInteractions.likedPostIds.length,
+      },
+    });
+
+    return result;
+  }
+
+  /**
+   * Get user interaction data for personalization
+   */
+  private async getUserInteractionData(userId: string) {
+    // Get user's liked posts to understand preferences
+    const likedPosts = await this.prisma.like.findMany({
+      where: { userId },
+      include: {
+        post: {
+          select: {
+            id: true,
+            restaurant: {
+              select: { cuisine: true, id: true },
+            },
+          },
+        },
+      },
+      take: 50, // Last 50 likes for analysis
+      orderBy: { id: 'desc' },
+    });
+
+    // Get user's commented posts
+    const commentedPosts = await this.prisma.comment.findMany({
+      where: { userId },
+      include: {
+        post: {
+          select: {
+            id: true,
+            restaurant: {
+              select: { cuisine: true, id: true },
+            },
+          },
+        },
+      },
+      take: 30, // Last 30 comments for analysis
+      orderBy: { id: 'desc' },
+    });
+
+    // Analyze favorite cuisines based on interactions
+    const cuisineInteractions = new Map<string, number>();
+    const restaurantInteractions = new Map<string, number>();
+
+    // Count likes by cuisine (weight: 2)
+    likedPosts.forEach((like) => {
+      const cuisine = like.post.restaurant.cuisine;
+      const restaurantId = like.post.restaurant.id;
+
+      if (cuisine) {
+        cuisineInteractions.set(
+          cuisine,
+          (cuisineInteractions.get(cuisine) || 0) + 2,
+        );
+      }
+      restaurantInteractions.set(
+        restaurantId,
+        (restaurantInteractions.get(restaurantId) || 0) + 2,
+      );
+    });
+
+    // Count comments by cuisine (weight: 1)
+    commentedPosts.forEach((comment) => {
+      const cuisine = comment.post.restaurant.cuisine;
+      const restaurantId = comment.post.restaurant.id;
+
+      if (cuisine) {
+        cuisineInteractions.set(
+          cuisine,
+          (cuisineInteractions.get(cuisine) || 0) + 1,
+        );
+      }
+      restaurantInteractions.set(
+        restaurantId,
+        (restaurantInteractions.get(restaurantId) || 0) + 1,
+      );
+    });
+
+    // Get top 3 favorite cuisines
+    const favoriteCuisines = Array.from(cuisineInteractions.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map((entry) => entry[0]);
+
+    // Get top interacted restaurants
+    const interactedRestaurants = Array.from(restaurantInteractions.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map((entry) => entry[0]);
+
+    return {
+      favoriteCuisines,
+      interactedRestaurants,
+      likedPostIds: likedPosts.map((like) => like.postId),
+    };
+  }
+
+  /**
+   * Score posts for personalization based on user preferences
+   */
+  private scorePostsForPersonalization(posts: any[], userInteractions: any) {
+    return posts
+      .map((post) => {
+        let score = 0;
+
+        // Base score from post metrics
+        score += post._count.likes * 0.3; // Likes weight
+        score += post._count.comments * 0.2; // Comments weight
+        score += post.rating * 0.1; // Post rating weight
+
+        // Cuisine preference bonus
+        if (
+          userInteractions.favoriteCuisines.includes(post.restaurant.cuisine)
+        ) {
+          score += 10; // Strong preference bonus
+        }
+
+        // Restaurant interaction bonus
+        if (
+          userInteractions.interactedRestaurants.includes(post.restaurant.id)
+        ) {
+          score += 5; // Restaurant familiarity bonus
+        }
+
+        // Recency bonus (posts from last 24 hours get boost)
+        const hoursAgo =
+          (Date.now() - new Date(post.createdAt).getTime()) / (1000 * 60 * 60);
+        if (hoursAgo < 24) {
+          score += 3;
+        } else if (hoursAgo < 72) {
+          score += 1;
+        }
+
+        return { ...post, personalizationScore: score };
+      })
+      .sort((a, b) => b.personalizationScore - a.personalizationScore);
+  }
+
+  /**
+   * Get feed posts with pagination and filtering with caching (legacy method)
    * @param query - Pagination and filter query parameters
    * @param userId - Optional user ID for personalized feed
    * @returns Paginated posts feed
@@ -351,6 +846,7 @@ export class PostsService {
               username: true,
               name: true,
               avatar: true,
+              bio: true,
             },
           },
           restaurant: {
@@ -358,7 +854,30 @@ export class PostsService {
               id: true,
               name: true,
               city: true,
+              state: true,
               imageUrl: true,
+              cuisine: true,
+              rating: true,
+            },
+          },
+          likes: userId
+            ? {
+                where: { userId },
+                select: { id: true },
+              }
+            : false,
+          comments: {
+            take: 3, // Show first 3 comments
+            orderBy: { createdAt: 'asc' },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  name: true,
+                  avatar: true,
+                },
+              },
             },
           },
           _count: {
@@ -372,7 +891,14 @@ export class PostsService {
       this.prisma.post.count({ where }),
     ]);
 
-    const result = new PaginatedResponseDto(posts, total, page, limit);
+    // Process posts to add computed fields
+    const processedPosts = posts.map((post) => ({
+      ...post,
+      isLikedByUser: userId ? post.likes && post.likes.length > 0 : false,
+      timeAgo: DateUtils.timeAgo(post.createdAt),
+    }));
+
+    const result = new PaginatedResponseDto(processedPosts, total, page, limit);
 
     // Cache feed for 2 minutes (feeds change frequently)
     await this.cacheService.set(cacheKey, result, 120);
@@ -517,10 +1043,10 @@ export class PostsService {
   }
 
   /**
-   * Like/Unlike a post
+   * Like/Unlike a post with real-time feedback
    * @param postId - Post ID
    * @param userId - User ID
-   * @returns Like status and updated counts
+   * @returns Like status, updated counts, and user feedback
    */
   async toggleLike(postId: string, userId: string) {
     this.logger.log('Toggling post like', { postId, userId });
@@ -528,6 +1054,13 @@ export class PostsService {
     // Check if post exists
     const post = await this.prisma.post.findUnique({
       where: { id: postId },
+      include: {
+        _count: {
+          select: {
+            likes: true,
+          },
+        },
+      },
     });
 
     if (!post) {
@@ -545,6 +1078,8 @@ export class PostsService {
     });
 
     try {
+      let result;
+
       if (existingLike) {
         // Unlike the post
         await this.prisma.like.delete({
@@ -556,11 +1091,30 @@ export class PostsService {
           },
         });
 
+        // Get updated count
+        const updatedPost = await this.prisma.post.findUnique({
+          where: { id: postId },
+          include: {
+            _count: {
+              select: {
+                likes: true,
+                comments: true,
+              },
+            },
+          },
+        });
+
         this.logger.log('Post unliked', { postId, userId });
 
-        return {
+        result = {
           liked: false,
+          action: 'unliked',
           message: 'Post unliked successfully',
+          likesCount: updatedPost?._count.likes || 0,
+          commentsCount: updatedPost?._count.comments || 0,
+          postId,
+          userId,
+          timestamp: new Date().toISOString(),
         };
       } else {
         // Like the post
@@ -571,16 +1125,49 @@ export class PostsService {
           },
         });
 
-        // Send notification to post owner
-        await this.notificationsService.notifyPostLike(postId, userId);
+        // Get updated count
+        const updatedPost = await this.prisma.post.findUnique({
+          where: { id: postId },
+          include: {
+            _count: {
+              select: {
+                likes: true,
+                comments: true,
+              },
+            },
+          },
+        });
+
+        // Send notification to post owner (don't await to improve performance)
+        this.notificationsService
+          .notifyPostLike(postId, userId)
+          .catch((error) => {
+            this.logger.warn('Failed to send like notification', {
+              postId,
+              userId,
+              error: error.message,
+            });
+          });
 
         this.logger.log('Post liked', { postId, userId });
 
-        return {
+        result = {
           liked: true,
+          action: 'liked',
           message: 'Post liked successfully',
+          likesCount: updatedPost?._count.likes || 0,
+          commentsCount: updatedPost?._count.comments || 0,
+          postId,
+          userId,
+          timestamp: new Date().toISOString(),
         };
       }
+
+      // Invalidate relevant caches
+      await this.cacheService.del(`post:${postId}:*`);
+      await this.cacheService.del(`feed:*`);
+
+      return result;
     } catch (error) {
       this.logger.error('Failed to toggle like', {
         postId,
@@ -625,17 +1212,39 @@ export class PostsService {
               username: true,
               name: true,
               avatar: true,
+              bio: true,
             },
           },
         },
       });
 
-      // Send notification to post owner
-      await this.notificationsService.notifyPostComment(
-        postId,
-        userId,
-        content,
-      );
+      // Get updated post counts
+      const updatedPost = await this.prisma.post.findUnique({
+        where: { id: postId },
+        include: {
+          _count: {
+            select: {
+              likes: true,
+              comments: true,
+            },
+          },
+        },
+      });
+
+      // Send notification to post owner (async for performance)
+      this.notificationsService
+        .notifyPostComment(postId, userId, content)
+        .catch((error) => {
+          this.logger.warn('Failed to send comment notification', {
+            postId,
+            userId,
+            error: error.message,
+          });
+        });
+
+      // Invalidate relevant caches
+      await this.cacheService.del(`post:${postId}:*`);
+      await this.cacheService.del(`feed:*`);
 
       this.logger.log('Comment added successfully', {
         postId,
@@ -643,7 +1252,15 @@ export class PostsService {
         commentId: comment.id,
       });
 
-      return comment;
+      return {
+        ...comment,
+        timeAgo: DateUtils.timeAgo(comment.createdAt),
+        postCounts: {
+          likes: updatedPost?._count.likes || 0,
+          comments: updatedPost?._count.comments || 0,
+        },
+        timestamp: new Date().toISOString(),
+      };
     } catch (error) {
       this.logger.error('Failed to add comment', {
         postId,

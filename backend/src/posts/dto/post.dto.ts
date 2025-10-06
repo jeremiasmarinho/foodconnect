@@ -58,15 +58,34 @@ export class PostResponseDto {
     username: string;
     name: string;
     avatar: string | null;
+    bio?: string | null;
   };
   restaurant: {
     id: string;
     name: string;
     city: string;
+    state?: string | null;
     imageUrl: string | null;
+    cuisine?: string | null;
+    rating?: number | null;
   };
+  likes?: Array<{ id: string }>;
+  comments?: Array<{
+    id: string;
+    content: string;
+    createdAt: Date;
+    user: {
+      id: string;
+      username: string;
+      name: string;
+      avatar: string | null;
+    };
+  }>;
   _count: {
     likes: number;
     comments: number;
   };
+  // Computed fields
+  isLikedByUser?: boolean;
+  timeAgo?: string;
 }
