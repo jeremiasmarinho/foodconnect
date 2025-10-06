@@ -1,8 +1,5 @@
-// API Configuration
-export const API_CONFIG = {
-  BASE_URL: "http://localhost:3000/api/v1",
-  TIMEOUT: 10000,
-} as const;
+// Import unified API configuration
+export { API_CONFIG } from "../config/api";
 
 // iFood-inspired Theme Colors
 export const LIGHT_THEME = {

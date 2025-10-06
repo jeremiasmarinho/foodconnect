@@ -1,9 +1,10 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_CONFIG } from "../../config/api";
 
-// API Configuration
+// Use unified API configuration
 const API_BASE_URL = __DEV__
-  ? "http://192.168.0.110:3000" // Development - Use your local IP
+  ? API_CONFIG.BASE_URL // Unified configuration
   : "https://your-production-api.com"; // Production
 
 class ApiClient {
