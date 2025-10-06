@@ -36,7 +36,7 @@ test_endpoint() {
 }
 
 # Variáveis de teste
-BASE_URL="http://localhost:3000"
+BASE_URL="http://localhost:3001"
 USER1_ID="cmgeycxk3000gv8e49s49cada"
 USER2_ID="cmgeycxhu0000v8e4t9vr2lo7"
 
