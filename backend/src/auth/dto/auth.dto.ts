@@ -129,8 +129,85 @@ export class AuthResponseDto {
   access_token: string;
 
   @ApiProperty({
+    description: 'Refresh token',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  refresh_token: string;
+
+  @ApiProperty({
     description: 'User information',
     type: UserResponseDto,
   })
   user: UserResponseDto;
+}
+
+export class RefreshTokenDto {
+  @ApiProperty({
+    description: 'Refresh token',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  @IsString({ message: 'Refresh token deve ser um texto' })
+  @IsNotEmpty({ message: 'Refresh token é obrigatório' })
+  refresh_token: string;
+}
+
+export class ForgotPasswordDto {
+  @ApiProperty({
+    description: 'User email address',
+    example: 'john.doe@example.com',
+    format: 'email',
+  })
+  @IsEmail({}, { message: 'Email deve ter um formato válido' })
+  @IsNotEmpty({ message: 'Email é obrigatório' })
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.toLowerCase().trim() : value,
+  )
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @ApiProperty({
+    description: 'Password reset token',
+    example: 'abc123def456...',
+  })
+  @IsString({ message: 'Token deve ser um texto' })
+  @IsNotEmpty({ message: 'Token é obrigatório' })
+  token: string;
+
+  @ApiProperty({
+    description: 'New password',
+    example: 'NewPassword123!',
+    minLength: 8,
+  })
+  @IsString({ message: 'Senha deve ser um texto' })
+  @IsNotEmpty({ message: 'Senha é obrigatória' })
+  @IsStrongPassword({
+    message:
+      'Senha deve ter pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e símbolo',
+  })
+  password: string;
+}
+
+export class VerifyEmailDto {
+  @ApiProperty({
+    description: 'Email verification token',
+    example: 'abc123def456...',
+  })
+  @IsString({ message: 'Token deve ser um texto' })
+  @IsNotEmpty({ message: 'Token é obrigatório' })
+  token: string;
+}
+
+export class ResendVerificationDto {
+  @ApiProperty({
+    description: 'User email address',
+    example: 'john.doe@example.com',
+    format: 'email',
+  })
+  @IsEmail({}, { message: 'Email deve ter um formato válido' })
+  @IsNotEmpty({ message: 'Email é obrigatório' })
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.toLowerCase().trim() : value,
+  )
+  email: string;
 }

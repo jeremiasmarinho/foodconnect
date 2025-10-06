@@ -25,17 +25,22 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Authentication
-  password String
+  password        String
+  emailVerified   Boolean   @default(false)
+  emailVerifiedAt DateTime?
 
   // Relations
-  posts             Post[]
-  likes             Like[]
-  comments          Comment[]
-  follows           Follow[]           @relation("UserFollows")
-  followers         Follow[]           @relation("UserFollowers")
-  orders            Order[]
-  notifications     Notification[]
-  pushSubscriptions PushSubscription[]
+  posts                   Post[]
+  likes                   Like[]
+  comments                Comment[]
+  follows                 Follow[]                 @relation("UserFollows")
+  followers               Follow[]                 @relation("UserFollowers")
+  orders                  Order[]
+  notifications           Notification[]
+  pushSubscriptions       PushSubscription[]
+  refreshTokens           RefreshToken[]
+  passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
 
   // Indexes for common queries
   @@index([email]) // Login queries
@@ -273,4 +278,60 @@ model PushSubscription {
   @@unique([userId, endpoint]) // Prevent duplicate subscriptions
   @@index([userId]) // User's subscriptions
   @@map("push_subscriptions")
+}
+
+// Refresh Token model for authentication
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  isRevoked Boolean  @default(false)
+  userAgent String?
+  ipAddress String?
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([userId]) // User's refresh tokens
+  @@index([expiresAt]) // Cleanup expired tokens
+  @@map("refresh_tokens")
+}
+
+// Password Reset Token model
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  isUsed    Boolean  @default(false)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([userId]) // User's reset tokens
+  @@index([expiresAt]) // Cleanup expired tokens
+  @@map("password_reset_tokens")
+}
+
+// Email Verification Token model
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  isUsed    Boolean  @default(false)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([userId]) // User's verification tokens
+  @@index([expiresAt]) // Cleanup expired tokens
+  @@map("email_verification_tokens")
 }

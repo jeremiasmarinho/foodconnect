@@ -17,6 +17,7 @@ import {
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PostsService } from './posts.service';
 import { CreatePostDto, UpdatePostDto, PostResponseDto } from './dto/post.dto';
+import { PaginationQueryDto } from '../common/dto/pagination.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -128,22 +129,16 @@ export class PostsController {
    * GET /posts/feed?page=1&limit=20
    */
   @Get('feed/timeline')
-  async getFeed(
-    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 20,
-  ) {
-    this.logger.log('Fetching posts feed', { page, limit });
+  async getFeed(@Query() query: PaginationQueryDto) {
+    this.logger.log('Fetching posts feed', { query });
 
-    const result = await this.postsService.getFeed(
-      page,
-      Math.min(limit, 50), // Max 50 per page
-    );
+    const result = await this.postsService.getFeed(query);
 
     return {
       success: true,
       message: 'Feed retrieved successfully',
       data: result.data,
-      pagination: result.pagination,
+      meta: result.meta,
     };
   }
 

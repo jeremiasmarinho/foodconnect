@@ -13,6 +13,7 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { CacheConfigModule } from './cache/cache.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     MenuItemsModule,
     OrdersModule,
     NotificationsModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [

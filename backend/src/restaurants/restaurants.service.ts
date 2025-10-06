@@ -103,7 +103,7 @@ export class RestaurantsService {
                 },
               },
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { createdAt: 'desc' as const },
             take: 10, // Lazy load only recent posts
           },
           menuItems: {
@@ -117,7 +117,7 @@ export class RestaurantsService {
               isAvailable: true,
             },
             where: { isAvailable: true }, // Only available items
-            orderBy: { category: 'asc' },
+            orderBy: { category: 'asc' as const },
           },
           _count: {
             select: {
