@@ -80,7 +80,7 @@ export const RestaurantCardSkeleton: React.FC = () => {
   );
 };
 
-// Feed Post Skeleton
+// Feed Post Skeleton with improved UX
 export const PostCardSkeleton: React.FC = () => {
   const { theme } = useTheme();
 
@@ -92,11 +92,17 @@ export const PostCardSkeleton: React.FC = () => {
           <Skeleton height={16} width="60%" />
           <Skeleton height={12} width="40%" style={{ marginTop: 4 }} />
         </View>
+        <Skeleton height={24} width={24} borderRadius={12} />
       </View>
       <Skeleton height={300} style={styles.postImage} />
       <View style={styles.postFooter}>
-        <Skeleton height={14} width="80%" />
-        <Skeleton height={12} width="30%" style={{ marginTop: 8 }} />
+        <View style={styles.postActions}>
+          <Skeleton height={20} width={20} borderRadius={10} />
+          <Skeleton height={20} width={20} borderRadius={10} style={{ marginLeft: 16 }} />
+          <Skeleton height={20} width={20} borderRadius={10} style={{ marginLeft: 16 }} />
+        </View>
+        <Skeleton height={14} width="80%" style={{ marginTop: 8 }} />
+        <Skeleton height={12} width="30%" style={{ marginTop: 4 }} />
       </View>
     </View>
   );
@@ -221,6 +227,10 @@ const styles = StyleSheet.create({
   postFooter: {
     paddingHorizontal: 16,
     paddingBottom: 16,
+  },
+  postActions: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   // Profile Skeleton

@@ -1,8 +1,41 @@
 import React, { useState, useMemo, useCallback } from "react";
 import {
-  View,
-  Text,
-  FlatList,
+  const handleLogout = useCallback(() => {
+    Alert.alert("Sair", "Deseja realmente sair da sua conta?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Sair",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await logout();
+            showSuccess("Logout realizado", "Até logo! Volte sempre.");
+          } catch (error) {
+            console.error("Logout error:", error);
+            showError("Erro ao sair", "Tente novamente em alguns instantes.");
+          }
+        },
+      },
+    ]);
+  }, [logout, showSuccess, showError]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      showSuccess("Feed atualizado", "Novos posts carregados!");
+    } catch (error) {
+      showError("Erro ao atualizar", "Verifique sua conexão e tente novamente.");
+    } finally {
+      setRefreshing(false);
+    }
+  }, [showSuccess, showError]);
+
+  const handleCreatePost = useCallback(() => {
+    // Navigate to create post screen
+    console.log("Navigate to create post");
+  }, []);  FlatList,
   RefreshControl,
   SafeAreaView,
   TouchableOpacity,
@@ -10,15 +43,26 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme, useAuth } from "../../providers";
-import { PostCard, SearchBar, Loading, ErrorView } from "../../components/ui";
+import { 
+  PostCard, 
+  SearchBar, 
+  Loading, 
+  ErrorView,
+  PostCardSkeleton,
+  EmptyState,
+  FeedEmptyState 
+} from "../../components/ui";
 import { useFeedPosts } from "../../hooks";
+import { useToast } from "../../hooks/useToast";
 import { Post, User } from "../../types";
 import { mockPosts, mockUsers } from "../../data/mockData";
 
 export const FeedScreen: React.FC = () => {
   const { theme } = useTheme();
   const { user, logout } = useAuth();
+  const { showSuccess, showError } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   // Using mock data for now - replace with real API call when backend is connected
   const allPosts = mockPosts;
