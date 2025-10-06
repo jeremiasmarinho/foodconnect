@@ -97,14 +97,14 @@ Write-Host "==============================" -ForegroundColor Blue
 $totalTests++
 $personalizedFeedUrl = "$BaseUrl/posts/feed/personalized?userId=$User2Id" + '&page=1&limit=3'
 if (Test-Endpoint -Method "GET" -Url $personalizedFeedUrl -Description "Feed personalizado") {
-    $passedTests++
+  $passedTests++
 }
 
 # 9. Teste de feed com filtros
 $totalTests++
 $filteredFeedUrl = "$BaseUrl/posts/feed/filtered?cuisine=Italiana" + '&page=1&limit=2'
 if (Test-Endpoint -Method "GET" -Url $filteredFeedUrl -Description "Feed com filtros") {
-    $passedTests++
+  $passedTests++
 }# Relatório final
 Write-Host "`n📊 Relatório dos Testes" -ForegroundColor Blue
 Write-Host "=======================" -ForegroundColor Blue

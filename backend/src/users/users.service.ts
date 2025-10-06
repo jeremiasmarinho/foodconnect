@@ -504,7 +504,7 @@ export class UsersService {
   async getCompleteProfile(userId: string, viewerId?: string) {
     // Get basic profile
     const profile = await this.getUserProfile(userId, viewerId);
-    
+
     // Get user's posts
     const posts = await this.prisma.post.findMany({
       where: { userId },
@@ -535,7 +535,7 @@ export class UsersService {
 
     return {
       ...profile,
-      posts: posts.map(post => ({
+      posts: posts.map((post) => ({
         id: post.id,
         content: post.content,
         imageUrl: post.imageUrl,
@@ -557,7 +557,8 @@ export class UsersService {
    */
   async addFavoriteRestaurant(userId: string, restaurantId: string) {
     return {
-      message: 'Funcionalidade em desenvolvimento - Prisma client needs regeneration',
+      message:
+        'Funcionalidade em desenvolvimento - Prisma client needs regeneration',
       data: null,
     };
   }
@@ -568,7 +569,8 @@ export class UsersService {
    */
   async removeFavoriteRestaurant(userId: string, restaurantId: string) {
     return {
-      message: 'Funcionalidade em desenvolvimento - Prisma client needs regeneration',
+      message:
+        'Funcionalidade em desenvolvimento - Prisma client needs regeneration',
     };
   }
 

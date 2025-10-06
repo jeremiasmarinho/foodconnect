@@ -81,9 +81,9 @@ model Restaurant {
   updatedAt DateTime @updatedAt
 
   // Relations
-  posts           Post[]
-  menuItems       MenuItem[]
-  orders          Order[]
+  posts            Post[]
+  menuItems        MenuItem[]
+  orders           Order[]
   favoritedByUsers FavoriteRestaurant[]
 
   // Indexes for common queries
@@ -344,9 +344,9 @@ model Achievement {
   id          String   @id @default(cuid())
   name        String   @unique // e.g., "Primeiro Post", "Explorador", "Social"
   description String
-  icon        String   // Icon name or emoji
-  category    String   // "social", "explorer", "creator", "foodie"
-  condition   String   // JSON with condition details
+  icon        String // Icon name or emoji
+  category    String // "social", "explorer", "creator", "foodie"
+  condition   String // JSON with condition details
   points      Int      @default(0) // Points awarded
   createdAt   DateTime @default(now())
 
@@ -358,11 +358,11 @@ model Achievement {
 
 // UserAchievement model for tracking user's earned achievements
 model UserAchievement {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   userId        String
   achievementId String
-  earnedAt      DateTime  @default(now())
-  progress      Int       @default(0) // For progressive achievements
+  earnedAt      DateTime @default(now())
+  progress      Int      @default(0) // For progressive achievements
 
   // Relations
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -376,10 +376,10 @@ model UserAchievement {
 
 // Favorite Restaurant model for user's favorite restaurants
 model FavoriteRestaurant {
-  id           String    @id @default(cuid())
+  id           String   @id @default(cuid())
   userId       String
   restaurantId String
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime @default(now())
 
   // Relations
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)

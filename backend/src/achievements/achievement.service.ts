@@ -69,35 +69,47 @@ export class AchievementService {
   async checkUserAchievements(userId: string) {
     // Buscar estatísticas do usuário
     const userStats = await this.getUserStats(userId);
-    
+
     // Buscar conquistas disponíveis
     const achievements = await this.prisma.achievement.findMany();
-    
+
     // Buscar conquistas já obtidas pelo usuário
     const userAchievements = await this.prisma.userAchievement.findMany({
       where: { userId },
       include: { achievement: true },
     });
 
-    const earnedAchievementIds = userAchievements.map(ua => ua.achievementId);
+    const earnedAchievementIds = userAchievements.map((ua) => ua.achievementId);
 
     // Verificar quais conquistas o usuário pode ganhar
     const newAchievements: any[] = [];
-    
+
     for (const achievement of achievements) {
       if (earnedAchievementIds.includes(achievement.id)) continue;
-      
+
       const condition = JSON.parse(achievement.condition);
       let isEarned = false;
 
       // Verificar condições
-      if (condition.postsCount && userStats.postsCount >= condition.postsCount) {
+      if (
+        condition.postsCount &&
+        userStats.postsCount >= condition.postsCount
+      ) {
         isEarned = true;
-      } else if (condition.followersCount && userStats.followersCount >= condition.followersCount) {
+      } else if (
+        condition.followersCount &&
+        userStats.followersCount >= condition.followersCount
+      ) {
         isEarned = true;
-      } else if (condition.followingCount && userStats.followingCount >= condition.followingCount) {
+      } else if (
+        condition.followingCount &&
+        userStats.followingCount >= condition.followingCount
+      ) {
         isEarned = true;
-      } else if (condition.favoritesCount && userStats.favoritesCount >= condition.favoritesCount) {
+      } else if (
+        condition.favoritesCount &&
+        userStats.favoritesCount >= condition.favoritesCount
+      ) {
         isEarned = true;
       }
 
@@ -117,12 +129,13 @@ export class AchievementService {
   }
 
   async getUserStats(userId: string) {
-    const [postsCount, followersCount, followingCount, favoritesCount] = await Promise.all([
-      this.prisma.post.count({ where: { userId: userId } }),
-      this.prisma.follow.count({ where: { followingId: userId } }),
-      this.prisma.follow.count({ where: { followerId: userId } }),
-      this.prisma.favoriteRestaurant.count({ where: { userId } }),
-    ]);
+    const [postsCount, followersCount, followingCount, favoritesCount] =
+      await Promise.all([
+        this.prisma.post.count({ where: { userId: userId } }),
+        this.prisma.follow.count({ where: { followingId: userId } }),
+        this.prisma.follow.count({ where: { followerId: userId } }),
+        this.prisma.favoriteRestaurant.count({ where: { userId } }),
+      ]);
 
     return {
       postsCount,
