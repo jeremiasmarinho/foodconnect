@@ -257,4 +257,34 @@ export class PostsController {
       pagination: result.pagination,
     };
   }
+
+  /**
+   * Add comment to a post
+   * POST /posts/:id/comment
+   */
+  @Post(':id/comment')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.CREATED)
+  async addComment(
+    @Param('id') postId: string,
+    @Request() req,
+    @Body('content') content: string,
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data: any;
+  }> {
+    this.logger.log('Adding comment to post', {
+      postId,
+      userId: req.user.id,
+    });
+
+    const comment = await this.postsService.addComment(postId, req.user.id, content);
+
+    return {
+      success: true,
+      message: 'Comment added successfully',
+      data: comment,
+    };
+  }
 }

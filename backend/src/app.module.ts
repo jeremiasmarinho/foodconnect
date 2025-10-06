@@ -14,6 +14,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { CacheConfigModule } from './cache/cache.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { UploadModule } from './upload/upload.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { UploadModule } from './upload/upload.module';
     OrdersModule,
     NotificationsModule,
     UploadModule,
+    SeedModule,
   ],
   controllers: [AppController],
   providers: [
