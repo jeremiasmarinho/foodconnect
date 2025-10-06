@@ -1,0 +1,76 @@
+# 🐳 FoodConnect - Docker Setup
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: foodconnect_postgres
+    environment:
+      POSTGRES_DB: foodconnect_dev
+      POSTGRES_USER: foodconnect_user
+      POSTGRES_PASSWORD: foodconnect_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/prisma/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U foodconnect_user -d foodconnect_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache (opcional, para performance)
+  redis:
+    image: redis:7-alpine
+    container_name: foodconnect_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: foodconnect_backend
+    environment:
+      DATABASE_URL: "postgresql://foodconnect_user:foodconnect_password@postgres:5432/foodconnect_dev"
+      JWT_SECRET: "your_super_secret_jwt_key_here"
+      JWT_EXPIRES_IN: "7d"
+      NODE_ENV: "development"
+      PORT: 3000
+      REDIS_URL: "redis://redis:6379"
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./backend/storage:/app/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: foodconnect_network

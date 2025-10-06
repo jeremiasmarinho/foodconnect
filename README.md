@@ -157,13 +157,44 @@ Prosseguir para pedidos/reservas **APENAS SE**:
 - **Senha**: `FoodConnect2024!`
 - **Acesso**: Login via API ou frontend com permissões totais
 
+## 🚀 **Setup Rápido**
+
+### **Opção 1: Script Automático (Recomendado)**
+
+```bash
+# Windows PowerShell
+.\setup.ps1
+
+# Linux/Mac
+chmod +x setup.sh && ./setup.sh
+```
+
+### **Opção 2: Docker (Mais Simples)**
+
+```bash
+# Iniciar todos os serviços
+docker-compose -f docker-compose.dev.yml up -d
+
+# Popular banco com dados de teste
+curl -X POST http://localhost:3000/seed/database
+```
+
+### **Opção 3: Manual**
+
+1. Configure PostgreSQL
+2. `cd backend && npm install && npx prisma migrate dev`
+3. `cd frontend && npm install`
+4. `npm run start:dev` (backend) + `npm run web` (frontend)
+
+📚 **Guia Completo**: [SETUP-GUIDE.md](./SETUP-GUIDE.md)
+
 ## �📞 Próximos Passos Imediatos
 
 1. **Sistema Completo** ✅ - Backend NestJS + Frontend React Native funcionais
-2. **Otimização de Performance** 🚧 - React.memo, useMemo, paginação, cache Redis
-3. **Testes E2E Frontend** - Detox para validação completa mobile
-4. **Deploy em Produção** - AWS/Render com CI/CD automatizado
-5. **Métricas Avançadas** - Analytics detalhados + monitoramento
+2. **Script de Seed** ✅ - 300 posts + usuários + restaurantes fictícios
+3. **Sistema de Métricas** 🚧 - Event tracking + analytics básicos
+4. **WhatsApp Bot** - Captura de leads automatizada
+5. **Busca Semântica** - pgvector + OpenAI embeddings
 
 ## 📊 Status Atual
 

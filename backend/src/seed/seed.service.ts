@@ -157,8 +157,8 @@ export class SeedService {
           ),
           zipCode: faker.location.zipCode(),
 
-          openingHours: this.generateOpeningHours(),
-          verified: faker.datatype.boolean({ probability: 0.7 }),
+          // openingHours será implementado em versão futura
+          isOpen: true,
         },
       });
 
