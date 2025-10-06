@@ -155,14 +155,16 @@ export const Toast: React.FC<ToastProps> = ({
           >
             {title}
           </Text>
-          
+
           {message && (
             <Text
               style={{
                 color: config.textColor,
                 fontSize: theme.typography.fontSize.sm,
                 opacity: 0.9,
-                lineHeight: theme.typography.lineHeight.relaxed * theme.typography.fontSize.sm,
+                lineHeight:
+                  theme.typography.lineHeight.relaxed *
+                  theme.typography.fontSize.sm,
               }}
             >
               {message}
@@ -231,11 +233,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
   return (
     <>
       {toasts.map((toast) => (
-        <Toast
-          key={toast.id}
-          {...toast}
-          onHide={onHideToast}
-        />
+        <Toast key={toast.id} {...toast} onHide={onHideToast} />
       ))}
     </>
   );

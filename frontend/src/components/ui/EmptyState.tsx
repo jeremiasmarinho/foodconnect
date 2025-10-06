@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ViewStyle,
-} from "react-native";
+import { View, Text, TouchableOpacity, ViewStyle } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../providers";
 
@@ -78,9 +73,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           width: getIconSize() + 24,
           height: getIconSize() + 24,
           borderRadius: (getIconSize() + 24) / 2,
-          backgroundColor: variant === "illustration" 
-            ? theme.colors.primary 
-            : `${theme.colors.primary}15`,
+          backgroundColor:
+            variant === "illustration"
+              ? theme.colors.primary
+              : `${theme.colors.primary}15`,
           justifyContent: "center",
           alignItems: "center",
           marginBottom: theme.spacing.lg,
@@ -89,18 +85,21 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         <Ionicons
           name={icon}
           size={getIconSize()}
-          color={variant === "illustration" 
-            ? theme.colors.textOnPrimary 
-            : theme.colors.primary}
+          color={
+            variant === "illustration"
+              ? theme.colors.textOnPrimary
+              : theme.colors.primary
+          }
         />
       </View>
 
       {/* Title */}
       <Text
         style={{
-          fontSize: variant === "minimal" 
-            ? theme.typography.fontSize.lg
-            : theme.typography.fontSize.xl,
+          fontSize:
+            variant === "minimal"
+              ? theme.typography.fontSize.lg
+              : theme.typography.fontSize.xl,
           fontWeight: theme.typography.fontWeight.bold,
           color: theme.colors.textPrimary,
           textAlign: "center",
@@ -116,7 +115,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           fontSize: theme.typography.fontSize.md,
           color: theme.colors.textSecondary,
           textAlign: "center",
-          lineHeight: theme.typography.lineHeight.relaxed * theme.typography.fontSize.md,
+          lineHeight:
+            theme.typography.lineHeight.relaxed * theme.typography.fontSize.md,
           marginBottom: actionLabel ? theme.spacing.xl : 0,
           maxWidth: 280,
         }}
@@ -153,7 +153,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 };
 
 // Predefined empty states for common scenarios
-export const FeedEmptyState: React.FC<{ onCreatePost?: () => void }> = ({ onCreatePost }) => (
+export const FeedEmptyState: React.FC<{ onCreatePost?: () => void }> = ({
+  onCreatePost,
+}) => (
   <EmptyState
     icon="restaurant-outline"
     title="Nenhum post ainda"
@@ -164,23 +166,26 @@ export const FeedEmptyState: React.FC<{ onCreatePost?: () => void }> = ({ onCrea
   />
 );
 
-export const SearchEmptyState: React.FC<{ query?: string; onClearSearch?: () => void }> = ({ 
-  query, 
-  onClearSearch 
-}) => (
+export const SearchEmptyState: React.FC<{
+  query?: string;
+  onClearSearch?: () => void;
+}> = ({ query, onClearSearch }) => (
   <EmptyState
     icon="search-outline"
     title={query ? "Nenhum resultado encontrado" : "Comece a pesquisar"}
-    description={query 
-      ? `Não encontramos resultados para "${query}". Tente outros termos.`
-      : "Digite o nome de um restaurante, prato ou localização para começar."
+    description={
+      query
+        ? `Não encontramos resultados para "${query}". Tente outros termos.`
+        : "Digite o nome de um restaurante, prato ou localização para começar."
     }
     actionLabel={query ? "Limpar busca" : undefined}
     onAction={onClearSearch}
   />
 );
 
-export const RestaurantsEmptyState: React.FC<{ onExplore?: () => void }> = ({ onExplore }) => (
+export const RestaurantsEmptyState: React.FC<{ onExplore?: () => void }> = ({
+  onExplore,
+}) => (
   <EmptyState
     icon="storefront-outline"
     title="Nenhum restaurante por aqui"
@@ -190,7 +195,9 @@ export const RestaurantsEmptyState: React.FC<{ onExplore?: () => void }> = ({ on
   />
 );
 
-export const FavoritesEmptyState: React.FC<{ onDiscover?: () => void }> = ({ onDiscover }) => (
+export const FavoritesEmptyState: React.FC<{ onDiscover?: () => void }> = ({
+  onDiscover,
+}) => (
   <EmptyState
     icon="heart-outline"
     title="Nenhum favorito ainda"
@@ -210,7 +217,9 @@ export const NotificationsEmptyState: React.FC = () => (
   />
 );
 
-export const OrdersEmptyState: React.FC<{ onOrderNow?: () => void }> = ({ onOrderNow }) => (
+export const OrdersEmptyState: React.FC<{ onOrderNow?: () => void }> = ({
+  onOrderNow,
+}) => (
   <EmptyState
     icon="receipt-outline"
     title="Nenhum pedido ainda"

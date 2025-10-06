@@ -61,12 +61,12 @@ export const AnimatedButton: React.FC<AnimatedButtonProps> = ({
 
   const handlePress = () => {
     if (disabled || loading) return;
-    
+
     // Haptic feedback (seria implementado com expo-haptics)
     // if (haptic && Platform.OS === 'ios') {
     //   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     // }
-    
+
     onPress();
   };
 
@@ -98,17 +98,23 @@ export const AnimatedButton: React.FC<AnimatedButtonProps> = ({
 
     const variantStyles = {
       primary: {
-        backgroundColor: disabled ? theme.colors.surfaceVariant : theme.colors.primary,
+        backgroundColor: disabled
+          ? theme.colors.surfaceVariant
+          : theme.colors.primary,
         ...theme.layout.shadow.small,
       },
       secondary: {
-        backgroundColor: disabled ? theme.colors.surfaceVariant : theme.colors.secondary,
+        backgroundColor: disabled
+          ? theme.colors.surfaceVariant
+          : theme.colors.secondary,
         ...theme.layout.shadow.small,
       },
       outline: {
         backgroundColor: "transparent",
         borderWidth: 1,
-        borderColor: disabled ? theme.colors.surfaceVariant : theme.colors.primary,
+        borderColor: disabled
+          ? theme.colors.surfaceVariant
+          : theme.colors.primary,
       },
       ghost: {
         backgroundColor: "transparent",
@@ -161,19 +167,15 @@ export const AnimatedButton: React.FC<AnimatedButtonProps> = ({
   };
 
   const iconSize = size === "small" ? 16 : size === "medium" ? 20 : 24;
-  const iconColor = variant === "primary" || variant === "secondary"
-    ? theme.colors.textOnPrimary
-    : disabled
-    ? theme.colors.textTertiary
-    : theme.colors.primary;
+  const iconColor =
+    variant === "primary" || variant === "secondary"
+      ? theme.colors.textOnPrimary
+      : disabled
+      ? theme.colors.textTertiary
+      : theme.colors.primary;
 
   return (
-    <Animated.View
-      style={[
-        { transform: [{ scale: scaleValue }] },
-        style,
-      ]}
-    >
+    <Animated.View style={[{ transform: [{ scale: scaleValue }] }, style]}>
       <TouchableOpacity
         style={[getButtonStyle()]}
         onPress={handlePress}
@@ -196,13 +198,9 @@ export const AnimatedButton: React.FC<AnimatedButtonProps> = ({
             style={{ marginRight: title ? theme.spacing.sm : 0 }}
           />
         ) : null}
-        
-        {title && (
-          <Text style={[getTextStyle(), textStyle]}>
-            {title}
-          </Text>
-        )}
-        
+
+        {title && <Text style={[getTextStyle(), textStyle]}>{title}</Text>}
+
         {!loading && icon && iconPosition === "right" && (
           <Ionicons
             name={icon}

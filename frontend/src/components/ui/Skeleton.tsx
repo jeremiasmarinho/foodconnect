@@ -98,8 +98,18 @@ export const PostCardSkeleton: React.FC = () => {
       <View style={styles.postFooter}>
         <View style={styles.postActions}>
           <Skeleton height={20} width={20} borderRadius={10} />
-          <Skeleton height={20} width={20} borderRadius={10} style={{ marginLeft: 16 }} />
-          <Skeleton height={20} width={20} borderRadius={10} style={{ marginLeft: 16 }} />
+          <Skeleton
+            height={20}
+            width={20}
+            borderRadius={10}
+            style={{ marginLeft: 16 }}
+          />
+          <Skeleton
+            height={20}
+            width={20}
+            borderRadius={10}
+            style={{ marginLeft: 16 }}
+          />
         </View>
         <Skeleton height={14} width="80%" style={{ marginTop: 8 }} />
         <Skeleton height={12} width="30%" style={{ marginTop: 4 }} />

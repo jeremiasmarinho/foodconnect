@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
 import { ActivityIndicator, View, Text, Modal } from "react-native";
 import { useTheme } from "./ThemeProvider";
 
@@ -21,7 +27,9 @@ interface LoadingProviderProps {
   children: ReactNode;
 }
 
-export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) => {
+export const LoadingProvider: React.FC<LoadingProviderProps> = ({
+  children,
+}) => {
   const { theme } = useTheme();
   const [loadingState, setLoadingState] = useState<LoadingState>({
     isLoading: false,
@@ -40,13 +48,16 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
     });
   }, []);
 
-  const showProgressLoading = useCallback((message: string, progress: number) => {
-    setLoadingState({
-      isLoading: true,
-      message,
-      progress: Math.max(0, Math.min(100, progress)),
-    });
-  }, []);
+  const showProgressLoading = useCallback(
+    (message: string, progress: number) => {
+      setLoadingState({
+        isLoading: true,
+        message,
+        progress: Math.max(0, Math.min(100, progress)),
+      });
+    },
+    []
+  );
 
   const contextValue: LoadingContextType = {
     showLoading,
@@ -58,7 +69,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
   return (
     <LoadingContext.Provider value={contextValue}>
       {children}
-      
+
       {/* Global Loading Modal */}
       <Modal
         visible={loadingState.isLoading}
@@ -122,7 +133,9 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
                 fontSize: theme.typography.fontSize.md,
                 fontWeight: theme.typography.fontWeight.medium,
                 textAlign: "center",
-                lineHeight: theme.typography.lineHeight.relaxed * theme.typography.fontSize.md,
+                lineHeight:
+                  theme.typography.lineHeight.relaxed *
+                  theme.typography.fontSize.md,
               }}
             >
               {loadingState.message || "Carregando..."}
@@ -159,33 +172,36 @@ export const useLoading = (): LoadingContextType => {
 export const useAsyncOperation = () => {
   const { showLoading, hideLoading, showProgressLoading } = useLoading();
 
-  const executeWithLoading = useCallback(async (
-    operation: () => Promise<any>,
-    message?: string
-  ) => {
-    try {
-      showLoading(message);
-      const result = await operation();
-      return result;
-    } finally {
-      hideLoading();
-    }
-  }, [showLoading, hideLoading]);
+  const executeWithLoading = useCallback(
+    async (operation: () => Promise<any>, message?: string) => {
+      try {
+        showLoading(message);
+        const result = await operation();
+        return result;
+      } finally {
+        hideLoading();
+      }
+    },
+    [showLoading, hideLoading]
+  );
 
-  const executeWithProgress = useCallback(async (
-    operation: (updateProgress: (progress: number) => void) => Promise<any>,
-    message: string
-  ) => {
-    try {
-      const updateProgress = (progress: number) => {
-        showProgressLoading(message, progress);
-      };
-      const result = await operation(updateProgress);
-      return result;
-    } finally {
-      hideLoading();
-    }
-  }, [showProgressLoading, hideLoading]);
+  const executeWithProgress = useCallback(
+    async (
+      operation: (updateProgress: (progress: number) => void) => Promise<any>,
+      message: string
+    ) => {
+      try {
+        const updateProgress = (progress: number) => {
+          showProgressLoading(message, progress);
+        };
+        const result = await operation(updateProgress);
+        return result;
+      } finally {
+        hideLoading();
+      }
+    },
+    [showProgressLoading, hideLoading]
+  );
 
   return {
     executeWithLoading,
