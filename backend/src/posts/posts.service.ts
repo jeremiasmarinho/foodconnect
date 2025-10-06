@@ -726,10 +726,20 @@ export class PostsService {
       .slice(0, 10)
       .map((entry) => entry[0]);
 
+    // Get followed users for feed prioritization
+    const followedUsers = await this.prisma.follow.findMany({
+      where: { followerId: userId },
+      select: { followingId: true },
+      take: 100, // Max 100 followed users for performance
+    });
+
+    const followedUserIds = followedUsers.map((follow) => follow.followingId);
+
     return {
       favoriteCuisines,
       interactedRestaurants,
       likedPostIds: likedPosts.map((like) => like.postId),
+      followedUserIds,
     };
   }
 
@@ -758,6 +768,11 @@ export class PostsService {
           userInteractions.interactedRestaurants.includes(post.restaurant.id)
         ) {
           score += 5; // Restaurant familiarity bonus
+        }
+
+        // Following users bonus (posts from followed users get priority)
+        if (userInteractions.followedUserIds.includes(post.userId)) {
+          score += 15; // Strong bonus for posts from followed users
         }
 
         // Recency bonus (posts from last 24 hours get boost)

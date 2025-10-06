@@ -41,6 +41,8 @@ model User {
   refreshTokens           RefreshToken[]
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
+  achievements            UserAchievement[]
+  favoriteRestaurants     FavoriteRestaurant[]
 
   // Indexes for common queries
   @@index([email]) // Login queries
@@ -79,9 +81,10 @@ model Restaurant {
   updatedAt DateTime @updatedAt
 
   // Relations
-  posts     Post[]
-  menuItems MenuItem[]
-  orders    Order[]
+  posts           Post[]
+  menuItems       MenuItem[]
+  orders          Order[]
+  favoritedByUsers FavoriteRestaurant[]
 
   // Indexes for common queries
   @@index([name]) // Search by name
@@ -334,4 +337,57 @@ model EmailVerificationToken {
   @@index([userId]) // User's verification tokens
   @@index([expiresAt]) // Cleanup expired tokens
   @@map("email_verification_tokens")
+}
+
+// Achievement model for user badges and accomplishments
+model Achievement {
+  id          String   @id @default(cuid())
+  name        String   @unique // e.g., "Primeiro Post", "Explorador", "Social"
+  description String
+  icon        String   // Icon name or emoji
+  category    String   // "social", "explorer", "creator", "foodie"
+  condition   String   // JSON with condition details
+  points      Int      @default(0) // Points awarded
+  createdAt   DateTime @default(now())
+
+  // Relations
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+// UserAchievement model for tracking user's earned achievements
+model UserAchievement {
+  id            String    @id @default(cuid())
+  userId        String
+  achievementId String
+  earnedAt      DateTime  @default(now())
+  progress      Int       @default(0) // For progressive achievements
+
+  // Relations
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@unique([userId, achievementId]) // User can only have each achievement once
+  @@index([userId]) // User's achievements
+  @@map("user_achievements")
+}
+
+// Favorite Restaurant model for user's favorite restaurants
+model FavoriteRestaurant {
+  id           String    @id @default(cuid())
+  userId       String
+  restaurantId String
+  createdAt    DateTime  @default(now())
+
+  // Relations
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@unique([userId, restaurantId]) // User can only favorite a restaurant once
+  @@index([userId]) // User's favorites
+  @@index([restaurantId]) // Restaurant's fans
+  @@map("favorite_restaurants")
 }
