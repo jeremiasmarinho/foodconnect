@@ -42,7 +42,8 @@ model User {
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
   achievements            UserAchievement[]
-  favoriteRestaurants     FavoriteRestaurant[]
+  favoriteEstablishments  FavoriteEstablishment[]
+  taggedInPosts           PostTag[]                // Posts where user is tagged
 
   // Indexes for common queries
   @@index([email]) // Login queries
@@ -52,76 +53,110 @@ model User {
   @@map("users")
 }
 
-// Restaurant model
-model Restaurant {
-  id          String  @id @default(cuid())
-  name        String
-  description String?
-  address     String
-  city        String
-  state       String
-  zipCode     String
-  phone       String?
-  email       String?
-  website     String?
-  imageUrl    String?
-  latitude    Float?
-  longitude   Float?
-
-  // Restaurant specific fields
-  category     String? // pizza, burger, sushi, etc.
-  cuisine      String? // Italian, Japanese, Brazilian, etc.
-  rating       Float? // Average rating
-  deliveryTime String? // "25-35 min"
-  deliveryFee  Float? // Delivery fee in currency
-  minimumOrder Float? // Minimum order value
-  isOpen       Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// Establishment model for restaurants and bars
+model Establishment {
+  id           String           @id @default(cuid())
+  name         String
+  description  String?
+  address      String
+  city         String
+  state        String
+  zipCode      String
+  phone        String?
+  email        String?
+  website      String?
+  imageUrl     String?
+  type         EstablishmentType // RESTAURANT or BAR
+  category     String           // e.g., "Fast Food", "Fine Dining", "Sports Bar", "Nightclub"
+  cuisine      String?          // e.g., "Italian", "Mexican", "Asian" (for restaurants)
+  ambiance     String?          // e.g., "Cozy", "Lively", "Romantic" (for bars)
+  priceRange   Int              @default(1) // 1-4 ($, $$, $$$, $$$$)
+  rating       Float            @default(0)
+  isOpen       Boolean          @default(true)
+  openingTime  String?          // "09:00"
+  closingTime  String?          // "22:00"
+  hasLiveMusic Boolean          @default(false) // For bars
+  hasKaraoke   Boolean          @default(false) // For bars
+  hasDanceFloor Boolean         @default(false) // For bars
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
   // Relations
   posts            Post[]
   menuItems        MenuItem[]
   orders           Order[]
-  favoritedByUsers FavoriteRestaurant[]
+  favoritedByUsers FavoriteEstablishment[]
 
   // Indexes for common queries
   @@index([name]) // Search by name
   @@index([city, state]) // Location-based searches
+  @@index([type]) // Filter by type (restaurant/bar)
   @@index([category]) // Filter by category
   @@index([cuisine]) // Filter by cuisine
   @@index([rating]) // Sort by rating
   @@index([isOpen]) // Filter by open status
   @@index([createdAt]) // Sort by creation date
-  @@map("restaurants")
+  @@map("establishments")
 }
 
-// Post model for food discoveries
+enum EstablishmentType {
+  RESTAURANT
+  BAR
+}
+
+enum PostType {
+  FOOD
+  DRINKS
+  SOCIAL
+}
+
+// Post model for food and social discoveries
 model Post {
-  id        String   @id @default(cuid())
-  content   String
-  imageUrl  String?
-  rating    Int? // 1-5 stars
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  content     String
+  imageUrls   String   // JSON array of image URLs
+  rating      Int? // 1-5 stars
+  postType    PostType @default(FOOD) // FOOD, DRINKS, SOCIAL
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
-  userId       String
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  restaurantId String
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  likes        Like[]
-  comments     Comment[]
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  establishmentId String?
+  establishment   Establishment? @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  likes           Like[]
+  comments        Comment[]
+  taggedUsers     PostTag[]     // Users tagged in this post
 
   // Indexes for common queries
   @@index([userId]) // Posts by user
-  @@index([restaurantId]) // Posts by restaurant
+  @@index([establishmentId]) // Posts by establishment
   @@index([createdAt]) // Feed sorting by date
   @@index([rating]) // Sort by rating
+  @@index([postType]) // Filter by post type
   @@index([userId, createdAt]) // User's posts chronologically
-  @@index([restaurantId, createdAt]) // Restaurant's posts chronologically
+  @@index([establishmentId, createdAt]) // Establishment's posts chronologically
   @@map("posts")
+}
+
+// PostTag model for tagging friends in posts
+model PostTag {
+  id       String @id @default(cuid())
+  postId   String
+  userId   String
+  x        Float? // X coordinate for photo tagging (0-1)
+  y        Float? // Y coordinate for photo tagging (0-1)
+  imageIndex Int @default(0) // Which image in the post (for multiple images)
+
+  // Relations
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId]) // A user can only be tagged once per post
+  @@index([postId]) // Tags for a post
+  @@index([userId]) // Posts where user is tagged
+  @@map("post_tags")
 }
 
 // Like model
@@ -169,28 +204,29 @@ model Follow {
   @@map("follows")
 }
 
-// Menu Item model - Items available in restaurants
+// Menu Item model - Items available in restaurants and bars
 model MenuItem {
   id          String   @id @default(cuid())
   name        String
   description String?
   price       Float
   imageUrl    String?
-  category    String // appetizer, main, dessert, beverage
+  category    String // appetizer, main, dessert, beverage, cocktail, beer, wine
   isAvailable Boolean  @default(true)
+  alcoholContent Float? // For drinks - alcohol percentage
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
-  restaurantId String
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  orderItems   OrderItem[]
+  establishmentId String
+  establishment   Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  orderItems      OrderItem[]
 
-  @@index([restaurantId]) // Menu items by restaurant
+  @@index([establishmentId]) // Menu items by establishment
   @@index([category]) // Filter by category
   @@index([isAvailable]) // Available items
   @@index([price]) // Sort by price
-  @@index([restaurantId, category]) // Restaurant menu by category
+  @@index([establishmentId, category]) // Establishment menu by category
   @@map("menu_items")
 }
 
@@ -208,18 +244,18 @@ model Order {
   updatedAt       DateTime @updatedAt
 
   // Relations
-  userId       String
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  restaurantId String
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  orderItems   OrderItem[]
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  establishmentId String
+  establishment   Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  orderItems      OrderItem[]
 
   @@index([userId]) // User's orders
-  @@index([restaurantId]) // Restaurant's orders
+  @@index([establishmentId]) // Establishment's orders
   @@index([status]) // Filter by status
   @@index([createdAt]) // Sort by date
   @@index([userId, createdAt]) // User's order history
-  @@index([restaurantId, status]) // Restaurant's orders by status
+  @@index([establishmentId, status]) // Establishment's orders by status
   @@map("orders")
 }
 
@@ -374,20 +410,20 @@ model UserAchievement {
   @@map("user_achievements")
 }
 
-// Favorite Restaurant model for user's favorite restaurants
-model FavoriteRestaurant {
-  id           String   @id @default(cuid())
-  userId       String
-  restaurantId String
-  createdAt    DateTime @default(now())
+// Favorite Establishment model for user's favorite restaurants and bars
+model FavoriteEstablishment {
+  id              String   @id @default(cuid())
+  userId          String
+  establishmentId String
+  createdAt       DateTime @default(now())
 
   // Relations
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
 
   // Constraints
-  @@unique([userId, restaurantId]) // User can only favorite a restaurant once
+  @@unique([userId, establishmentId]) // User can only favorite an establishment once
   @@index([userId]) // User's favorites
-  @@index([restaurantId]) // Restaurant's fans
-  @@map("favorite_restaurants")
+  @@index([establishmentId]) // Establishment's fans
+  @@map("favorite_establishments")
 }

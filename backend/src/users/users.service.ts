@@ -509,7 +509,7 @@ export class UsersService {
     const posts = await this.prisma.post.findMany({
       where: { userId },
       include: {
-        restaurant: {
+        establishment: {
           select: {
             id: true,
             name: true,
@@ -538,9 +538,10 @@ export class UsersService {
       posts: posts.map((post) => ({
         id: post.id,
         content: post.content,
-        imageUrl: post.imageUrl,
+        imageUrl: post.imageUrls ? JSON.parse(post.imageUrls)[0] || null : null,
         createdAt: post.createdAt,
-        restaurant: post.restaurant,
+        restaurant: post.establishment, // For backwards compatibility
+        establishment: post.establishment,
         stats: {
           likesCount: post._count.likes,
           commentsCount: post._count.comments,

@@ -7,7 +7,6 @@ export { RestaurantCard } from "./RestaurantCard";
 export { SearchBar } from "./SearchBar";
 export { Header } from "./Header";
 export { PostCard } from "./PostCard";
-export { RestaurantSearchModal } from "../RestaurantSearchModal";
 export {
   Skeleton,
   RestaurantCardSkeleton,

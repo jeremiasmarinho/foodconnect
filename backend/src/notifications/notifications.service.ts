@@ -156,23 +156,31 @@ export class NotificationsService {
       const order = await this.prisma.order.findUnique({
         where: { id: orderId },
         include: {
-          restaurant: {
-            select: { id: true, name: true },
+          establishment: {
+            select: {
+              id: true,
+              name: true,
+            },
           },
           user: {
-            select: { id: true, username: true, name: true },
+            select: {
+              id: true,
+              name: true,
+              username: true,
+            },
           },
+          orderItems: true,
         },
       });
 
       if (!order) return;
 
       // Send real-time notification to restaurant
-      await this.notificationsGateway.notifyNewOrder(order.restaurantId, {
-        id: order.id,
+      await this.notificationsGateway.notifyNewOrder(order.establishmentId, {
+        orderId: order.id,
         customerName: order.user.name || order.user.username,
         total: order.total,
-        status: order.status,
+        items: order.orderItems?.length || 0,
       });
 
       this.logger.log('New order notification sent successfully');
@@ -195,7 +203,7 @@ export class NotificationsService {
       const order = await this.prisma.order.findUnique({
         where: { id: orderId },
         include: {
-          restaurant: {
+          establishment: {
             select: { name: true },
           },
         },
@@ -208,19 +216,20 @@ export class NotificationsService {
         order.userId,
         orderId,
         newStatus,
-        order.restaurant.name,
+        order.establishment.name,
       );
 
       // Store notification in database
       await this.createNotification({
         userId: order.userId,
         type: 'order-status',
-        title: 'Order Update',
-        message: `Your order from ${order.restaurant.name} is now ${newStatus}`,
+        title: 'Pedido Atualizado',
+        message: `Your order from ${order.establishment.name} is now ${newStatus}`,
+        read: false,
         data: {
-          orderId,
+          orderId: order.id,
+          establishmentName: order.establishment.name,
           status: newStatus,
-          restaurantName: order.restaurant.name,
         },
       });
 

@@ -43,7 +43,7 @@ export class PostsController {
   }> {
     this.logger.log('Creating post', {
       userId: req.user.id,
-      restaurantId: createPostDto.restaurantId,
+      establishmentId: createPostDto.establishmentId,
     });
 
     const post = await this.postsService.createPost(req.user.id, createPostDto);

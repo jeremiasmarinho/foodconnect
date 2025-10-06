@@ -23,5 +23,5 @@ export class CreateMenuItemDto {
   isAvailable?: boolean;
 
   @IsString()
-  restaurantId: string;
+  establishmentId: string;
 }

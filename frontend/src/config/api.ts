@@ -18,14 +18,14 @@ const getCurrentIP = (): string => {
 // API Configuration
 export const API_CONFIG = {
   // Development URLs
-  WEB_URL: "http://localhost:3001",
-  MOBILE_URL: `http://${getCurrentIP()}:3001`,
+  WEB_URL: "http://localhost:3002",
+  MOBILE_URL: `http://${getCurrentIP()}:3002`,
 
   // Get appropriate URL based on platform
   BASE_URL: (() => {
     // Web environment
     if (typeof window !== "undefined") {
-      return "http://localhost:3001";
+      return "http://localhost:3002";
     }
 
     // React Native environment
@@ -33,11 +33,11 @@ export const API_CONFIG = {
       typeof navigator !== "undefined" &&
       navigator.product === "ReactNative"
     ) {
-      return `http://${getCurrentIP()}:3001`;
+      return `http://${getCurrentIP()}:3002`;
     }
 
     // Default fallback
-    return "http://localhost:3001";
+    return "http://localhost:3002";
   })(),
 
   TIMEOUT: 10000,
@@ -78,8 +78,8 @@ export const validateApiConfig = () => {
     errors.push("BASE_URL is not defined");
   }
 
-  if (!API_CONFIG.BASE_URL.includes("3001")) {
-    errors.push("BASE_URL should use port 3001");
+  if (!API_CONFIG.BASE_URL.includes("3002")) {
+    errors.push("BASE_URL should use port 3002");
   }
 
   if (API_CONFIG.TIMEOUT < 1000) {

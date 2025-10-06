@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
 import { UpdateMenuItemDto } from './dto/update-menu-item.dto';
@@ -8,48 +8,62 @@ export class MenuItemsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createMenuItemDto: CreateMenuItemDto) {
-    return this.prisma.menuItem.create({
+    const menuItem = await this.prisma.menuItem.create({
       data: createMenuItemDto,
       include: {
-        restaurant: true,
+        establishment: true,
       },
     });
+
+    return menuItem;
   }
 
   async findAll() {
-    return this.prisma.menuItem.findMany({
+    const menuItems = await this.prisma.menuItem.findMany({
       include: {
-        restaurant: true,
+        establishment: true,
       },
     });
+
+    return menuItems;
   }
 
-  async findByRestaurant(restaurantId: string) {
-    return this.prisma.menuItem.findMany({
-      where: { restaurantId },
+  async findByEstablishment(establishmentId: string) {
+    const menuItems = await this.prisma.menuItem.findMany({
+      where: { establishmentId },
       include: {
-        restaurant: true,
+        establishment: true,
       },
     });
+
+    return menuItems;
   }
 
   async findOne(id: string) {
-    return this.prisma.menuItem.findUnique({
+    const menuItem = await this.prisma.menuItem.findUnique({
       where: { id },
       include: {
-        restaurant: true,
+        establishment: true,
       },
     });
+
+    if (!menuItem) {
+      throw new NotFoundException(`Menu item with ID ${id} not found`);
+    }
+
+    return menuItem;
   }
 
   async update(id: string, updateMenuItemDto: UpdateMenuItemDto) {
-    return this.prisma.menuItem.update({
+    const menuItem = await this.prisma.menuItem.update({
       where: { id },
       data: updateMenuItemDto,
       include: {
-        restaurant: true,
+        establishment: true,
       },
     });
+
+    return menuItem;
   }
 
   async remove(id: string) {

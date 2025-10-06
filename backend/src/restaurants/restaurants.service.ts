@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EstablishmentType } from '@prisma/client';
 import {
   CreateRestaurantDto,
   UpdateRestaurantDto,
@@ -34,8 +35,12 @@ export class RestaurantsService {
     });
 
     try {
-      const restaurant = await this.prisma.restaurant.create({
-        data: createRestaurantDto,
+      const restaurant = await this.prisma.establishment.create({
+        data: {
+          ...createRestaurantDto,
+          type: EstablishmentType.RESTAURANT,
+          category: 'restaurant',
+        },
       });
 
       this.logger.log('Restaurant created successfully', {
@@ -129,7 +134,7 @@ export class RestaurantsService {
         }
       : undefined;
 
-    const restaurant = await this.prisma.restaurant.findUnique({
+    const restaurant = await this.prisma.establishment.findUnique({
       where: { id },
       include: includeOptions,
     });
@@ -163,7 +168,7 @@ export class RestaurantsService {
     });
 
     // Check if restaurant exists
-    const existingRestaurant = await this.prisma.restaurant.findUnique({
+    const existingRestaurant = await this.prisma.establishment.findUnique({
       where: { id },
     });
 
@@ -172,7 +177,7 @@ export class RestaurantsService {
     }
 
     try {
-      const updatedRestaurant = await this.prisma.restaurant.update({
+      const updatedRestaurant = await this.prisma.establishment.update({
         where: { id },
         data: updateRestaurantDto,
       });
@@ -199,7 +204,7 @@ export class RestaurantsService {
     this.logger.log('Deleting restaurant', { restaurantId: id });
 
     // Check if restaurant exists
-    const existingRestaurant = await this.prisma.restaurant.findUnique({
+    const existingRestaurant = await this.prisma.establishment.findUnique({
       where: { id },
     });
 
@@ -208,7 +213,7 @@ export class RestaurantsService {
     }
 
     try {
-      await this.prisma.restaurant.delete({
+      await this.prisma.establishment.delete({
         where: { id },
       });
 
@@ -291,13 +296,13 @@ export class RestaurantsService {
     }
 
     const [restaurants, total] = await Promise.all([
-      this.prisma.restaurant.findMany({
+      this.prisma.establishment.findMany({
         skip,
         take: limit,
         where,
         orderBy,
       }),
-      this.prisma.restaurant.count({ where }),
+      this.prisma.establishment.count({ where }),
     ]);
 
     const result = new PaginatedResponseDto(restaurants, total, page, limit);
@@ -325,7 +330,7 @@ export class RestaurantsService {
   async searchRestaurants(query: string, limit: number = 10) {
     this.logger.log('Searching restaurants', { query, limit });
 
-    const restaurants = await this.prisma.restaurant.findMany({
+    const restaurants = await this.prisma.establishment.findMany({
       where: {
         OR: [
           { name: { contains: query } },
@@ -349,42 +354,27 @@ export class RestaurantsService {
    * @param limit - Maximum results
    * @returns Nearby restaurants
    */
-  async getNearbyRestaurants(
+  async findNearby(
     latitude: number,
     longitude: number,
     radiusKm: number = 10,
     limit: number = 20,
   ) {
-    this.logger.log('Finding nearby restaurants', {
-      latitude,
-      longitude,
-      radiusKm,
-      limit,
-    });
+    this.logger.log(
+      'Finding nearby restaurants (simplified without geo coordinates)',
+      {
+        latitude,
+        longitude,
+        radiusKm,
+        limit,
+      },
+    );
 
-    // For SQLite, we'll do a simple approximation
-    // In production with PostgreSQL, use PostGIS for accurate geospatial queries
-    const latRange = radiusKm / 111; // Rough km to degree conversion
-    const lngRange = radiusKm / (111 * Math.cos((latitude * Math.PI) / 180));
-
-    const restaurants = await this.prisma.restaurant.findMany({
+    // Since we removed lat/lng from schema, return recent restaurants
+    // TODO: Implement proper geospatial search when coordinates are added back
+    const restaurants = await this.prisma.establishment.findMany({
       where: {
-        AND: [
-          { latitude: { not: null } },
-          { longitude: { not: null } },
-          {
-            latitude: {
-              gte: latitude - latRange,
-              lte: latitude + latRange,
-            },
-          },
-          {
-            longitude: {
-              gte: longitude - lngRange,
-              lte: longitude + lngRange,
-            },
-          },
-        ],
+        type: 'RESTAURANT',
       },
       take: limit,
       orderBy: {

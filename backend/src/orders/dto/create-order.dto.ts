@@ -24,7 +24,7 @@ export class CreateOrderItemDto {
 
 export class CreateOrderDto {
   @IsString()
-  restaurantId: string;
+  establishmentId: string;
 
   @IsNumber()
   subtotal: number;

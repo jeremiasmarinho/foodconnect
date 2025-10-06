@@ -11,7 +11,17 @@ export interface User {
   updatedAt?: string;
 }
 
-export interface Restaurant {
+export interface PostUser {
+  id: string;
+  username: string;
+  name?: string;
+  avatar?: string;
+  isVerified?: boolean;
+}
+
+export type EstablishmentType = "RESTAURANT" | "BAR";
+
+export interface Establishment {
   id: string;
   name: string;
   description?: string;
@@ -26,39 +36,80 @@ export interface Restaurant {
   latitude?: number;
   longitude?: number;
 
-  // Restaurant specific fields
-  category?: string; // pizza, burger, sushi, etc.
-  cuisine?: string; // Italian, Japanese, Brazilian, etc.
+  // Establishment type and specific fields
+  type: EstablishmentType;
+  category?: string; // pizza, burger, sushi, sports bar, nightclub, etc.
+  cuisine?: string; // For restaurants: Italian, Japanese, Brazilian, etc.
+  ambiance?: string; // For bars: Cozy, Lively, Romantic, etc.
   rating?: number; // Average rating
   reviewCount?: number; // Number of reviews
   deliveryTime?: string; // "25-35 min"
   deliveryFee?: number; // Delivery fee in currency
   minimumOrder?: number; // Minimum order value
   isOpen?: boolean;
-  priceRange?: "low" | "medium" | "high";
+  priceRange?: 1 | 2 | 3 | 4; // 1-4 ($, $$, $$$, $$$$)
   openingHours?: Record<string, string>;
   features?: string[];
   tags?: string[];
+
+  // Bar specific features
+  hasLiveMusic?: boolean;
+  hasKaraoke?: boolean;
+  hasDanceFloor?: boolean;
 
   createdAt: string;
   updatedAt?: string;
 }
 
-export interface Post {
+// Keep Restaurant interface for backwards compatibility
+export interface Restaurant extends Establishment {
+  type: "RESTAURANT";
+}
+
+// New Bar interface
+export interface Bar extends Establishment {
+  type: "BAR";
+}
+
+export type PostType = "FOOD" | "DRINKS" | "SOCIAL";
+
+export interface PostTag {
+  id: string;
+  postId: string;
+  userId: string;
+  user: User;
+  x?: number; // X coordinate for photo tagging (0-1)
+  y?: number; // Y coordinate for photo tagging (0-1)
+  imageIndex: number; // Which image in the post (for multiple images)
+}
+
+export interface PostData {
   id: string;
   content: string;
-  imageUrl?: string;
+  images: string[]; // Multiple images support
+  postType: PostType;
+  rating?: number; // 1-5 stars
   userId: string;
-  authorId: string;
-  author?: User;
-  user?: User;
-  restaurantId?: string;
-  restaurant?: Restaurant;
+  user: PostUser;
+  establishmentId?: string;
+  establishment?: Establishment;
+  restaurant?: Restaurant; // Backwards compatibility
+  location?: string;
   likesCount: number;
   commentsCount?: number;
   isLiked?: boolean;
+  isSaved?: boolean;
+  taggedUsers?: PostTag[]; // Users tagged in this post
   createdAt: string;
   updatedAt?: string;
+}
+
+// Keep Post interface for backwards compatibility
+export interface Post extends PostData {
+  imageUrl?: string; // Single image for backwards compatibility
+  authorId: string;
+  author?: User;
+  restaurantId?: string;
 }
 
 export interface AuthResponse {

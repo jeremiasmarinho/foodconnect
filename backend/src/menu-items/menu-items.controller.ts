@@ -29,8 +29,8 @@ export class MenuItemsController {
   }
 
   @Get('restaurant/:restaurantId')
-  findByRestaurant(@Param('restaurantId') restaurantId: string) {
-    return this.menuItemsService.findByRestaurant(restaurantId);
+  findByEstablishment(@Param('restaurantId') restaurantId: string) {
+    return this.menuItemsService.findByEstablishment(restaurantId);
   }
 
   @Get(':id')

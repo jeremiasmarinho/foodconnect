@@ -343,7 +343,7 @@ export class RestaurantsController {
       };
     }
 
-    const restaurants = await this.restaurantsService.getNearbyRestaurants(
+    const restaurants = await this.restaurantsService.findNearby(
       parseFloat(latitude),
       parseFloat(longitude),
       parseInt(radius),

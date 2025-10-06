@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -6,293 +6,177 @@ import {
   RefreshControl,
   SafeAreaView,
   TouchableOpacity,
-  Alert,
+  StyleSheet,
+  StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useTheme, useAuth } from "../../providers";
-import { PostCard, SearchBar, Loading, ErrorView } from "../../components/ui";
-import { useFeedPosts } from "../../hooks";
-import { Post, User } from "../../types";
-import { mockPosts, mockUsers } from "../../data/mockData";
+import { useAuth } from "../../providers";
+import { Loading, EmptyState } from "../../components/ui";
+import { Post } from "../../components/Post";
+import { Stories } from "../../components/Stories";
+import { CreatePostButton } from "../../components/CreatePostButton";
+import { usePost } from "../../hooks/usePost";
+import { LIGHT_THEME } from "../../constants/theme";
 
 export const FeedScreen: React.FC = () => {
-  const { theme } = useTheme();
-  const { user, logout } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
+  const { user } = useAuth();
+  const {
+    posts,
+    loading,
+    refreshing,
+    refreshPosts,
+    toggleLike,
+    toggleSave,
+    openComments,
+    sharePost,
+    openUserProfile,
+  } = usePost();
 
-  // Using mock data for now - replace with real API call when backend is connected
-  const allPosts = mockPosts;
-  const isLoading = false;
-  const isError = false;
-
-  // Memoize filtered posts based on search query
-  const filteredPosts = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return allPosts;
-    }
-
-    return allPosts.filter(
-      (post) =>
-        post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.restaurant?.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [allPosts, searchQuery]);
-
-  const handlePostPress = useCallback((post: Post) => {
-    // TODO: Navigate to post detail
-    console.log("Post pressed:", post.id);
-  }, []);
-
-  const handleUserPress = useCallback((user: User) => {
-    // TODO: Navigate to user profile
-    console.log("User pressed:", user.id);
-  }, []);
-
-  const handleRestaurantPress = useCallback((restaurantId: string) => {
-    // TODO: Navigate to restaurant detail
-    console.log("Restaurant pressed:", restaurantId);
-  }, []);
-
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-    // TODO: Implement search
-    console.log("Search:", query);
-  }, []);
-
-  const handleLogout = async () => {
-    Alert.alert("Sair", "Tem certeza que deseja sair da sua conta?", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Sair",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await logout();
-          } catch (error) {
-            console.error("Logout error:", error);
-          }
-        },
-      },
-    ]);
-  };
-
-  const renderHeader = useCallback(
-    () => (
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingHorizontal: theme.spacing.lg,
-          paddingVertical: theme.spacing.md,
-          backgroundColor: theme.colors.surface,
-          borderBottomWidth: 1,
-          borderBottomColor: theme.colors.border,
-        }}
-      >
-        <View>
-          <Text
-            style={{
-              fontSize: theme.typography.fontSize.xxxl,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.primary,
-            }}
-          >
-            FoodConnect
-          </Text>
-          <Text
-            style={{
-              fontSize: theme.typography.fontSize.sm,
-              color: theme.colors.textSecondary,
-            }}
-          >
-            Olá, {user?.name?.split(" ")[0] || "Foodie"}! 🍕 Descubra novos
-            sabores
-          </Text>
-        </View>
-
-        <TouchableOpacity
-          onPress={handleLogout}
-          style={{
-            padding: theme.spacing.sm,
-            borderRadius: 20,
-            backgroundColor: theme.colors.surfaceVariant,
-          }}
-          activeOpacity={0.7}
-        >
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <Text style={styles.logo}>FoodConnect</Text>
+      <View style={styles.headerActions}>
+        <TouchableOpacity style={styles.headerButton}>
           <Ionicons
-            name="log-out-outline"
-            size={20}
-            color={theme.colors.textSecondary}
+            name="heart-outline"
+            size={24}
+            color={LIGHT_THEME.textPrimary}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.headerButton}>
+          <Ionicons
+            name="chatbubble-ellipses-outline"
+            size={24}
+            color={LIGHT_THEME.textPrimary}
           />
         </TouchableOpacity>
       </View>
-    ),
-    [theme, user?.name, handleLogout]
+    </View>
   );
 
-  const renderSearchBar = useCallback(
-    () => (
-      <View
-        style={{
-          paddingHorizontal: theme.spacing.lg,
-          paddingVertical: theme.spacing.md,
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <SearchBar
-          placeholder="Buscar posts, restaurantes..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          onSearch={handleSearch}
-          showFilter={true}
-          onFilterPress={() => {
-            // TODO: Open filter modal
-            console.log("Filter pressed");
-          }}
-        />
-      </View>
-    ),
-    [theme.spacing.lg, handleSearch]
+  const handleStoryPress = (story: any) => {
+    console.log("Story pressed:", story);
+    // TODO: Navigate to story viewer
+  };
+
+  const handleAddStoryPress = () => {
+    console.log("Add story pressed");
+    // TODO: Navigate to story creation
+  };
+
+  const handleCreatePostPress = () => {
+    console.log("Create post pressed");
+    // TODO: Navigate to create post screen
+  };
+
+  const renderPost = ({ item }: { item: any }) => (
+    <Post
+      post={item}
+      onLike={toggleLike}
+      onComment={openComments}
+      onSave={toggleSave}
+      onShare={sharePost}
+      onUserPress={openUserProfile}
+    />
   );
 
-  const renderPost = useCallback(
-    ({ item }: { item: Post }) => (
-      <View style={{ paddingHorizontal: theme.spacing.lg }}>
-        <PostCard
-          post={item}
-          onPress={() => handlePostPress(item)}
-          onUserPress={handleUserPress}
-          onRestaurantPress={handleRestaurantPress}
-        />
-      </View>
-    ),
-    [theme.spacing.lg, handlePostPress, handleUserPress, handleRestaurantPress]
+  const renderEmpty = () => (
+    <EmptyState
+      icon="restaurant-outline"
+      title="Nenhum post encontrado"
+      description="Siga mais pessoas para ver posts no seu feed"
+    />
   );
 
-  const renderFooter = useCallback(() => {
-    // Mock loading footer - would show when loading more posts
-    return null;
-  }, []);
-
-  const renderEmpty = useCallback(
-    () => (
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          paddingVertical: theme.spacing.xxxxl,
-          paddingHorizontal: theme.spacing.lg,
-        }}
-      >
-        <Ionicons
-          name="restaurant-outline"
-          size={64}
-          color={theme.colors.textTertiary}
-          style={{ marginBottom: theme.spacing.lg }}
-        />
-        <Text
-          style={{
-            fontSize: theme.typography.fontSize.xl,
-            fontWeight: theme.typography.fontWeight.semibold,
-            color: theme.colors.textPrimary,
-            textAlign: "center",
-            marginBottom: theme.spacing.sm,
-          }}
-        >
-          Nenhum post ainda
-        </Text>
-        <Text
-          style={{
-            fontSize: theme.typography.fontSize.md,
-            color: theme.colors.textSecondary,
-            textAlign: "center",
-            lineHeight:
-              theme.typography.lineHeight.relaxed *
-              theme.typography.fontSize.md,
-          }}
-        >
-          Seja o primeiro a compartilhar uma experiência gastronômica incrível!
-        </Text>
-      </View>
-    ),
-    [theme]
-  );
-
-  if (isLoading) {
+  if (loading && posts.length === 0) {
     return (
-      <SafeAreaView
-        style={{
-          flex: 1,
-          backgroundColor: theme.colors.background,
-        }}
-      >
+      <SafeAreaView style={styles.container}>
         {renderHeader()}
-        <Loading text="Carregando feed..." />
-      </SafeAreaView>
-    );
-  }
-
-  if (isError) {
-    return (
-      <SafeAreaView
-        style={{
-          flex: 1,
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        {renderHeader()}
-        <ErrorView
-          title="Ops! Algo deu errado"
-          message="Não foi possível carregar o feed. Tente novamente."
-        />
+        <Loading />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: theme.colors.background,
-      }}
-    >
+    <SafeAreaView style={styles.container}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={LIGHT_THEME.surface}
+      />
+      {renderHeader()}
+
       <FlatList
-        data={filteredPosts}
+        data={posts}
         renderItem={renderPost}
         keyExtractor={(item) => item.id}
-        ListHeaderComponent={() => (
-          <>
-            {renderHeader()}
-            {renderSearchBar()}
-          </>
-        )}
-        ListEmptyComponent={renderEmpty}
-        ListFooterComponent={renderFooter}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
-            refreshing={false}
-            onRefresh={() => {
-              // Mock refresh - would reload posts from API
-              console.log("Refreshing feed...");
-            }}
-            colors={[theme.colors.primary]}
-            tintColor={theme.colors.primary}
+            refreshing={refreshing}
+            onRefresh={refreshPosts}
+            colors={[LIGHT_THEME.primary]}
+            tintColor={LIGHT_THEME.primary}
           />
         }
-        onEndReached={() => {
-          // Mock load more - would fetch next page of posts
-          console.log("Loading more posts...");
-        }}
-        onEndReachedThreshold={0.5}
-        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={() => (
+          <View>
+            <Stories
+              onStoryPress={handleStoryPress}
+              onAddStoryPress={handleAddStoryPress}
+            />
+            <CreatePostButton
+              userAvatar={user?.avatar}
+              onPress={handleCreatePostPress}
+            />
+          </View>
+        )}
+        ListEmptyComponent={renderEmpty}
         contentContainerStyle={
-          filteredPosts.length === 0
-            ? { flex: 1 }
-            : { paddingBottom: theme.spacing.xl }
+          posts.length === 0 ? styles.emptyContainer : undefined
         }
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: LIGHT_THEME.background,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: LIGHT_THEME.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: LIGHT_THEME.surfaceVariant,
+  },
+  logo: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: LIGHT_THEME.primary,
+    fontFamily: "System", // Use custom font if available
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headerButton: {
+    marginLeft: 16,
+    padding: 4,
+  },
+
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  separator: {
+    height: 1,
+    backgroundColor: LIGHT_THEME.surfaceVariant,
+  },
+});

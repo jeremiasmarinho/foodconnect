@@ -8,15 +8,28 @@ export class OrdersService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: string, createOrderDto: CreateOrderDto) {
-    const { orderItems, ...orderData } = createOrderDto;
+    const {
+      orderItems,
+      establishmentId,
+      subtotal,
+      deliveryFee,
+      total,
+      notes,
+      deliveryAddress,
+    } = createOrderDto;
 
     return this.prisma.order.create({
       data: {
-        ...orderData,
         userId,
         orderItems: {
           create: orderItems,
         },
+        establishmentId,
+        subtotal,
+        deliveryFee,
+        total,
+        notes,
+        deliveryAddress,
       },
       include: {
         orderItems: {
@@ -24,7 +37,7 @@ export class OrdersService {
             menuItem: true,
           },
         },
-        restaurant: true,
+        establishment: true,
         user: {
           select: {
             id: true,
@@ -44,7 +57,7 @@ export class OrdersService {
             menuItem: true,
           },
         },
-        restaurant: true,
+        establishment: true,
         user: {
           select: {
             id: true,
@@ -68,7 +81,7 @@ export class OrdersService {
             menuItem: true,
           },
         },
-        restaurant: true,
+        establishment: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -76,9 +89,9 @@ export class OrdersService {
     });
   }
 
-  async findByRestaurant(restaurantId: string) {
+  async findByEstablishment(establishmentId: string) {
     return this.prisma.order.findMany({
-      where: { restaurantId },
+      where: { establishmentId },
       include: {
         orderItems: {
           include: {
@@ -108,7 +121,7 @@ export class OrdersService {
             menuItem: true,
           },
         },
-        restaurant: true,
+        establishment: true,
         user: {
           select: {
             id: true,
@@ -130,7 +143,7 @@ export class OrdersService {
             menuItem: true,
           },
         },
-        restaurant: true,
+        establishment: true,
         user: {
           select: {
             id: true,

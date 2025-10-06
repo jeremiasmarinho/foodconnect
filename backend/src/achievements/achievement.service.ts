@@ -134,7 +134,7 @@ export class AchievementService {
         this.prisma.post.count({ where: { userId: userId } }),
         this.prisma.follow.count({ where: { followingId: userId } }),
         this.prisma.follow.count({ where: { followerId: userId } }),
-        this.prisma.favoriteRestaurant.count({ where: { userId } }),
+        this.prisma.favoriteEstablishment.count({ where: { userId } }),
       ]);
 
     return {

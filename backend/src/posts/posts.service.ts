@@ -36,7 +36,7 @@ export class PostsService {
   ): Promise<PostResponseDto> {
     this.logger.log('Creating new post', {
       userId,
-      restaurantId: createPostDto.restaurantId,
+      establishmentId: createPostDto.establishmentId,
       hasRating: !!createPostDto.rating,
     });
 
@@ -55,7 +55,7 @@ export class PostsService {
               avatar: true,
             },
           },
-          restaurant: {
+          establishment: {
             select: {
               id: true,
               name: true,
@@ -77,7 +77,7 @@ export class PostsService {
         userId,
       });
 
-      return post;
+      return this.mapToPostResponseDto(post);
     } catch (error) {
       this.logger.error('Failed to create post', {
         userId,
@@ -117,7 +117,7 @@ export class PostsService {
           avatar: true,
         },
       },
-      restaurant: {
+      establishment: {
         select: {
           id: true,
           name: true,
@@ -167,7 +167,7 @@ export class PostsService {
     await this.cacheService.set(cacheKey, post, 300);
 
     this.logger.log('Post retrieved from database and cached', { postId: id });
-    return post;
+    return this.mapToPostResponseDto(post);
   }
 
   /**
@@ -215,7 +215,7 @@ export class PostsService {
               avatar: true,
             },
           },
-          restaurant: {
+          establishment: {
             select: {
               id: true,
               name: true,
@@ -233,7 +233,7 @@ export class PostsService {
       });
 
       this.logger.log('Post updated successfully', { postId: id });
-      return updatedPost;
+      return this.mapToPostResponseDto(updatedPost);
     } catch (error) {
       this.logger.error('Failed to update post', {
         postId: id,
@@ -334,7 +334,7 @@ export class PostsService {
     if (search && search.trim()) {
       where.OR = [
         { content: { contains: search } },
-        { restaurant: { name: { contains: search } } },
+        { establishment: { name: { contains: search } } },
       ];
     }
 
@@ -414,7 +414,7 @@ export class PostsService {
               bio: true,
             },
           },
-          restaurant: {
+          establishment: {
             select: {
               id: true,
               name: true,
@@ -462,12 +462,15 @@ export class PostsService {
       filteredPosts = posts.filter((post) => post._count.likes >= minLikesNum);
     }
 
-    // Process posts to add computed fields
-    const processedPosts = filteredPosts.map((post) => ({
-      ...post,
-      isLikedByUser: userId ? post.likes && post.likes.length > 0 : false,
-      timeAgo: DateUtils.timeAgo(post.createdAt),
-    }));
+    // Process posts to add computed fields and map to DTO
+    const processedPosts = filteredPosts.map((post) => {
+      const processedPost = {
+        ...post,
+        isLikedByUser: userId ? post.likes && post.likes.length > 0 : false,
+        timeAgo: DateUtils.timeAgo(post.createdAt),
+      };
+      return this.mapToPostResponseDto(processedPost);
+    });
 
     const result = new PaginatedResponseDto(
       processedPosts,
@@ -526,7 +529,7 @@ export class PostsService {
               OR: [
                 { content: { contains: search } },
                 {
-                  restaurant: {
+                  establishment: {
                     OR: [
                       { name: { contains: search } },
                       { cuisine: { contains: search } },
@@ -548,7 +551,7 @@ export class PostsService {
             bio: true,
           },
         },
-        restaurant: {
+        establishment: {
           select: {
             id: true,
             name: true,
@@ -597,7 +600,7 @@ export class PostsService {
               OR: [
                 { content: { contains: search } },
                 {
-                  restaurant: {
+                  establishment: {
                     OR: [
                       { name: { contains: search } },
                       { cuisine: { contains: search } },
@@ -649,7 +652,7 @@ export class PostsService {
         post: {
           select: {
             id: true,
-            restaurant: {
+            establishment: {
               select: { cuisine: true, id: true },
             },
           },
@@ -666,7 +669,7 @@ export class PostsService {
         post: {
           select: {
             id: true,
-            restaurant: {
+            establishment: {
               select: { cuisine: true, id: true },
             },
           },
@@ -682,8 +685,9 @@ export class PostsService {
 
     // Count likes by cuisine (weight: 2)
     likedPosts.forEach((like) => {
-      const cuisine = like.post.restaurant.cuisine;
-      const restaurantId = like.post.restaurant.id;
+      if (!like.post.establishment) return;
+      const cuisine = like.post.establishment.cuisine;
+      const establishmentId = like.post.establishment.id;
 
       if (cuisine) {
         cuisineInteractions.set(
@@ -692,15 +696,16 @@ export class PostsService {
         );
       }
       restaurantInteractions.set(
-        restaurantId,
-        (restaurantInteractions.get(restaurantId) || 0) + 2,
+        establishmentId,
+        (restaurantInteractions.get(establishmentId) || 0) + 2,
       );
     });
 
     // Count comments by cuisine (weight: 1)
     commentedPosts.forEach((comment) => {
-      const cuisine = comment.post.restaurant.cuisine;
-      const restaurantId = comment.post.restaurant.id;
+      if (!comment.post.establishment) return;
+      const cuisine = comment.post.establishment.cuisine;
+      const establishmentId = comment.post.establishment.id;
 
       if (cuisine) {
         cuisineInteractions.set(
@@ -709,8 +714,8 @@ export class PostsService {
         );
       }
       restaurantInteractions.set(
-        restaurantId,
-        (restaurantInteractions.get(restaurantId) || 0) + 1,
+        establishmentId,
+        (restaurantInteractions.get(establishmentId) || 0) + 1,
       );
     });
 
@@ -758,14 +763,14 @@ export class PostsService {
 
         // Cuisine preference bonus
         if (
-          userInteractions.favoriteCuisines.includes(post.restaurant.cuisine)
+          userInteractions.favoriteCuisines.includes(post.establishment.cuisine)
         ) {
           score += 10; // Strong preference bonus
         }
 
         // Restaurant interaction bonus
         if (
-          userInteractions.interactedRestaurants.includes(post.restaurant.id)
+          userInteractions.interactedRestaurants.includes(post.establishment.id)
         ) {
           score += 5; // Restaurant familiarity bonus
         }
@@ -834,7 +839,7 @@ export class PostsService {
     if (search && search.trim()) {
       where.OR = [
         { content: { contains: search, mode: 'insensitive' } },
-        { restaurant: { name: { contains: search, mode: 'insensitive' } } },
+        { establishment: { name: { contains: search, mode: 'insensitive' } } },
       ];
     }
 
@@ -864,7 +869,7 @@ export class PostsService {
               bio: true,
             },
           },
-          restaurant: {
+          establishment: {
             select: {
               id: true,
               name: true,
@@ -906,12 +911,15 @@ export class PostsService {
       this.prisma.post.count({ where }),
     ]);
 
-    // Process posts to add computed fields
-    const processedPosts = posts.map((post) => ({
-      ...post,
-      isLikedByUser: userId ? post.likes && post.likes.length > 0 : false,
-      timeAgo: DateUtils.timeAgo(post.createdAt),
-    }));
+    // Process posts to add computed fields and map to DTO
+    const processedPosts = posts.map((post) => {
+      const processedPost = {
+        ...post,
+        isLikedByUser: userId ? post.likes && post.likes.length > 0 : false,
+        timeAgo: DateUtils.timeAgo(post.createdAt),
+      };
+      return this.mapToPostResponseDto(processedPost);
+    });
 
     const result = new PaginatedResponseDto(processedPosts, total, page, limit);
 
@@ -958,7 +966,7 @@ export class PostsService {
               avatar: true,
             },
           },
-          restaurant: {
+          establishment: {
             select: {
               id: true,
               name: true,
@@ -991,18 +999,18 @@ export class PostsService {
 
   /**
    * Get posts by restaurant
-   * @param restaurantId - Restaurant ID
+   * @param establishmentId - Restaurant ID
    * @param page - Page number
    * @param limit - Items per page
    * @returns Restaurant's posts with pagination
    */
   async getPostsByRestaurant(
-    restaurantId: string,
+    establishmentId: string,
     page: number = 1,
     limit: number = 20,
   ) {
     this.logger.log('Fetching posts by restaurant', {
-      restaurantId,
+      establishmentId,
       page,
       limit,
     });
@@ -1011,7 +1019,7 @@ export class PostsService {
 
     const [posts, total] = await Promise.all([
       this.prisma.post.findMany({
-        where: { restaurantId },
+        where: { establishmentId },
         skip,
         take: limit,
         orderBy: {
@@ -1026,7 +1034,7 @@ export class PostsService {
               avatar: true,
             },
           },
-          restaurant: {
+          establishment: {
             select: {
               id: true,
               name: true,
@@ -1042,7 +1050,7 @@ export class PostsService {
           },
         },
       }),
-      this.prisma.post.count({ where: { restaurantId } }),
+      this.prisma.post.count({ where: { establishmentId } }),
     ]);
 
     return {
@@ -1284,5 +1292,31 @@ export class PostsService {
       });
       throw error;
     }
+  }
+
+  /**
+   * Helper method to map Prisma post data to PostResponseDto
+   */
+  private mapToPostResponseDto(post: any): PostResponseDto {
+    return {
+      id: post.id,
+      content: post.content,
+      imageUrl: post.imageUrls ? JSON.parse(post.imageUrls)[0] || null : null, // First image for backwards compatibility
+      imageUrls: post.imageUrls,
+      rating: post.rating,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
+      userId: post.userId,
+      restaurantId: post.establishmentId, // For backwards compatibility
+      establishmentId: post.establishmentId,
+      user: post.user,
+      restaurant: post.establishment, // For backwards compatibility
+      establishment: post.establishment,
+      likes: post.likes,
+      comments: post.comments,
+      _count: post._count,
+      isLikedByUser: post.isLikedByUser,
+      timeAgo: post.timeAgo,
+    };
   }
 }

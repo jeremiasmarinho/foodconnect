@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { faker } from '@faker-js/faker';
+import { EstablishmentType } from '@prisma/client';
 
 @Injectable()
 export class SeedService {
@@ -60,7 +61,7 @@ export class SeedService {
     await this.prisma.comment.deleteMany();
     await this.prisma.like.deleteMany();
     await this.prisma.post.deleteMany();
-    await this.prisma.restaurant.deleteMany();
+    await this.prisma.establishment.deleteMany();
     await this.prisma.user.deleteMany();
   }
 
@@ -137,25 +138,28 @@ export class SeedService {
       const cuisine = faker.helpers.arrayElement(cuisineTypes);
       const name = this.generateRestaurantName(cuisine);
 
-      const restaurant = await this.prisma.restaurant.create({
+      const restaurant = await this.prisma.establishment.create({
         data: {
           name,
+          type: EstablishmentType.RESTAURANT,
+          category: 'restaurant',
           description: faker.lorem.sentences(2),
           cuisine,
           address: faker.location.streetAddress(),
           city: faker.location.city(),
           state: faker.location.state(),
-          latitude: faker.location.latitude({ min: -23.7, max: -23.4 }), // São Paulo region
-          longitude: faker.location.longitude({ min: -46.8, max: -46.4 }),
+          zipCode: faker.location.zipCode(),
           phone: faker.phone.number(),
           email: faker.internet.email(),
-          website: faker.internet.url(),
+          website: `https://${name.toLowerCase().replace(/\s+/g, '-')}.com`,
+          imageUrl: faker.image.urlLoremFlickr({
+            category: 'restaurant',
+          }),
           rating: parseFloat(
             faker.number
               .float({ min: 3.0, max: 5.0, fractionDigits: 1 })
               .toFixed(1),
           ),
-          zipCode: faker.location.zipCode(),
 
           // openingHours será implementado em versão futura
           isOpen: true,
@@ -262,17 +266,19 @@ export class SeedService {
         data: {
           content: description,
           userId: user.id,
-          restaurantId: restaurant.id,
+          establishmentId: restaurant.id,
           rating: faker.datatype.boolean({ probability: 0.8 })
             ? faker.number.int({ min: 3, max: 5 })
             : null,
-          imageUrl: faker.datatype.boolean({ probability: 0.9 })
-            ? faker.image.urlLoremFlickr({
-                category: 'food',
-                width: 800,
-                height: 600,
-              })
-            : null,
+          imageUrls: faker.datatype.boolean({ probability: 0.9 })
+            ? JSON.stringify([
+                faker.image.urlLoremFlickr({
+                  category: 'food',
+                  width: 800,
+                  height: 600,
+                }),
+              ])
+            : JSON.stringify([]),
           createdAt,
           updatedAt: createdAt,
         },

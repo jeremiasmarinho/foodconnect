@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EstablishmentType } from '@prisma/client';
 
 @Injectable()
 export class RestaurantsSeedService {
@@ -13,6 +14,7 @@ export class RestaurantsSeedService {
     const mockRestaurants = [
       {
         name: 'Pizza Prime',
+        type: EstablishmentType.RESTAURANT,
         description:
           'As melhores pizzas artesanais da cidade com ingredientes frescos e massa fermentada naturalmente.',
         address: 'Rua das Flores, 123',
@@ -35,6 +37,7 @@ export class RestaurantsSeedService {
       },
       {
         name: 'Burger House',
+        type: EstablishmentType.RESTAURANT,
         description:
           'Hambúrgueres gourmet com carne artesanal, pães brioche e molhos especiais da casa.',
         address: 'Av. Paulista, 456',
@@ -57,6 +60,7 @@ export class RestaurantsSeedService {
       },
       {
         name: 'Sushi Zen',
+        type: EstablishmentType.RESTAURANT,
         description:
           'Culinária japonesa autêntica com peixes frescos importados e receitas tradicionais.',
         address: 'Rua da Liberdade, 789',
@@ -79,6 +83,7 @@ export class RestaurantsSeedService {
       },
       {
         name: 'Café Moinho',
+        type: EstablishmentType.RESTAURANT,
         description:
           'Cafés especiais, doces artesanais e um ambiente aconchegante para qualquer hora do dia.',
         address: 'Rua Augusta, 321',
@@ -101,6 +106,7 @@ export class RestaurantsSeedService {
       },
       {
         name: 'Doce Vida',
+        type: EstablishmentType.RESTAURANT,
         description:
           'Sobremesas irresistíveis, bolos artesanais e doces gourmet para adoçar seu dia.',
         address: 'Rua dos Jardins, 654',
@@ -123,6 +129,7 @@ export class RestaurantsSeedService {
       },
       {
         name: 'Green Bowl',
+        type: EstablishmentType.RESTAURANT,
         description:
           'Alimentação saudável com pratos nutritivos, saladas frescas e smoothies naturais.',
         address: 'Rua Consolação, 987',
@@ -145,6 +152,7 @@ export class RestaurantsSeedService {
       },
       {
         name: 'Cantina da Nonna',
+        type: EstablishmentType.RESTAURANT,
         description:
           'Comida brasileira caseira como a da vovó, com tempero especial e muito carinho.',
         address: 'Rua da Mooca, 147',
@@ -167,6 +175,7 @@ export class RestaurantsSeedService {
       },
       {
         name: 'Pizza Express',
+        type: EstablishmentType.RESTAURANT,
         description:
           'Pizzas rápidas e saborosas para quando a fome bate e você não pode esperar.',
         address: 'Rua do Comércio, 258',
@@ -191,7 +200,7 @@ export class RestaurantsSeedService {
 
     try {
       // Check if restaurants already exist
-      const existingCount = await this.prisma.restaurant.count();
+      const existingCount = await this.prisma.establishment.count();
       if (existingCount > 0) {
         this.logger.log(
           `Found ${existingCount} existing restaurants. Skipping seeding.`,
@@ -201,7 +210,7 @@ export class RestaurantsSeedService {
 
       // Create restaurants
       this.logger.log(`Creating ${mockRestaurants.length} restaurants...`);
-      const createdRestaurants = await this.prisma.restaurant.createMany({
+      const createdRestaurants = await this.prisma.establishment.createMany({
         data: mockRestaurants,
       });
 

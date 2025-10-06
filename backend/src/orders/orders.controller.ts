@@ -39,7 +39,7 @@ export class OrdersController {
   @Get('restaurant/:restaurantId')
   @UseGuards(JwtAuthGuard)
   findByRestaurant(@Param('restaurantId') restaurantId: string) {
-    return this.ordersService.findByRestaurant(restaurantId);
+    return this.ordersService.findByEstablishment(restaurantId);
   }
 
   @Get(':id')

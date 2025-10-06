@@ -13,9 +13,8 @@ export class CreatePostDto {
   @MaxLength(2000)
   content: string;
 
-  @IsOptional()
-  @IsUrl()
-  imageUrl?: string;
+  @IsString()
+  imageUrls: string; // JSON string with array of URLs
 
   @IsOptional()
   @IsNumber()
@@ -24,7 +23,7 @@ export class CreatePostDto {
   rating?: number;
 
   @IsString()
-  restaurantId: string;
+  establishmentId: string;
 }
 
 export class UpdatePostDto {
@@ -34,8 +33,8 @@ export class UpdatePostDto {
   content?: string;
 
   @IsOptional()
-  @IsUrl()
-  imageUrl?: string;
+  @IsString()
+  imageUrls?: string;
 
   @IsOptional()
   @IsNumber()
@@ -47,12 +46,14 @@ export class UpdatePostDto {
 export class PostResponseDto {
   id: string;
   content: string;
-  imageUrl: string | null;
+  imageUrl: string | null; // Backwards compatibility
+  imageUrls: string;
   rating: number | null;
   createdAt: Date;
   updatedAt: Date;
   userId: string;
-  restaurantId: string;
+  restaurantId: string; // Backwards compatibility
+  establishmentId: string;
   user: {
     id: string;
     username: string;
@@ -67,6 +68,15 @@ export class PostResponseDto {
     state?: string | null;
     imageUrl: string | null;
     cuisine?: string | null;
+    rating?: number | null;
+  };
+  establishment: {
+    id: string;
+    name: string;
+    city: string;
+    state?: string | null;
+    imageUrl: string | null;
+    type: string;
     rating?: number | null;
   };
   likes?: Array<{ id: string }>;

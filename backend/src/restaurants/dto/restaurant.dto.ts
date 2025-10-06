@@ -118,10 +118,14 @@ export class RestaurantResponseDto {
   state: string;
   zipCode: string;
   phone: string | null;
+  email: string | null;
   website: string | null;
   imageUrl: string | null;
-  latitude: number | null;
-  longitude: number | null;
+  cuisine: string | null;
+  rating: number;
+  isOpen: boolean;
+  type: string;
+  category: string;
   createdAt: Date;
   updatedAt: Date;
 }
