@@ -10,12 +10,5 @@ module.exports = async function (env, argv) {
     "react-dom": require.resolve("react-dom"),
   };
 
-  // Evita múltiplas instâncias do React
-  config.externals = {
-    ...config.externals,
-    react: "React",
-    "react-dom": "ReactDOM",
-  };
-
   return config;
 };

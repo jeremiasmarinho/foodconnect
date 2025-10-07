@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { MainTabParamList } from "../types";
 import {
-  SafeFeedScreen as FeedScreen,
+  FeedScreen,
   DiscoverScreen,
   ProfileScreen,
   CartScreen,

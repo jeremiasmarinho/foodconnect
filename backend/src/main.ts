@@ -17,14 +17,10 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:8081', // Expo web
-      'http://localhost:8082', // Expo web current port
       'http://localhost:19006', // Expo alternative port
       'exp://localhost:8081', // Expo development
-      'exp://localhost:8082', // Expo development current
       'exp://192.168.0.161:8081', // Expo network access
-      'exp://192.168.0.161:8082', // Expo network current port
       'http://192.168.0.161:8081', // Expo HTTP
-      'http://192.168.0.161:8082', // Expo HTTP current port
       'http://192.168.0.161:19000', // Expo DevTools
       'http://192.168.0.161:19006', // Expo alternative
       '*', // Allow all origins for development (remove in production)

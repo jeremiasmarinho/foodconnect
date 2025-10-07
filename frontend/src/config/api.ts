@@ -18,14 +18,14 @@ const getCurrentIP = (): string => {
 // API Configuration
 export const API_CONFIG = {
   // Development URLs
-  WEB_URL: "http://localhost:3002",
-  MOBILE_URL: `http://${getCurrentIP()}:3002`,
+  WEB_URL: "http://localhost:3001",
+  MOBILE_URL: `http://${getCurrentIP()}:3001`,
 
   // Get appropriate URL based on platform
   BASE_URL: (() => {
     // Web environment
     if (typeof window !== "undefined") {
-      return "http://localhost:3002";
+      return "http://localhost:3001";
     }
 
     // React Native environment
@@ -33,11 +33,11 @@ export const API_CONFIG = {
       typeof navigator !== "undefined" &&
       navigator.product === "ReactNative"
     ) {
-      return `http://${getCurrentIP()}:3002`;
+      return `http://${getCurrentIP()}:3001`;
     }
 
     // Default fallback
-    return "http://localhost:3002";
+    return "http://localhost:3001";
   })(),
 
   TIMEOUT: 10000,

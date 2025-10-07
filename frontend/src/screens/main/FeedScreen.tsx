@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { SimpleStoriesContainer } from "../../components/Stories";
 import {
   View,
@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../providers";
@@ -17,6 +18,7 @@ import { Post } from "../../components/Post";
 import { CreatePostButton } from "../../components/CreatePostButton";
 import { usePost } from "../../hooks/usePost";
 import { LIGHT_THEME } from "../../constants/theme";
+import { PostType } from "../../types";
 
 export const FeedScreen: React.FC = () => {
   const { user } = useAuth();
@@ -32,9 +34,24 @@ export const FeedScreen: React.FC = () => {
     openUserProfile,
   } = usePost();
 
+  // Filter states
+  const [selectedFilter, setSelectedFilter] = useState<PostType | "ALL">("ALL");
+
+  const filters = [
+    { key: "ALL" as const, label: "Todos", icon: "grid-outline" },
+    { key: "FOOD" as const, label: "Comida", icon: "restaurant-outline" },
+    { key: "DRINKS" as const, label: "Bebidas", icon: "wine-outline" },
+    { key: "SOCIAL" as const, label: "Social", icon: "people-outline" },
+  ];
+
+  // Filter posts based on selected type
+  const filteredPosts = posts.filter(
+    (post) => selectedFilter === "ALL" || post.postType === selectedFilter
+  );
+
   const renderHeader = () => (
     <View style={styles.header}>
-      <Text style={styles.logo}>FeedConnect</Text>
+      <Text style={styles.logo}>FoodConnect</Text>
       <View style={styles.headerActions}>
         <TouchableOpacity style={styles.headerButton}>
           <Ionicons
@@ -54,6 +71,45 @@ export const FeedScreen: React.FC = () => {
     </View>
   );
 
+  const renderFilters = () => (
+    <View style={styles.filtersContainer}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filtersContent}
+      >
+        {filters.map((filter) => (
+          <TouchableOpacity
+            key={filter.key}
+            style={[
+              styles.filterButton,
+              selectedFilter === filter.key && styles.activeFilterButton,
+            ]}
+            onPress={() => setSelectedFilter(filter.key)}
+          >
+            <Ionicons
+              name={filter.icon as any}
+              size={18}
+              color={
+                selectedFilter === filter.key
+                  ? LIGHT_THEME.surface
+                  : LIGHT_THEME.textSecondary
+              }
+            />
+            <Text
+              style={[
+                styles.filterText,
+                selectedFilter === filter.key && styles.activeFilterText,
+              ]}
+            >
+              {filter.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
+  );
+
   const handleCreatePostPress = () => {
     console.log("Create post pressed");
   };
@@ -66,6 +122,15 @@ export const FeedScreen: React.FC = () => {
       onSave={toggleSave}
       onShare={sharePost}
       onUserPress={openUserProfile}
+      friends={[]} // TODO: Fetch user's friends
+      onTagFriend={(postId, userId, x, y, imageIndex) => {
+        console.log("Tag friend:", { postId, userId, x, y, imageIndex });
+        // TODO: Implement API call to tag friend
+      }}
+      onRemoveTag={(tagId) => {
+        console.log("Remove tag:", tagId);
+        // TODO: Implement API call to remove tag
+      }}
     />
   );
 
@@ -90,7 +155,7 @@ export const FeedScreen: React.FC = () => {
       {renderHeader()}
 
       <FlatList
-        data={posts}
+        data={filteredPosts}
         renderItem={renderPost}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
@@ -107,6 +172,9 @@ export const FeedScreen: React.FC = () => {
             {/* Stories Section */}
             <SimpleStoriesContainer currentUserId={user?.id || "temp-user"} />
 
+            {/* Filters */}
+            {renderFilters()}
+
             {/* Create Post Button */}
             <CreatePostButton
               userAvatar={user?.avatar}
@@ -116,7 +184,7 @@ export const FeedScreen: React.FC = () => {
         )}
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={
-          posts.length === 0 ? styles.emptyContainer : undefined
+          filteredPosts.length === 0 ? styles.emptyContainer : undefined
         }
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
@@ -151,6 +219,37 @@ const styles = StyleSheet.create({
   headerButton: {
     marginLeft: 16,
     padding: 8,
+  },
+  filtersContainer: {
+    backgroundColor: LIGHT_THEME.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: LIGHT_THEME.border,
+    paddingVertical: 12,
+  },
+  filtersContent: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  filterButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: LIGHT_THEME.surfaceVariant,
+    marginRight: 8,
+    gap: 6,
+  },
+  activeFilterButton: {
+    backgroundColor: LIGHT_THEME.primary,
+  },
+  filterText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: LIGHT_THEME.textSecondary,
+  },
+  activeFilterText: {
+    color: LIGHT_THEME.surface,
   },
   emptyContainer: {
     flex: 1,
