@@ -11,6 +11,30 @@ export interface User {
   updatedAt?: string;
 }
 
+// Auth types
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  access_token: string;
+  user: User;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
 export interface PostUser {
   id: string;
   username: string;
@@ -207,8 +231,8 @@ export type MainTabParamList = {
   Profile: undefined;
 };
 
-// API Response types
-export interface ApiResponse<T> {
+// API Response types (rename to avoid conflict)
+export interface BackendApiResponse<T> {
   data: T;
   message?: string;
   timestamp?: string;

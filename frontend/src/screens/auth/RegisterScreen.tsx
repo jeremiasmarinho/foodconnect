@@ -1,337 +1,236 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
+  TextInput,
+  TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Alert,
-  TouchableOpacity,
-} from "react-native";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { AuthStackParamList } from "../../types";
-import { Button, Input } from "../../components/ui";
-import { useAuth, useTheme } from "../../providers";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../../contexts/AuthContext';
 
-type RegisterScreenProps = NativeStackScreenProps<
-  AuthStackParamList,
-  "Register"
->;
+interface RegisterScreenProps {
+  onSwitchToLogin: () => void;
+}
 
-export const RegisterScreen: React.FC<RegisterScreenProps> = ({
-  navigation,
-}) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{
-    name?: string;
-    username?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-  }>({});
-
-  const { register } = useAuth();
-  const { theme } = useTheme();
-
-  const updateFormData = (field: keyof typeof formData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: typeof errors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Nome é obrigatório";
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = "Nome deve ter pelo menos 2 caracteres";
-    }
-
-    if (!formData.username.trim()) {
-      newErrors.username = "Nome de usuário é obrigatório";
-    } else if (formData.username.trim().length < 3) {
-      newErrors.username = "Nome de usuário deve ter pelo menos 3 caracteres";
-    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username.trim())) {
-      newErrors.username =
-        "Nome de usuário pode conter apenas letras, números e _";
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email é obrigatório";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email inválido";
-    }
-
-    if (!formData.password.trim()) {
-      newErrors.password = "Senha é obrigatória";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Senha deve ter pelo menos 6 caracteres";
-    }
-
-    if (!formData.confirmPassword.trim()) {
-      newErrors.confirmPassword = "Confirmação de senha é obrigatória";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Senhas não coincidem";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+export function RegisterScreen({ onSwitchToLogin }: RegisterScreenProps) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const { register, isLoading } = useAuth();
 
   const handleRegister = async () => {
-    if (!validateForm()) return;
+    if (!name.trim() || !email.trim() || !username.trim() || !password.trim()) {
+      Alert.alert('Erro', 'Por favor, preencha todos os campos');
+      return;
+    }
 
-    setLoading(true);
-    try {
-      await register(
-        formData.email.trim(),
-        formData.password,
-        formData.name.trim(),
-        formData.username.trim()
-      );
-      // Navigation will be handled automatically by the auth state change
-    } catch (error: any) {
-      Alert.alert(
-        "Erro no Cadastro",
-        error.response?.data?.message ||
-          "Erro ao criar conta. Tente novamente.",
-        [{ text: "OK" }]
-      );
-    } finally {
-      setLoading(false);
+    if (password !== confirmPassword) {
+      Alert.alert('Erro', 'As senhas não coincidem');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Erro', 'A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    const result = await register(name.trim(), email.trim(), username.trim(), password);
+    
+    if (!result.success) {
+      Alert.alert('Erro no Cadastro', result.error || 'Erro desconhecido');
     }
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
+    <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            { padding: theme.spacing.xl },
-          ]}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.header}>
-            <View
-              style={{
-                width: 80,
-                height: 80,
-                borderRadius: 40,
-                backgroundColor: theme.colors.primary,
-                justifyContent: "center",
-                alignItems: "center",
-                marginBottom: theme.spacing.lg,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 36,
-                  fontWeight: "bold",
-                  color: "white",
-                }}
-              >
-                👨‍🍳
-              </Text>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.content}>
+            <View style={styles.header}>
+              <Text style={styles.title}>FoodConnect</Text>
+              <Text style={styles.subtitle}>Crie sua conta</Text>
             </View>
-            <Text style={[styles.title, { color: theme.colors.textPrimary }]}>
-              Criar Conta
-            </Text>
-            <Text
-              style={[styles.subtitle, { color: theme.colors.textSecondary }]}
-            >
-              Junte-se à comunidade food lovers
-            </Text>
-          </View>
 
-          <View style={styles.form}>
-            <Input
-              label="Nome Completo"
-              value={formData.name}
-              onChangeText={(value: string) => updateFormData("name", value)}
-              error={errors.name}
-              leftIcon="person-outline"
-              placeholder="Maria Silva"
-            />
+            <View style={styles.form}>
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Nome completo</Text>
+                <TextInput
+                  style={styles.input}
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="Seu nome completo"
+                  placeholderTextColor="#999"
+                  autoCapitalize="words"
+                />
+              </View>
 
-            <Input
-              label="Nome de Usuário"
-              value={formData.username}
-              onChangeText={(value: string) =>
-                updateFormData("username", value)
-              }
-              error={errors.username}
-              autoCapitalize="none"
-              leftIcon="at-outline"
-              placeholder="maria_foodie"
-            />
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Email</Text>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="seu@email.com"
+                  placeholderTextColor="#999"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
 
-            <Input
-              label="Email"
-              value={formData.email}
-              onChangeText={(value: string) => updateFormData("email", value)}
-              error={errors.email}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              leftIcon="mail-outline"
-              placeholder="maria@exemplo.com"
-            />
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Nome de usuário</Text>
+                <TextInput
+                  style={styles.input}
+                  value={username}
+                  onChangeText={setUsername}
+                  placeholder="@seuusername"
+                  placeholderTextColor="#999"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
 
-            <Input
-              label="Senha"
-              value={formData.password}
-              onChangeText={(value: string) =>
-                updateFormData("password", value)
-              }
-              error={errors.password}
-              secureTextEntry
-              placeholder="••••••••"
-            />
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Senha</Text>
+                <TextInput
+                  style={styles.input}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Mínimo 6 caracteres"
+                  placeholderTextColor="#999"
+                  secureTextEntry
+                  autoCapitalize="none"
+                />
+              </View>
 
-            <Input
-              label="Confirmar Senha"
-              value={formData.confirmPassword}
-              onChangeText={(value: string) =>
-                updateFormData("confirmPassword", value)
-              }
-              error={errors.confirmPassword}
-              secureTextEntry
-              placeholder="••••••••"
-            />
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Confirmar senha</Text>
+                <TextInput
+                  style={styles.input}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  placeholder="Digite a senha novamente"
+                  placeholderTextColor="#999"
+                  secureTextEntry
+                  autoCapitalize="none"
+                />
+              </View>
 
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginTop: theme.spacing.md,
-                marginBottom: theme.spacing.lg,
-              }}
-            >
               <TouchableOpacity
-                style={{
-                  width: 20,
-                  height: 20,
-                  borderWidth: 2,
-                  borderColor: theme.colors.primary,
-                  borderRadius: 4,
-                  marginRight: theme.spacing.sm,
-                  backgroundColor: theme.colors.primary,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
+                style={[styles.registerButton, isLoading && styles.buttonDisabled]}
+                onPress={handleRegister}
+                disabled={isLoading}
               >
-                <Text
-                  style={{ color: "white", fontSize: 12, fontWeight: "bold" }}
-                >
-                  ✓
+                <Text style={styles.registerButtonText}>
+                  {isLoading ? 'Criando conta...' : 'Criar conta'}
                 </Text>
               </TouchableOpacity>
-              <Text
-                style={{
-                  flex: 1,
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.textSecondary,
-                  lineHeight: 18,
-                }}
-              >
-                Concordo com os{" "}
-                <Text
-                  style={{ color: theme.colors.primary, fontWeight: "bold" }}
-                >
-                  Termos de Uso
-                </Text>{" "}
-                e{" "}
-                <Text
-                  style={{ color: theme.colors.primary, fontWeight: "bold" }}
-                >
-                  Política de Privacidade
-                </Text>
-              </Text>
             </View>
 
-            <Button
-              title="Criar Conta"
-              onPress={handleRegister}
-              loading={loading}
-              style={styles.registerButton}
-            />
-          </View>
-
-          <View style={styles.footer}>
-            <Text
-              style={[styles.footerText, { color: theme.colors.textSecondary }]}
-            >
-              Já tem uma conta?
-            </Text>
-            <Button
-              title="Fazer login"
-              onPress={() => navigation.navigate("Login")}
-              variant="outline"
-              fullWidth
-            />
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Já tem uma conta? </Text>
+              <TouchableOpacity onPress={onSwitchToLogin}>
+                <Text style={styles.footerLink}>Entrar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F2F2F7",
+    backgroundColor: '#fff',
   },
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: "center",
-    padding: 20,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+    paddingVertical: 32,
   },
   header: {
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: 32,
   },
   title: {
     fontSize: 32,
-    fontWeight: "bold",
-    color: "#1C1C1E",
+    fontWeight: 'bold',
+    color: '#2D5A27',
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 18,
-    color: "#8E8E93",
+    fontSize: 16,
+    color: '#666',
   },
   form: {
-    marginBottom: 32,
+    marginBottom: 24,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  input: {
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    backgroundColor: '#f9f9f9',
   },
   registerButton: {
+    backgroundColor: '#2D5A27',
+    height: 50,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 8,
   },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  registerButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   footer: {
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   footerText: {
-    fontSize: 16,
-    color: "#8E8E93",
-    marginBottom: 12,
+    fontSize: 14,
+    color: '#666',
+  },
+  footerLink: {
+    fontSize: 14,
+    color: '#2D5A27',
+    fontWeight: '600',
   },
 });

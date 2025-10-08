@@ -2,256 +2,196 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  SafeAreaView,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Alert,
-  TouchableOpacity,
 } from "react-native";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { AuthStackParamList } from "../../types";
-import { Button, Input } from "../../components/ui";
-import { useAuth, useTheme } from "../../providers";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "../../contexts/AuthContext";
 
-type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, "Login">;
+interface LoginScreenProps {
+  onSwitchToRegister: () => void;
+}
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+export function LoginScreen({ onSwitchToRegister }: LoginScreenProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {}
-  );
-
-  const { login } = useAuth();
-  const { theme } = useTheme();
-
-  const validateForm = () => {
-    const newErrors: { email?: string; password?: string } = {};
-
-    if (!email.trim()) {
-      newErrors.email = "Email é obrigatório";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email inválido";
-    }
-
-    if (!password.trim()) {
-      newErrors.password = "Senha é obrigatória";
-    } else if (password.length < 6) {
-      newErrors.password = "Senha deve ter pelo menos 6 caracteres";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const { login, isLoading } = useAuth();
 
   const handleLogin = async () => {
-    if (!validateForm()) return;
-
-    setLoading(true);
-    try {
-      await login(email.trim(), password);
-      // Navigation will be handled automatically by the auth state change
-    } catch (error: any) {
-      Alert.alert(
-        "Erro no Login",
-        error.response?.data?.message || "Credenciais inválidas",
-        [{ text: "OK" }]
-      );
-    } finally {
-      setLoading(false);
+    if (!email.trim() || !password.trim()) {
+      Alert.alert("Erro", "Por favor, preencha todos os campos");
+      return;
     }
+
+    const result = await login(email.trim(), password);
+
+    if (!result.success) {
+      Alert.alert("Erro no Login", result.error || "Erro desconhecido");
+    }
+    // Se success = true, o AuthContext já atualizou o estado e a navegação será automática
   };
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: theme.colors.background,
-      }}
-    >
+    <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
+        style={styles.keyboardView}
       >
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: "center",
-            padding: theme.spacing.xl,
-          }}
-          showsVerticalScrollIndicator={false}
-        >
-          <View
-            style={{
-              alignItems: "center",
-              marginBottom: theme.spacing.xxxxl,
-            }}
-          >
-            <View
-              style={{
-                width: 80,
-                height: 80,
-                borderRadius: 40,
-                backgroundColor: theme.colors.primary,
-                justifyContent: "center",
-                alignItems: "center",
-                marginBottom: theme.spacing.lg,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 36,
-                  fontWeight: "bold",
-                  color: "white",
-                }}
-              >
-                🍽️
-              </Text>
-            </View>
-            <Text
-              style={{
-                fontSize: theme.typography.fontSize.xxxxxl,
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.primary,
-                marginBottom: theme.spacing.sm,
-              }}
-            >
-              FoodConnect
-            </Text>
-            <Text
-              style={{
-                fontSize: theme.typography.fontSize.lg,
-                color: theme.colors.textSecondary,
-                textAlign: "center",
-                paddingHorizontal: theme.spacing.lg,
-              }}
-            >
-              Conecte-se aos melhores sabores da sua cidade
-            </Text>
-          </View>
-
-          <View style={{ marginBottom: theme.spacing.xxxxl }}>
-            <Input
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              error={errors.email}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              leftIcon="mail-outline"
-              placeholder="maria@exemplo.com"
-            />
-
-            <Input
-              label="Senha"
-              value={password}
-              onChangeText={setPassword}
-              error={errors.password}
-              secureTextEntry
-              placeholder="••••••••"
-            />
-
-            <TouchableOpacity
-              style={{ alignSelf: "flex-end", marginTop: theme.spacing.sm }}
-            >
-              <Text
-                style={{
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.primary,
-                  fontWeight: theme.typography.fontWeight.medium,
-                }}
-              >
-                Esqueceu a senha?
-              </Text>
-            </TouchableOpacity>
-
-            <Button
-              title="Entrar"
-              onPress={handleLogin}
-              loading={loading}
-              fullWidth
-              style={{ marginTop: theme.spacing.xl }}
-            />
-          </View>
-
-          <View style={{ alignItems: "center" }}>
-            <Text
-              style={{
-                fontSize: theme.typography.fontSize.md,
-                color: theme.colors.textSecondary,
-                marginBottom: theme.spacing.md,
-              }}
-            >
-              Novo no FoodConnect?
-            </Text>
-            <Button
-              title="Criar conta gratuita"
-              onPress={() => navigation.navigate("Register")}
-              variant="outline"
-              fullWidth
-            />
-
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginTop: theme.spacing.xl,
-                paddingHorizontal: theme.spacing.lg,
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  height: 1,
-                  backgroundColor: theme.colors.border,
-                }}
-              />
-              <Text
-                style={{
-                  marginHorizontal: theme.spacing.md,
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.textSecondary,
-                }}
-              >
-                ou use uma conta demo
-              </Text>
-              <View
-                style={{
-                  flex: 1,
-                  height: 1,
-                  backgroundColor: theme.colors.border,
-                }}
-              />
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.content}>
+            <View style={styles.header}>
+              <Text style={styles.title}>FoodConnect</Text>
+              <Text style={styles.subtitle}>Entre na sua conta</Text>
             </View>
 
-            <TouchableOpacity
-              style={{
-                marginTop: theme.spacing.md,
-                padding: theme.spacing.sm,
-                borderRadius: 8,
-                backgroundColor: theme.colors.surface,
-              }}
-              onPress={() => {
-                setEmail("admin@foodconnect.com");
-                setPassword("FoodConnect2024!");
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.primary,
-                  textAlign: "center",
-                  fontWeight: theme.typography.fontWeight.medium,
-                }}
+            <View style={styles.form}>
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Email</Text>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="seu@email.com"
+                  placeholderTextColor="#999"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Senha</Text>
+                <TextInput
+                  style={styles.input}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Sua senha"
+                  placeholderTextColor="#999"
+                  secureTextEntry
+                  autoCapitalize="none"
+                />
+              </View>
+
+              <TouchableOpacity
+                style={[styles.loginButton, isLoading && styles.buttonDisabled]}
+                onPress={handleLogin}
+                disabled={isLoading}
               >
-                🎭 Usar conta admin (admin@foodconnect.com)
-              </Text>
-            </TouchableOpacity>
+                <Text style={styles.loginButtonText}>
+                  {isLoading ? "Entrando..." : "Entrar"}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.forgotPassword}>
+                <Text style={styles.forgotPasswordText}>Esqueceu a senha?</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Não tem uma conta? </Text>
+              <TouchableOpacity onPress={onSwitchToRegister}>
+                <Text style={styles.footerLink}>Cadastre-se</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
-};
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: "center",
+  },
+  header: {
+    alignItems: "center",
+    marginBottom: 48,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#2D5A27",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
+  },
+  form: {
+    marginBottom: 32,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 8,
+  },
+  input: {
+    height: 50,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    backgroundColor: "#f9f9f9",
+  },
+  loginButton: {
+    backgroundColor: "#2D5A27",
+    height: 50,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
+  },
+  buttonDisabled: {
+    backgroundColor: "#ccc",
+  },
+  loginButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  forgotPassword: {
+    alignItems: "center",
+    marginTop: 16,
+  },
+  forgotPasswordText: {
+    color: "#2D5A27",
+    fontSize: 14,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  footerText: {
+    fontSize: 14,
+    color: "#666",
+  },
+  footerLink: {
+    fontSize: 14,
+    color: "#2D5A27",
+    fontWeight: "600",
+  },
+});

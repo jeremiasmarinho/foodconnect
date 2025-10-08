@@ -7,20 +7,20 @@ async function createAdminUser() {
   try {
     console.log('🔧 Criando usuário administrador...');
 
-    // Verificar se o admin já existe
+    // Verificar se o admin já existe e deletar para recriar
     const existingAdmin = await prisma.user.findUnique({
       where: { email: 'admin@foodconnect.com' },
     });
 
     if (existingAdmin) {
-      console.log('⚠️  Usuário admin já existe!');
-      console.log('📧 Email:', existingAdmin.email);
-      console.log('👤 Nome:', existingAdmin.name);
-      return;
+      console.log('🔄 Removendo usuário admin existente para recriar...');
+      await prisma.user.delete({
+        where: { email: 'admin@foodconnect.com' },
+      });
     }
 
     // Hash da senha
-    const hashedPassword = await bcryptjs.hash('FoodConnect2024!', 10);
+    const hashedPassword = await bcryptjs.hash('admin123', 10);
 
     // Criar usuário admin
     const adminUser = await prisma.user.create({
@@ -37,7 +37,7 @@ async function createAdminUser() {
     console.log('📧 Email:', adminUser.email);
     console.log('👤 Nome:', adminUser.name);
     console.log('🆔 ID:', adminUser.id);
-    console.log('🔑 Senha: FoodConnect2024!');
+    console.log('🔑 Senha: admin123');
 
     // Criar usuários de teste adicionais
     await createTestUsers();

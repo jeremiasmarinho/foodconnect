@@ -1,7 +1,4 @@
 export { FeedScreen } from "./FeedScreen";
-export { SafeFeedScreen } from "./SafeFeedScreen";
-export { SimpleFeedScreen } from "./SimpleFeedScreen";
-export { HookTestScreen } from "./HookTestScreen";
 export { DiscoverScreen } from "./DiscoverScreen";
 export { ProfileScreen } from "./ProfileScreen";
 export { RestaurantDetailScreen } from "./RestaurantDetailScreen";
