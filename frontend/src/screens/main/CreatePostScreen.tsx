@@ -2,341 +2,208 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-  Image,
   TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
   Alert,
-  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-// TODO: Install expo-image-picker: npx expo install expo-image-picker
-// import * as ImagePicker from "expo-image-picker";
-import { useTheme } from "../../providers";
-import {
-  Button,
-  Card,
-  SearchBar,
-  RestaurantSearchModal,
-} from "../../components";
+import { ImageUploadComponent } from "../../components/ImageUpload";
+import { PostService } from "../../services/post";
+import { UploadResponse } from "../../services/upload";
+import { PostType } from "../../types";
 
-const { width } = Dimensions.get("window");
-
-export const CreatePostScreen: React.FC = () => {
-  const { theme } = useTheme();
+export function CreatePostScreen() {
   const navigation = useNavigation();
-
-  // Form state
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [content, setContent] = useState("");
-  const [selectedRestaurant, setSelectedRestaurant] = useState<any>(null);
-  const [rating, setRating] = useState(0);
+  const [postType, setPostType] = useState<PostType>("FOOD");
+  const [uploadedImages, setUploadedImages] = useState<UploadResponse[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // UI state
-  const [showRestaurantSearch, setShowRestaurantSearch] = useState(false);
-  const [restaurantSearchQuery, setRestaurantSearchQuery] = useState("");
-
-  const pickImage = async () => {
-    // TODO: Implement image picker when expo-image-picker is installed
-    Alert.alert(
-      "Seletor de Imagem",
-      "Funcionalidade será implementada quando expo-image-picker for instalado.",
-      [{ text: "OK" }]
-    );
-
-    // Mock image selection for demo
-    setSelectedImage(
-      "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400"
-    );
-  };
-
-  const handleRatingPress = (newRating: number) => {
-    setRating(newRating);
-  };
-
-  const handleRestaurantSelect = (restaurant: any) => {
-    setSelectedRestaurant(restaurant);
-    setShowRestaurantSearch(false);
-    setRestaurantSearchQuery("");
-  };
-
-  const validateForm = () => {
-    if (!content.trim()) {
-      Alert.alert(
-        "Descrição obrigatória",
-        "Escreva algo sobre sua experiência."
-      );
-      return false;
-    }
-    if (!selectedRestaurant) {
-      Alert.alert(
-        "Restaurante obrigatório",
-        "Selecione o restaurante onde você comeu."
-      );
-      return false;
-    }
-    if (rating === 0) {
-      Alert.alert("Avaliação obrigatória", "Dê uma nota de 1 a 5 estrelas.");
-      return false;
-    }
-    return true;
-  };
-
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    if (!content.trim()) {
+      Alert.alert("Erro", "Por favor, escreva algo sobre sua experiência");
+      return;
+    }
+
+    if (uploadedImages.length === 0) {
+      Alert.alert("Erro", "Adicione pelo menos uma imagem ao seu post");
+      return;
+    }
 
     setIsSubmitting(true);
 
     try {
-      // TODO: Implement API call to create post
-      console.log("Creating post:", {
-        image: selectedImage,
-        content: content.trim(),
-        restaurant: selectedRestaurant,
-        rating,
-      });
+      // Preparar dados do post
+      const imageUrls = uploadedImages.map((img) => img.url);
 
-      Alert.alert(
-        "Post criado!",
-        "Seu post foi publicado com sucesso no feed.",
-        [
+      const postData = {
+        content: content.trim(),
+        images: imageUrls,
+        type: postType,
+      };
+
+      const response = await PostService.createPost(postData);
+
+      if (response.success) {
+        Alert.alert("Sucesso!", "Seu post foi publicado com sucesso!", [
           {
             text: "OK",
             onPress: () => navigation.goBack(),
           },
-        ]
-      );
+        ]);
+      } else {
+        Alert.alert("Erro", response.error || "Erro ao publicar post");
+      }
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível criar o post. Tente novamente.");
+      console.error("Erro ao criar post:", error);
+      Alert.alert("Erro", "Erro inesperado ao publicar post");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const renderImagePicker = () => (
-    <Card style={styles.imagePickerCard}>
-      <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>
-        Foto (opcional)
-      </Text>
-      {selectedImage ? (
-        <View style={styles.selectedImageContainer}>
-          <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
+  const renderTypeSelector = () => (
+    <View style={styles.typeSelectorContainer}>
+      <Text style={styles.sectionTitle}>Tipo do Post</Text>
+      <View style={styles.typeButtons}>
+        {[
+          { key: "FOOD", label: "Comida", icon: "restaurant" },
+          { key: "DRINKS", label: "Bebidas", icon: "wine" },
+          { key: "SOCIAL", label: "Social", icon: "people" },
+        ].map((type) => (
           <TouchableOpacity
+            key={type.key}
             style={[
-              styles.changeImageButton,
-              { backgroundColor: theme.colors.primary },
+              styles.typeButton,
+              postType === type.key && styles.typeButtonActive,
             ]}
-            onPress={pickImage}
-          >
-            <Ionicons name="camera-outline" size={16} color="#FFFFFF" />
-            <Text style={styles.changeImageText}>Alterar</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <TouchableOpacity
-          style={[
-            styles.imagePlaceholder,
-            { borderColor: theme.colors.border },
-          ]}
-          onPress={pickImage}
-        >
-          <Ionicons
-            name="camera-outline"
-            size={48}
-            color={theme.colors.textSecondary}
-          />
-          <Text
-            style={[
-              styles.placeholderText,
-              { color: theme.colors.textSecondary },
-            ]}
-          >
-            Toque para adicionar uma foto
-          </Text>
-        </TouchableOpacity>
-      )}
-    </Card>
-  );
-
-  const renderContentInput = () => (
-    <Card style={styles.contentCard}>
-      <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>
-        Conte sua experiência *
-      </Text>
-      <TextInput
-        style={[
-          styles.contentInput,
-          {
-            borderColor: theme.colors.border,
-            color: theme.colors.textPrimary,
-            backgroundColor: theme.colors.surface,
-          },
-        ]}
-        placeholder="Como foi a comida? O que você recomenda? Conte todos os detalhes..."
-        placeholderTextColor={theme.colors.textSecondary}
-        multiline
-        numberOfLines={4}
-        value={content}
-        onChangeText={setContent}
-        maxLength={500}
-      />
-      <Text
-        style={[styles.characterCount, { color: theme.colors.textSecondary }]}
-      >
-        {content.length}/500
-      </Text>
-    </Card>
-  );
-
-  const renderRestaurantSelector = () => (
-    <Card style={styles.restaurantCard}>
-      <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>
-        Restaurante *
-      </Text>
-      {selectedRestaurant ? (
-        <TouchableOpacity
-          style={[
-            styles.selectedRestaurant,
-            { backgroundColor: theme.colors.surfaceVariant },
-          ]}
-          onPress={() => setShowRestaurantSearch(true)}
-        >
-          <View style={styles.restaurantInfo}>
-            <Text
-              style={[
-                styles.restaurantName,
-                { color: theme.colors.textPrimary },
-              ]}
-            >
-              {selectedRestaurant.name}
-            </Text>
-            <Text
-              style={[
-                styles.restaurantAddress,
-                { color: theme.colors.textSecondary },
-              ]}
-            >
-              {selectedRestaurant.address}
-            </Text>
-          </View>
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color={theme.colors.textSecondary}
-          />
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity
-          style={[
-            styles.restaurantPlaceholder,
-            { borderColor: theme.colors.border },
-          ]}
-          onPress={() => setShowRestaurantSearch(true)}
-        >
-          <Ionicons
-            name="location-outline"
-            size={24}
-            color={theme.colors.textSecondary}
-          />
-          <Text
-            style={[
-              styles.placeholderText,
-              { color: theme.colors.textSecondary },
-            ]}
-          >
-            Selecione o restaurante
-          </Text>
-        </TouchableOpacity>
-      )}
-    </Card>
-  );
-
-  const renderRatingSelector = () => (
-    <Card style={styles.ratingCard}>
-      <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>
-        Sua avaliação *
-      </Text>
-      <View style={styles.starsContainer}>
-        {[1, 2, 3, 4, 5].map((star) => (
-          <TouchableOpacity
-            key={star}
-            style={styles.starButton}
-            onPress={() => handleRatingPress(star)}
+            onPress={() => setPostType(type.key as PostType)}
           >
             <Ionicons
-              name={star <= rating ? "star" : "star-outline"}
-              size={32}
-              color={star <= rating ? "#FFD700" : theme.colors.textSecondary}
+              name={type.icon as any}
+              size={20}
+              color={postType === type.key ? "#fff" : "#2D5A27"}
             />
+            <Text
+              style={[
+                styles.typeButtonText,
+                postType === type.key && styles.typeButtonTextActive,
+              ]}
+            >
+              {type.label}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
-      {rating > 0 && (
-        <Text
-          style={[styles.ratingText, { color: theme.colors.textSecondary }]}
-        >
-          {rating === 1 && "Muito ruim"}
-          {rating === 2 && "Ruim"}
-          {rating === 3 && "Ok"}
-          {rating === 4 && "Bom"}
-          {rating === 5 && "Excelente"}
-        </Text>
-      )}
-    </Card>
+    </View>
   );
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
-        <TouchableOpacity
-          style={styles.headerButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="close" size={24} color={theme.colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.colors.textPrimary }]}>
-          Novo Post
-        </Text>
-        <TouchableOpacity
-          style={[styles.headerButton, { opacity: validateForm() ? 1 : 0.5 }]}
-          onPress={handleSubmit}
-          disabled={isSubmitting || !validateForm()}
-        >
-          <Text style={[styles.publishText, { color: theme.colors.primary }]}>
-            {isSubmitting ? "Publicando..." : "Publicar"}
-          </Text>
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="close" size={24} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Novo Post</Text>
+          <TouchableOpacity
+            style={[
+              styles.headerButton,
+              styles.publishButton,
+              (!content.trim() ||
+                uploadedImages.length === 0 ||
+                isSubmitting) &&
+                styles.publishButtonDisabled,
+            ]}
+            onPress={handleSubmit}
+            disabled={
+              !content.trim() || uploadedImages.length === 0 || isSubmitting
+            }
+          >
+            <Text
+              style={[
+                styles.publishButtonText,
+                (!content.trim() ||
+                  uploadedImages.length === 0 ||
+                  isSubmitting) &&
+                  styles.publishButtonTextDisabled,
+              ]}
+            >
+              {isSubmitting ? "Publicando..." : "Publicar"}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {renderImagePicker()}
-        {renderContentInput()}
-        {renderRestaurantSelector()}
-        {renderRatingSelector()}
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {/* Tipo do Post */}
+          {renderTypeSelector()}
 
-        <View style={styles.bottomSpacing} />
-      </ScrollView>
+          {/* Upload de Imagens */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Fotos</Text>
+            <ImageUploadComponent
+              onImagesChange={setUploadedImages}
+              maxImages={5}
+              uploadType="post"
+            />
+          </View>
 
-      {/* Restaurant Search Modal */}
-      <RestaurantSearchModal
-        visible={showRestaurantSearch}
-        onClose={() => setShowRestaurantSearch(false)}
-        onSelectRestaurant={handleRestaurantSelect}
-        selectedRestaurantId={selectedRestaurant?.id}
-      />
+          {/* Conteúdo */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Conte sua experiência</Text>
+            <TextInput
+              style={styles.textInput}
+              value={content}
+              onChangeText={setContent}
+              placeholder="Como foi sua experiência? Compartilhe os detalhes..."
+              placeholderTextColor="#999"
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+              maxLength={2000}
+            />
+            <Text style={styles.characterCount}>{content.length}/2000</Text>
+          </View>
+
+          {/* Dicas */}
+          <View style={styles.tipsContainer}>
+            <Text style={styles.tipsTitle}>💡 Dicas para um bom post:</Text>
+            <Text style={styles.tipText}>
+              • Adicione fotos atrativas da comida/bebida
+            </Text>
+            <Text style={styles.tipText}>• Descreva sabores e texturas</Text>
+            <Text style={styles.tipText}>
+              • Mencione o ambiente e atendimento
+            </Text>
+            <Text style={styles.tipText}>
+              • Use emojis para tornar mais divertido
+            </Text>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  keyboardView: {
     flex: 1,
   },
   header: {
@@ -346,7 +213,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.1)",
+    borderBottomColor: "#f0f0f0",
   },
   headerButton: {
     padding: 8,
@@ -354,120 +221,101 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
+    color: "#333",
   },
-  publishText: {
-    fontSize: 16,
+  publishButton: {
+    backgroundColor: "#2D5A27",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  publishButtonDisabled: {
+    backgroundColor: "#ccc",
+  },
+  publishButtonText: {
+    color: "#fff",
+    fontSize: 14,
     fontWeight: "600",
+  },
+  publishButtonTextDisabled: {
+    color: "#999",
   },
   content: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 16,
+  },
+  section: {
+    marginVertical: 16,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "600",
+    color: "#333",
     marginBottom: 12,
   },
-  imagePickerCard: {
-    marginBottom: 16,
+  typeSelectorContainer: {
+    marginVertical: 16,
   },
-  selectedImageContainer: {
-    position: "relative",
+  typeButtons: {
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
-  selectedImage: {
-    width: "100%",
-    height: 200,
-    borderRadius: 8,
-  },
-  changeImageButton: {
-    position: "absolute",
-    bottom: 12,
-    right: 12,
+  typeButton: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  changeImageText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "500",
-    marginLeft: 4,
-  },
-  imagePlaceholder: {
-    height: 150,
-    borderWidth: 2,
-    borderStyle: "dashed",
-    borderRadius: 8,
     justifyContent: "center",
-    alignItems: "center",
-  },
-  placeholderText: {
-    fontSize: 14,
-    marginTop: 8,
-  },
-  contentCard: {
-    marginBottom: 16,
-  },
-  contentInput: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginHorizontal: 4,
     borderWidth: 1,
+    borderColor: "#2D5A27",
     borderRadius: 8,
-    padding: 12,
-    minHeight: 100,
-    textAlignVertical: "top",
+    backgroundColor: "#fff",
+  },
+  typeButtonActive: {
+    backgroundColor: "#2D5A27",
+  },
+  typeButtonText: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#2D5A27",
+  },
+  typeButtonTextActive: {
+    color: "#fff",
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 16,
     fontSize: 16,
+    minHeight: 120,
+    backgroundColor: "#f9f9f9",
   },
   characterCount: {
-    fontSize: 12,
     textAlign: "right",
-    marginTop: 4,
+    marginTop: 8,
+    fontSize: 12,
+    color: "#666",
   },
-  restaurantCard: {
-    marginBottom: 16,
-  },
-  selectedRestaurant: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
+  tipsContainer: {
+    backgroundColor: "#f8f9fa",
+    padding: 16,
     borderRadius: 8,
+    marginVertical: 16,
+    marginBottom: 32,
   },
-  restaurantInfo: {
-    flex: 1,
-  },
-  restaurantName: {
-    fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 2,
-  },
-  restaurantAddress: {
+  tipsTitle: {
     fontSize: 14,
-  },
-  restaurantPlaceholder: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    borderWidth: 1,
-    borderRadius: 8,
-    borderStyle: "dashed",
-  },
-  ratingCard: {
-    marginBottom: 16,
-  },
-  starsContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 8,
   },
-  starButton: {
-    padding: 4,
-    marginHorizontal: 4,
-  },
-  ratingText: {
-    fontSize: 14,
-    textAlign: "center",
-  },
-  bottomSpacing: {
-    height: 32,
+  tipText: {
+    fontSize: 13,
+    color: "#666",
+    marginVertical: 2,
   },
 });

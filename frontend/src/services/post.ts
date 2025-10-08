@@ -75,7 +75,18 @@ export class PostService {
     postData: CreatePostRequest
   ): Promise<ApiResponse<Post>> {
     try {
-      const response = await apiClient.post<Post>("/posts", postData);
+      // Converter array de imagens para JSON string para o backend
+      const backendData = {
+        ...postData,
+        imageUrls: postData.images ? JSON.stringify(postData.images) : "[]",
+        establishmentId:
+          postData.establishmentId || "cmghu42ln0004hwri6tlbb23y", // ID do restaurante de exemplo
+      };
+
+      // Remover o campo images que é só para o frontend
+      delete (backendData as any).images;
+
+      const response = await apiClient.post<Post>("/posts", backendData);
       return {
         success: true,
         data: response.data,

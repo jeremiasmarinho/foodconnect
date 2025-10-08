@@ -35,13 +35,13 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
-// Create Post Request
+// Create Post Request (aligned with backend)
 export interface CreatePostRequest {
   content: string;
-  images?: string[];
-  type: PostType;
-  restaurantId?: string;
-  taggedFriends?: string[];
+  imageUrls?: string; // JSON string array for backend
+  images?: string[]; // Array for frontend processing
+  establishmentId?: string;
+  rating?: number;
 }
 
 export interface PostUser {
