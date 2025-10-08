@@ -35,6 +35,15 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
+// Create Post Request
+export interface CreatePostRequest {
+  content: string;
+  images?: string[];
+  type: PostType;
+  restaurantId?: string;
+  taggedFriends?: string[];
+}
+
 export interface PostUser {
   id: string;
   username: string;
@@ -128,12 +137,48 @@ export interface PostData {
   updatedAt?: string;
 }
 
-// Keep Post interface for backwards compatibility
-export interface Post extends PostData {
-  imageUrl?: string; // Single image for backwards compatibility
-  authorId: string;
-  author?: User;
+// Post interface aligned with backend API
+export interface Post {
+  id: string;
+  content: string;
+  imageUrl?: string;
+  imageUrls: string; // JSON string array
+  rating?: number;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
   restaurantId?: string;
+  establishmentId?: string;
+  user: PostUser;
+  restaurant?: {
+    id: string;
+    name: string;
+    city: string;
+    state?: string;
+    imageUrl?: string;
+    cuisine?: string;
+    rating?: number;
+  };
+  establishment?: {
+    id: string;
+    name: string;
+    city: string;
+    state?: string;
+    imageUrl?: string;
+    cuisine?: string;
+    rating?: number;
+  };
+  comments?: any[];
+  _count: {
+    likes: number;
+    comments: number;
+  };
+  isLikedByUser?: boolean;
+  isLiked?: boolean;
+  likesCount?: number;
+  commentsCount?: number;
+  timeAgo?: string;
+  postType?: PostType;
 }
 
 export interface AuthResponse {
