@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../types";
 import { useTheme } from "../../providers";
 import { Button, Card, Header } from "../../components";
 import { useCurrentUser, useLogout } from "../../hooks";
@@ -20,9 +22,11 @@ import { mockUsers, mockPosts } from "../../data/mockData";
 const { width } = Dimensions.get("window");
 const imageSize = (width - 48) / 3; // 3 columns with 16px margins
 
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 export const ProfileScreen: React.FC = () => {
   const { theme } = useTheme();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const { user } = useCurrentUser();
   const logoutMutation = useLogout();
   const [activeTab, setActiveTab] = useState<"posts" | "liked">("posts");
@@ -90,8 +94,11 @@ export const ProfileScreen: React.FC = () => {
   ];
 
   const handleEditProfile = () => {
-    // @ts-ignore - Navigation will be properly typed when integrated
     navigation.navigate("EditProfile");
+  };
+
+  const handleAchievements = () => {
+    navigation.navigate("Achievements", { userId: user?.id });
   };
 
   const handleSettings = () => {
@@ -237,6 +244,19 @@ export const ProfileScreen: React.FC = () => {
           variant="outline"
           style={styles.editButton}
         />
+        <TouchableOpacity
+          style={[
+            styles.achievementsButton,
+            { backgroundColor: theme.colors.surfaceVariant },
+          ]}
+          onPress={handleAchievements}
+        >
+          <Ionicons
+            name="trophy-outline"
+            size={20}
+            color={theme.colors.primary}
+          />
+        </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.settingsButton,
@@ -490,6 +510,14 @@ const styles = StyleSheet.create({
   },
   editButton: {
     flex: 1,
+    marginRight: 12,
+  },
+  achievementsButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
   },
   settingsButton: {

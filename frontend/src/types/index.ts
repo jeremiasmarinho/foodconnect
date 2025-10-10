@@ -261,6 +261,13 @@ export type RootStackParamList = {
   PostDetail: { postId: string };
   RestaurantDetail: { restaurantId: string };
   UserProfile: { userId: string };
+  Comments: { postId: string };
+  Notifications: undefined;
+  Search: undefined;
+  Achievements: { userId?: string };
+  CreatePost: undefined;
+  EditProfile: undefined;
+  OrderDetails: { orderId: string };
 };
 
 export type AuthStackParamList = {

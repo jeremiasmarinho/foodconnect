@@ -12,14 +12,21 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../types";
 import { useAuth } from "../../providers";
 import { Post } from "../../components/Post";
 import { CreatePostButton } from "../../components/CreatePostButton";
+import { AppHeader } from "../../components/AppHeader";
 import { useRealPosts } from "../../hooks/useRealPosts";
 import { PostType, PostData } from "../../types";
 
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 export const FeedScreen: React.FC = () => {
   const { user } = useAuth();
+  const navigation = useNavigation<NavigationProp>();
   const {
     posts,
     loading,
@@ -76,7 +83,7 @@ export const FeedScreen: React.FC = () => {
     <Post
       post={item}
       onLike={() => toggleLike(item.id)}
-      onComment={() => Alert.alert("Comentário", "Em desenvolvimento")}
+      onComment={() => navigation.navigate("Comments", { postId: item.id })}
       onSave={() => Alert.alert("Salvar", "Em desenvolvimento")}
       onShare={() => Alert.alert("Compartilhar", "Em desenvolvimento")}
       onUserPress={() =>
@@ -109,17 +116,11 @@ export const FeedScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>FoodConnect</Text>
-        <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="notifications-outline" size={24} color="#2D5A27" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="chatbubble-outline" size={24} color="#2D5A27" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <AppHeader
+        title="FoodConnect"
+        showSearch={true}
+        showNotifications={true}
+      />
 
       <FlatList
         data={posts}
@@ -199,27 +200,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#2D5A27",
-  },
-  headerIcons: {
-    flexDirection: "row",
-  },
-  iconButton: {
-    marginLeft: 16,
   },
   filtersContainer: {
     flexDirection: "row",
