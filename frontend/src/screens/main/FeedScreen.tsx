@@ -12,11 +12,11 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../providers";
 import { Post } from "../../components/Post";
 import { CreatePostButton } from "../../components/CreatePostButton";
 import { useRealPosts } from "../../hooks/useRealPosts";
-import { PostType, Post as PostInterface } from "../../types";
+import { PostType, PostData } from "../../types";
 
 export const FeedScreen: React.FC = () => {
   const { user } = useAuth();
@@ -72,7 +72,7 @@ export const FeedScreen: React.FC = () => {
   );
 
   // Renderizar post
-  const renderPost = ({ item }: { item: PostInterface }) => (
+  const renderPost = ({ item }: { item: PostData }) => (
     <Post
       post={item}
       onLike={() => toggleLike(item.id)}

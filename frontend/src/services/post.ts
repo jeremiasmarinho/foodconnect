@@ -1,26 +1,54 @@
 import { apiClient } from "../api/client";
-import { ApiResponse, Post, CreatePostRequest } from "../types";
+import { ApiResponse, Post, CreatePostRequest, PostData } from "../types";
+
+// Transformar Post do backend para PostData do frontend
+function transformPost(post: Post): PostData {
+  let images: string[] = [];
+
+  // Tentar parsear imageUrls (JSON string)
+  try {
+    if (post.imageUrls) {
+      images = JSON.parse(post.imageUrls);
+    }
+  } catch (e) {
+    console.error("Error parsing imageUrls:", e);
+  }
+
+  // Fallback para imageUrl se imageUrls estiver vazio
+  if (images.length === 0 && post.imageUrl) {
+    images = [post.imageUrl];
+  }
+
+  return {
+    id: post.id,
+    content: post.content,
+    images: images,
+    postType: post.postType || "FOOD",
+    rating: post.rating,
+    userId: post.userId,
+    user: post.user,
+    establishmentId: post.establishmentId || post.restaurantId,
+    establishment: post.establishment as any, // Type compatibility
+    restaurant: post.restaurant as any, // Type compatibility
+    location: post.establishment?.city || post.restaurant?.city,
+    likesCount: post.likesCount || post._count?.likes || 0,
+    commentsCount: post.commentsCount || post._count?.comments || 0,
+    isLiked: post.isLiked || post.isLikedByUser || false,
+    isSaved: false,
+    createdAt: post.createdAt,
+    updatedAt: post.updatedAt,
+  };
+}
 
 export class PostService {
-  // Buscar feed personalizado do usuário
+  // Buscar feed (usa filtrado como padrão)
   static async getFeed(
     page: number = 1,
-    limit: number = 10
-  ): Promise<ApiResponse<Post[]>> {
-    try {
-      const response = await apiClient.get<Post[]>(
-        `/posts/feed/personalized?page=${page}&limit=${limit}`
-      );
-      return {
-        success: true,
-        data: response.data,
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.response?.data?.message || "Erro ao carregar feed",
-      };
-    }
+    limit: number = 10,
+    userId?: string
+  ): Promise<ApiResponse<PostData[]>> {
+    // Sempre usar feed filtrado que funciona sem userId
+    return this.getFilteredFeed(undefined, page, limit);
   }
 
   // Buscar feed por filtro (timeline geral)
@@ -28,7 +56,7 @@ export class PostService {
     type?: "FOOD" | "DRINKS" | "SOCIAL",
     page: number = 1,
     limit: number = 10
-  ): Promise<ApiResponse<Post[]>> {
+  ): Promise<ApiResponse<PostData[]>> {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -39,14 +67,23 @@ export class PostService {
         params.append("type", type);
       }
 
-      const response = await apiClient.get<Post[]>(
-        `/posts/feed/filtered?${params}`
-      );
+      const response = await apiClient.get<{
+        success: boolean;
+        data: Post[];
+        meta?: any;
+      }>(`/posts/feed/filtered?${params}`);
+
+      // O backend retorna { success, data, meta }
+      // Então response.data.data contém os posts
+      // Transformar cada post para PostData
+      const transformedPosts = (response.data.data || []).map(transformPost);
+
       return {
         success: true,
-        data: response.data,
+        data: transformedPosts,
       };
     } catch (error: any) {
+      console.error("Error fetching filtered feed:", error);
       return {
         success: false,
         error: error.response?.data?.message || "Erro ao carregar posts",

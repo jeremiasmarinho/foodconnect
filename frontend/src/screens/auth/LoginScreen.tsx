@@ -11,13 +11,18 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuth } from "../../contexts/AuthContext";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { AuthStackParamList } from "../../types";
+import { useAuth } from "../../providers";
 
-interface LoginScreenProps {
-  onSwitchToRegister: () => void;
-}
+type LoginScreenNavigationProp = NativeStackNavigationProp<
+  AuthStackParamList,
+  "Login"
+>;
 
-export function LoginScreen({ onSwitchToRegister }: LoginScreenProps) {
+export function LoginScreen() {
+  const navigation = useNavigation<LoginScreenNavigationProp>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login, isLoading } = useAuth();
@@ -28,12 +33,12 @@ export function LoginScreen({ onSwitchToRegister }: LoginScreenProps) {
       return;
     }
 
-    const result = await login(email.trim(), password);
-
-    if (!result.success) {
-      Alert.alert("Erro no Login", result.error || "Erro desconhecido");
+    try {
+      await login(email.trim(), password);
+      // Se sucesso, o AuthContext já atualizou o estado e a navegação será automática
+    } catch (error: any) {
+      Alert.alert("Erro no Login", error.message || "Erro desconhecido");
     }
-    // Se success = true, o AuthContext já atualizou o estado e a navegação será automática
   };
 
   return (
@@ -94,7 +99,7 @@ export function LoginScreen({ onSwitchToRegister }: LoginScreenProps) {
 
             <View style={styles.footer}>
               <Text style={styles.footerText}>Não tem uma conta? </Text>
-              <TouchableOpacity onPress={onSwitchToRegister}>
+              <TouchableOpacity onPress={() => navigation.navigate("Register")}>
                 <Text style={styles.footerLink}>Cadastre-se</Text>
               </TouchableOpacity>
             </View>

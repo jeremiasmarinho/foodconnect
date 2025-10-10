@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,49 +9,55 @@ import {
   Platform,
   ScrollView,
   Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../contexts/AuthContext';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { AuthStackParamList } from "../../types";
+import { useAuth } from "../../providers";
 
-interface RegisterScreenProps {
-  onSwitchToLogin: () => void;
-}
+type RegisterScreenNavigationProp = NativeStackNavigationProp<
+  AuthStackParamList,
+  "Register"
+>;
 
-export function RegisterScreen({ onSwitchToLogin }: RegisterScreenProps) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+export function RegisterScreen() {
+  const navigation = useNavigation<RegisterScreenNavigationProp>();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const { register, isLoading } = useAuth();
 
   const handleRegister = async () => {
     if (!name.trim() || !email.trim() || !username.trim() || !password.trim()) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos');
+      Alert.alert("Erro", "Por favor, preencha todos os campos");
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Erro', 'As senhas não coincidem');
+      Alert.alert("Erro", "As senhas não coincidem");
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Erro', 'A senha deve ter pelo menos 6 caracteres');
+      Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
       return;
     }
 
-    const result = await register(name.trim(), email.trim(), username.trim(), password);
-    
-    if (!result.success) {
-      Alert.alert('Erro no Cadastro', result.error || 'Erro desconhecido');
+    try {
+      await register(email.trim(), password, name.trim(), username.trim());
+      // Se sucesso, o AuthContext já atualizou o estado e a navegação será automática
+    } catch (error: any) {
+      Alert.alert("Erro no Cadastro", error.message || "Erro desconhecido");
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -128,19 +134,22 @@ export function RegisterScreen({ onSwitchToLogin }: RegisterScreenProps) {
               </View>
 
               <TouchableOpacity
-                style={[styles.registerButton, isLoading && styles.buttonDisabled]}
+                style={[
+                  styles.registerButton,
+                  isLoading && styles.buttonDisabled,
+                ]}
                 onPress={handleRegister}
                 disabled={isLoading}
               >
                 <Text style={styles.registerButtonText}>
-                  {isLoading ? 'Criando conta...' : 'Criar conta'}
+                  {isLoading ? "Criando conta..." : "Criar conta"}
                 </Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.footer}>
               <Text style={styles.footerText}>Já tem uma conta? </Text>
-              <TouchableOpacity onPress={onSwitchToLogin}>
+              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
                 <Text style={styles.footerLink}>Entrar</Text>
               </TouchableOpacity>
             </View>
@@ -154,7 +163,7 @@ export function RegisterScreen({ onSwitchToLogin }: RegisterScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   keyboardView: {
     flex: 1,
@@ -165,22 +174,22 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingVertical: 32,
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 32,
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#2D5A27',
+    fontWeight: "bold",
+    color: "#2D5A27",
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   form: {
     marginBottom: 24,
@@ -190,47 +199,47 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 8,
   },
   input: {
     height: 50,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     paddingHorizontal: 16,
     fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
   },
   registerButton: {
-    backgroundColor: '#2D5A27',
+    backgroundColor: "#2D5A27",
     height: 50,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 8,
   },
   buttonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
   },
   registerButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
   footerText: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   footerLink: {
     fontSize: 14,
-    color: '#2D5A27',
-    fontWeight: '600',
+    color: "#2D5A27",
+    fontWeight: "600",
   },
 });

@@ -199,7 +199,7 @@ export const Post: React.FC<PostProps> = ({
               setCurrentImageIndex(index);
             }}
           >
-            {post.images.map((image, index) => (
+            {(post.images || []).map((image, index) => (
               <Image
                 key={index}
                 source={{ uri: image }}
@@ -212,9 +212,9 @@ export const Post: React.FC<PostProps> = ({
         </TouchableOpacity>
 
         {/* Image Indicators */}
-        {post.images.length > 1 && (
+        {(post.images || []).length > 1 && (
           <View style={styles.imageIndicators}>
-            {post.images.map((_, index) => (
+            {(post.images || []).map((_, index) => (
               <View
                 key={index}
                 style={[
@@ -328,9 +328,9 @@ export const Post: React.FC<PostProps> = ({
       <Text style={styles.timeText}>{formatTime(post.createdAt)}</Text>
 
       {/* Photo Tagging Modal */}
-      {showTagging && (
+      {showTagging && (post.images || []).length > 0 && (
         <PhotoTagging
-          imageUri={post.images[currentImageIndex]}
+          imageUri={(post.images || [])[currentImageIndex]}
           imageIndex={currentImageIndex}
           existingTags={post.taggedUsers || []}
           onAddTag={(userId, x, y, imageIndex) => {

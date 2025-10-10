@@ -16,6 +16,9 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { UploadModule } from './upload/upload.module';
 import { SeedModule } from './seed/seed.module';
 import { StoriesModule } from './stories/stories.module';
+import { CommentsModule } from './comments/comments.module';
+import { SearchModule } from './search/search.module';
+import { AchievementsModule } from './achievements/achievements.module';
 
 @Module({
   imports: [
@@ -25,12 +28,15 @@ import { StoriesModule } from './stories/stories.module';
     UsersModule,
     RestaurantsModule,
     PostsModule,
+    CommentsModule,
     MenuItemsModule,
     OrdersModule,
     NotificationsModule,
     UploadModule,
     SeedModule,
     StoriesModule,
+    SearchModule,
+    AchievementsModule,
   ],
   controllers: [AppController],
   providers: [

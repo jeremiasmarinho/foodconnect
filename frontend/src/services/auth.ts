@@ -131,3 +131,47 @@ export class AuthService {
     return !!token;
   }
 }
+
+// Export a singleton instance with wrapper methods
+export const authService = {
+  async login(credentials: LoginRequest): Promise<User> {
+    const response = await AuthService.login(credentials);
+    if (!response.success || !response.data) {
+      throw new Error(response.error || "Login failed");
+    }
+    return response.data.user;
+  },
+
+  async register(userData: RegisterRequest): Promise<User> {
+    const response = await AuthService.register(userData);
+    if (!response.success || !response.data) {
+      throw new Error(response.error || "Registration failed");
+    }
+    return response.data.user;
+  },
+
+  async logout(): Promise<void> {
+    await AuthService.logout();
+  },
+
+  async restoreSession(): Promise<User | null> {
+    const token = await AuthService.getStoredToken();
+    if (!token) {
+      return null;
+    }
+
+    const response = await AuthService.getCurrentUser();
+    if (response.success && response.data) {
+      return response.data;
+    }
+    return null;
+  },
+
+  async getCurrentUser(): Promise<User | null> {
+    const response = await AuthService.getCurrentUser();
+    if (response.success && response.data) {
+      return response.data;
+    }
+    return null;
+  },
+};

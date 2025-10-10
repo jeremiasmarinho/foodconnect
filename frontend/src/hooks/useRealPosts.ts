@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { Post, PostType } from "../types";
+import { PostData, PostType } from "../types";
 import { PostService } from "../services/post";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../providers";
 
 interface UseRealPostsConfig {
   initialLoad?: boolean;
@@ -10,9 +10,9 @@ interface UseRealPostsConfig {
 
 export function useRealPosts(config: UseRealPostsConfig = {}) {
   const { initialLoad = true, pageSize = 10 } = config;
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostData[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -35,7 +35,7 @@ export function useRealPosts(config: UseRealPostsConfig = {}) {
       try {
         const response =
           filter === "ALL"
-            ? await PostService.getFeed(page, pageSize)
+            ? await PostService.getFeed(page, pageSize, user?.id)
             : await PostService.getFilteredFeed(filter, page, pageSize);
 
         if (response.success && response.data) {
@@ -51,16 +51,20 @@ export function useRealPosts(config: UseRealPostsConfig = {}) {
           setCurrentFilter(filter);
         } else {
           setError(response.error || "Erro ao carregar posts");
+          // Não continuar tentando se houver erro
+          setHasMore(false);
         }
       } catch (err) {
         setError("Erro inesperado ao carregar posts");
         console.error("Error loading posts:", err);
+        // Parar o loop de tentativas
+        setHasMore(false);
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [loading, pageSize]
+    [loading, pageSize, user?.id]
   );
 
   // Carregar mais posts (paginação)
@@ -132,10 +136,11 @@ export function useRealPosts(config: UseRealPostsConfig = {}) {
 
   // Carregar posts iniciais
   useEffect(() => {
-    if (initialLoad && isAuthenticated) {
+    if (initialLoad && isAuthenticated && !loading && posts.length === 0) {
       loadPosts(1, "ALL", false);
     }
-  }, [initialLoad, isAuthenticated, loadPosts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialLoad, isAuthenticated]);
 
   return {
     // Data

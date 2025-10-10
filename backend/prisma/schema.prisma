@@ -47,6 +47,8 @@ model User {
   stories                 Story[]                  // User's stories
   storyViews              StoryView[]              // Stories user has viewed
   highlightedStories      HighlightedStory[]       // User's highlighted stories
+  conversationParticipants ConversationParticipant[] // User's conversations
+  sentMessages            Message[]                // Messages sent by user
 
   // Indexes for common queries
   @@index([email]) // Login queries
@@ -497,4 +499,59 @@ model HighlightedStory {
   @@index([userId]) // User's highlights
   @@index([order]) // Ordering
   @@map("highlighted_stories")
+}
+
+// Conversation model for direct messaging
+model Conversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@map("conversations")
+}
+
+// ConversationParticipant model for users in conversations
+model ConversationParticipant {
+  id             String   @id @default(cuid())
+  conversationId String
+  userId         String
+  joinedAt       DateTime @default(now())
+  lastReadAt     DateTime @default(now())
+  isMuted        Boolean  @default(false)
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@unique([conversationId, userId]) // User can only be in a conversation once
+  @@index([userId]) // User's conversations
+  @@index([conversationId]) // Conversation participants
+  @@map("conversation_participants")
+}
+
+// Message model for direct messages
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String
+  imageUrl       String?
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@index([conversationId]) // Conversation messages
+  @@index([senderId]) // Sender's messages
+  @@index([createdAt]) // Sort by time
+  @@map("messages")
 }

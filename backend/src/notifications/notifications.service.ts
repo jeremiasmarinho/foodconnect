@@ -253,7 +253,7 @@ export class NotificationsService {
           type: notificationData.type,
           title: notificationData.title,
           message: notificationData.message,
-          data: notificationData.data || {},
+          data: JSON.stringify(notificationData.data || {}),
           read: false,
         },
       });
@@ -278,8 +278,14 @@ export class NotificationsService {
       this.prisma.notification.count({ where: { userId } }),
     ]);
 
+    // Parse JSON data field
+    const parsedNotifications = notifications.map((notification) => ({
+      ...notification,
+      data: JSON.parse(notification.data),
+    }));
+
     return {
-      notifications,
+      notifications: parsedNotifications,
       total,
       page,
       limit,

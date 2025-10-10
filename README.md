@@ -1,7 +1,7 @@
 # FoodConnect - Plataforma de Descoberta Social Gastronômica
 
-> **Status**: Sprint 0 em Desenvolvimento 🚧  
-> **Progresso**: Backend Base Implementado (Auth + Users + Restaurants)  
+> **Status**: Em Produção �  
+> **Arquitetura**: AWS Well-Architected Framework  
 > **Última Atualização**: Outubro 2025
 
 ## 🎯 Visão do Projeto
@@ -11,42 +11,41 @@ O **FoodConnect** transforma a experiência gastronômica de um ato puramente tr
 **Para Usuários**: "Descubra onde comer de forma inspirada, autêntica e personalizada – antes de pedir ou reservar."  
 **Para Restaurantes**: "Construa presença, marca e demanda qualificada além de descontos e disputa por preço."
 
+## �️ AWS Well-Architected Framework
+
+Este projeto segue os **6 pilares** do AWS Well-Architected Framework:
+
+### 📋 Documentação Completa
+
+- **[Executive Summary](./docs/aws-well-architected/EXECUTIVE-SUMMARY.md)** - Visão executiva e ROI
+- **[Plano de Implementação](./docs/aws-well-architected/IMPLEMENTATION-PLAN.md)** - Roadmap de 12 semanas
+- **[Visão Geral](./docs/aws-well-architected/README.md)** - Arquitetura e decisões
+
+### Os 6 Pilares
+
+1. **[Operational Excellence](./docs/aws-well-architected/01-operational-excellence.md)** - CI/CD, IaC, Monitoring
+2. **[Security](./docs/aws-well-architected/02-security.md)** - WAF, IAM, Encryption, Compliance
+3. **[Reliability](./docs/aws-well-architected/03-reliability.md)** - Multi-AZ, Auto-scaling, DR
+4. **[Performance Efficiency](./docs/aws-well-architected/04-performance-efficiency.md)** - Cache, CDN, Optimization
+5. **[Cost Optimization](./docs/aws-well-architected/05-cost-optimization.md)** - Right-sizing, Reserved Instances
+6. **[Sustainability](./docs/aws-well-architected/06-sustainability.md)** - ARM64, Green Energy, Efficiency
+
 ## 🏗️ Estrutura da Documentação
 
-### 📋 **Documentos Estratégicos**
+### � **Documentos Estratégicos**
 
-- [`master-strategic-brief.md`](./master-strategic-brief.md) - **DOCUMENTO PRINCIPAL** - Síntese executiva, hipóteses, roadmap 90 dias
-- [`docs/master-strategic-brief.md`](./docs/master-strategic-brief.md) - Síntese estratégica e análises consolidadas
-- [`foodconnect.md`](./foodconnect.md) - Especificação técnica completa original (1300+ linhas)
+- [`master-strategic-brief.md`](./docs/master-strategic-brief.md) - Síntese estratégica e análises consolidadas
+- [`development-roadmap.md`](./docs/development-roadmap.md) - Roadmap detalhado de desenvolvimento
+- [`aws-well-architected/`](./docs/aws-well-architected/) - Framework AWS e arquitetura
 
-### 🤖 **Análises das IAs**
+### 📝 **Guias de Desenvolvimento**
 
-- [`gemini-review-request.md`](./gemini-review-request.md) - Solicitação de análise para Gemini
-- [`gemini-analysis-response.md`](./gemini-analysis-response.md) - Análise do Gemini (8.5/10)
-- [`claude-analysis-response.md`](./claude-analysis-response.md) - Análise do Claude (8.2/10)
-- [`chatgpt-analysis-request.md`](./chatgpt-analysis-request.md) - Solicitação de análise para ChatGPT-4
-
-### 📝 **Documentos de Desenvolvimento**
-
-- [`development-roadmap.md`](./development-roadmap.md) - Roadmap detalhado de desenvolvimento (este arquivo)
+- [`COMO-RODAR.md`](./COMO-RODAR.md) - Como executar o projeto localmente
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md) - Guia de contribuição
+- [`DEPLOYMENT.md`](./DEPLOYMENT.md) - Guia de deployment
+- [`SCRIPTS-README.md`](./SCRIPTS-README.md) - Documentação dos scripts
 
 ## 🚀 Status Atual
-
-### ✅ **Fase Completada: Planejamento Estratégico**
-
-- [x] Documentação técnica abrangente
-- [x] Análise crítica por múltiplas IAs
-- [x] Síntese estratégica consolidada
-- [x] Definição de hipóteses e KPIs
-- [x] Roadmap 90 dias validado
-
-### 🎯 **Próxima Fase: Sprint 0 (Preparação)**
-
-- [ ] Setup do ambiente de desenvolvimento
-- [ ] Scaffold do backend NestJS
-- [ ] Modelo de dados e migrações
-- [ ] Script de seed inicial
-- [ ] Configuração de métricas básicas
 
 ## 📊 Resumo Executivo
 
