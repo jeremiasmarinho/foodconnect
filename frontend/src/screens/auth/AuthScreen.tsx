@@ -8,15 +8,12 @@ export function AuthScreen() {
     "login"
   );
 
-  const switchToRegister = () => setCurrentScreen("register");
-  const switchToLogin = () => setCurrentScreen("login");
-
   return (
     <View style={styles.container}>
       {currentScreen === "login" ? (
-        <LoginScreen onSwitchToRegister={switchToRegister} />
+        <LoginScreen />
       ) : (
-        <RegisterScreen onSwitchToLogin={switchToLogin} />
+        <RegisterScreen />
       )}
     </View>
   );

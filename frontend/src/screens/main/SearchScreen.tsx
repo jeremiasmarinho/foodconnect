@@ -10,12 +10,15 @@ import {
   Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../types';
 import useSearch from '../../hooks/useSearch';
 
 type SearchType = 'all' | 'users' | 'posts' | 'restaurants';
+type SearchScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const SearchScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<SearchScreenNavigationProp>();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<SearchType>('all');
 
@@ -52,7 +55,7 @@ const SearchScreen = () => {
   const handleResultPress = (item: any) => {
     switch (item.type) {
       case 'user':
-        navigation.navigate('Profile', { userId: item.id });
+        navigation.navigate('UserProfile', { userId: item.id });
         break;
       case 'post':
         navigation.navigate('Comments', { postId: item.id });

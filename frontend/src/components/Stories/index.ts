@@ -1,4 +1,6 @@
 export { SimpleStoriesContainer } from "./SimpleStoriesContainer";
+export { StoriesContainer } from "./StoriesContainer";
+export { StoryViewer } from "./StoryViewer";
 
 // Types
 export interface User {

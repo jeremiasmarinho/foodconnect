@@ -9,10 +9,14 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../types';
 import useNotifications from '../../hooks/useNotifications';
 
+type NotificationsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 const NotificationsScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NotificationsScreenNavigationProp>();
   const {
     notifications,
     unreadCount,
@@ -42,7 +46,7 @@ const NotificationsScreen = () => {
         break;
       case 'FOLLOW':
         if (notification.data?.userId) {
-          navigation.navigate('Profile', { userId: notification.data.userId });
+          navigation.navigate('UserProfile', { userId: notification.data.userId });
         }
         break;
       default:

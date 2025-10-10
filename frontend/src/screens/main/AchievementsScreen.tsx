@@ -12,10 +12,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 // Mock hook - você precisará criar este hook baseado no service
 const useAchievements = () => {
-  const [progress, setProgress] = React.useState([]);
-  const [stats, setStats] = React.useState(null);
+  const [progress, setProgress] = React.useState<any[]>([]);
+  const [stats, setStats] = React.useState<{
+    postsCount: number;
+    followersCount: number;
+    favoritesCount: number;
+  } | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState(null);
+  const [error, setError] = React.useState<Error | null>(null);
 
   // TODO: Implement actual hook
   return {
@@ -140,7 +144,7 @@ const AchievementsScreen = () => {
   if (error) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>❌ {error}</Text>
+        <Text style={styles.errorText}>❌ {error.message || 'Erro ao carregar conquistas'}</Text>
         <TouchableOpacity style={styles.retryButton} onPress={refresh}>
           <Text style={styles.retryText}>Tentar novamente</Text>
         </TouchableOpacity>

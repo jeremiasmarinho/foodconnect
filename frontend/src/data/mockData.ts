@@ -487,15 +487,14 @@ export const mockPosts: Post[] = [
   {
     id: "1",
     userId: "1",
-    authorId: "1",
     restaurantId: "1",
     content:
       "Noite perfeita no Bella Napoli! A pizza margherita estava divina 🍕✨",
     imageUrl:
       "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=600&h=600&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=600&h=600&fit=crop",
-    ],
+    imageUrls: '["https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=600&h=600&fit=crop"]',
+    updatedAt: "2024-09-25T20:30:00Z",
+    _count: { likes: 0, comments: 0 },
     postType: "FOOD",
     user: {
       id: mockUsers[0].id,
@@ -506,22 +505,20 @@ export const mockPosts: Post[] = [
     createdAt: "2024-09-25T20:30:00Z",
     likesCount: 24,
     commentsCount: 5,
-    author: mockUsers[0],
     restaurant: mockRestaurants[0],
     isLiked: false,
   },
   {
     id: "2",
     userId: "2",
-    authorId: "2",
     restaurantId: "3",
     content:
       "Experiência incrível no Sushi Zen! O sashimi estava fresquíssimo 🍣",
     imageUrl:
       "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=600&h=600&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=600&h=600&fit=crop",
-    ],
+    imageUrls: '["https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=600&h=600&fit=crop"]',
+    updatedAt: "2024-09-25T20:30:00Z",
+    _count: { likes: 0, comments: 0 },
     postType: "FOOD",
     user: {
       id: mockUsers[1].id,
@@ -532,22 +529,20 @@ export const mockPosts: Post[] = [
     createdAt: "2024-09-24T19:15:00Z",
     likesCount: 31,
     commentsCount: 8,
-    author: mockUsers[1],
     restaurant: mockRestaurants[2],
     isLiked: true,
   },
   {
     id: "3",
     userId: "3",
-    authorId: "3",
     restaurantId: "4",
     content:
       "Almoço saudável e delicioso! Este bowl de quinoa estava perfeito 🥗",
     imageUrl:
       "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=600&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=600&fit=crop",
-    ],
+    imageUrls: '["https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=600&fit=crop"]',
+    updatedAt: "2024-09-25T20:30:00Z",
+    _count: { likes: 0, comments: 0 },
     postType: "FOOD",
     user: {
       id: mockUsers[2].id,
@@ -558,21 +553,19 @@ export const mockPosts: Post[] = [
     createdAt: "2024-09-23T13:45:00Z",
     likesCount: 18,
     commentsCount: 3,
-    author: mockUsers[2],
     restaurant: mockRestaurants[3],
     isLiked: false,
   },
   {
     id: "4",
     userId: "1",
-    authorId: "1",
     restaurantId: "2",
     content: "Esse bacon burger é simplesmente épico! Não consegui resistir 🍔",
     imageUrl:
       "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=600&h=600&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=600&h=600&fit=crop",
-    ],
+    imageUrls: '["https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=600&h=600&fit=crop"]',
+    updatedAt: "2024-09-25T20:30:00Z",
+    _count: { likes: 0, comments: 0 },
     postType: "FOOD",
     user: {
       id: mockUsers[0].id,
@@ -583,21 +576,19 @@ export const mockPosts: Post[] = [
     createdAt: "2024-09-22T21:00:00Z",
     likesCount: 27,
     commentsCount: 6,
-    author: mockUsers[0],
     restaurant: mockRestaurants[1],
     isLiked: true,
   },
   {
     id: "5",
     userId: "2",
-    authorId: "2",
     restaurantId: "5",
     content: "Café da manhã perfeito! Esse cappuccino está no ponto ideal ☕",
     imageUrl:
       "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&h=600&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&h=600&fit=crop",
-    ],
+    imageUrls: '["https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&h=600&fit=crop"]',
+    updatedAt: "2024-09-25T20:30:00Z",
+    _count: { likes: 0, comments: 0 },
     postType: "FOOD",
     user: {
       id: mockUsers[1].id,
@@ -608,22 +599,20 @@ export const mockPosts: Post[] = [
     createdAt: "2024-09-21T09:30:00Z",
     likesCount: 15,
     commentsCount: 2,
-    author: mockUsers[1],
     restaurant: mockRestaurants[4],
     isLiked: false,
   },
   {
     id: "6",
     userId: "4",
-    authorId: "4",
     restaurantId: "1",
     content:
       "A harmonização entre o vinho Chianti e a lasanha estava sublime! 🍷✨",
     imageUrl:
       "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=600&h=600&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=600&h=600&fit=crop",
-    ],
+    imageUrls: '["https://images.unsplash.com/photo-1551218808-94e220e084d2?w=600&h=600&fit=crop"]',
+    updatedAt: "2024-09-25T20:30:00Z",
+    _count: { likes: 0, comments: 0 },
     postType: "FOOD",
     user: {
       id: mockUsers[3].id,
@@ -634,22 +623,20 @@ export const mockPosts: Post[] = [
     createdAt: "2024-09-20T21:15:00Z",
     likesCount: 32,
     commentsCount: 7,
-    author: mockUsers[3],
     restaurant: mockRestaurants[0],
     isLiked: true,
   },
   {
     id: "7",
     userId: "5",
-    authorId: "5",
     restaurantId: "5",
     content:
       "Descobri o doce perfeito para acompanhar o café! Esse bolo de cenoura é incrível 🧁",
     imageUrl:
       "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&h=600&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&h=600&fit=crop",
-    ],
+    imageUrls: '["https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&h=600&fit=crop"]',
+    updatedAt: "2024-09-25T20:30:00Z",
+    _count: { likes: 0, comments: 0 },
     postType: "FOOD",
     user: {
       id: mockUsers[4].id,
@@ -660,22 +647,20 @@ export const mockPosts: Post[] = [
     createdAt: "2024-09-19T15:45:00Z",
     likesCount: 28,
     commentsCount: 4,
-    author: mockUsers[4],
     restaurant: mockRestaurants[4],
     isLiked: false,
   },
   {
     id: "8",
     userId: "6",
-    authorId: "6",
     restaurantId: "6",
     content:
       "Churrasco de domingo em família! A picanha estava no ponto perfeito 🥩",
     imageUrl:
       "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&h=600&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&h=600&fit=crop",
-    ],
+    imageUrls: '["https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&h=600&fit=crop"]',
+    updatedAt: "2024-09-25T20:30:00Z",
+    _count: { likes: 0, comments: 0 },
     postType: "FOOD",
     user: {
       id: mockUsers[5].id,
@@ -686,7 +671,6 @@ export const mockPosts: Post[] = [
     createdAt: "2024-09-18T14:20:00Z",
     likesCount: 41,
     commentsCount: 9,
-    author: mockUsers[5],
     restaurant: mockRestaurants[5],
     isLiked: true,
   },

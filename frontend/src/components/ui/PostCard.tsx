@@ -9,14 +9,14 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../providers";
-import { Post, User } from "../../types";
+import { Post, PostUser } from "../../types";
 import { formatDate } from "../../utils";
 import { useLikePost, useUnlikePost } from "../../hooks";
 
 interface PostCardProps {
   post: Post;
   onPress?: () => void;
-  onUserPress?: (user: User) => void;
+  onUserPress?: (user: PostUser) => void;
   onRestaurantPress?: (restaurantId: string) => void;
   style?: ViewStyle;
 }
@@ -50,8 +50,8 @@ export const PostCard: React.FC<PostCardProps> = React.memo(
     };
 
     const handleUserPress = () => {
-      if (onUserPress && post.author) {
-        onUserPress(post.author);
+      if (onUserPress && post.user) {
+        onUserPress(post.user);
       }
     };
 
@@ -94,9 +94,9 @@ export const PostCard: React.FC<PostCardProps> = React.memo(
             }}
             activeOpacity={0.7}
           >
-            {post.author?.avatar ? (
+            {post.user?.avatar ? (
               <Image
-                source={{ uri: post.author.avatar }}
+                source={{ uri: post.user.avatar }}
                 style={{
                   width: 40,
                   height: 40,
@@ -124,7 +124,7 @@ export const PostCard: React.FC<PostCardProps> = React.memo(
                     fontWeight: theme.typography.fontWeight.semibold,
                   }}
                 >
-                  {post.author?.name?.charAt(0).toUpperCase() || "?"}
+                  {post.user?.name?.charAt(0).toUpperCase() || "?"}
                 </Text>
               </View>
             )}
@@ -137,7 +137,7 @@ export const PostCard: React.FC<PostCardProps> = React.memo(
                   color: theme.colors.textPrimary,
                 }}
               >
-                {post.author?.name || "Usuário"}
+                {post.user?.name || "Usuário"}
               </Text>
               <Text
                 style={{

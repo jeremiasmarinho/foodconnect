@@ -21,6 +21,7 @@ export interface UseNotificationsReturn {
   markAsRead: (notificationId: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
   refreshUnreadCount: () => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 /**
@@ -218,6 +219,11 @@ export function useNotifications(): UseNotificationsReturn {
     refreshUnreadCount();
   }, [loadNotifications, refreshUnreadCount]);
 
+  // Função refresh como alias para loadNotifications
+  const refresh = useCallback(async () => {
+    await loadNotifications(1);
+  }, [loadNotifications]);
+
   return {
     notifications,
     unreadCount,
@@ -230,6 +236,7 @@ export function useNotifications(): UseNotificationsReturn {
     markAsRead,
     markAllAsRead,
     refreshUnreadCount,
+    refresh,
   };
 }
 

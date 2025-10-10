@@ -78,11 +78,10 @@ export interface CreateHighlightData {
 
 class StoriesService {
   private baseUrl = `${API_CONFIG.BASE_URL}/stories`;
-  private authService = AuthService.getInstance();
 
   async getActiveStories(): Promise<UserStories[]> {
     try {
-      const token = await this.authService.getAuthToken();
+      const token = await AuthService.getStoredToken();
       const response = await fetch(`${this.baseUrl}/active`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -103,7 +102,7 @@ class StoriesService {
 
   async getUserStories(userId: string): Promise<UserStories> {
     try {
-      const token = await this.authService.getAuthToken();
+      const token = await AuthService.getStoredToken();
       const response = await fetch(`${this.baseUrl}/user/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -124,7 +123,7 @@ class StoriesService {
 
   async createStory(storyData: CreateStoryData): Promise<Story> {
     try {
-      const token = await this.authService.getAuthToken();
+      const token = await AuthService.getStoredToken();
       const response = await fetch(this.baseUrl, {
         method: "POST",
         headers: {
@@ -147,7 +146,7 @@ class StoriesService {
 
   async viewStory(storyId: string): Promise<void> {
     try {
-      const token = await this.authService.getAuthToken();
+      const token = await AuthService.getStoredToken();
       const response = await fetch(`${this.baseUrl}/${storyId}/view`, {
         method: "POST",
         headers: {
@@ -167,7 +166,7 @@ class StoriesService {
 
   async deleteStory(storyId: string): Promise<void> {
     try {
-      const token = await this.authService.getAuthToken();
+      const token = await AuthService.getStoredToken();
       const response = await fetch(`${this.baseUrl}/${storyId}`, {
         method: "DELETE",
         headers: {
@@ -187,7 +186,7 @@ class StoriesService {
 
   async createHighlight(highlightData: CreateHighlightData): Promise<any> {
     try {
-      const token = await this.authService.getAuthToken();
+      const token = await AuthService.getStoredToken();
       const response = await fetch(`${this.baseUrl}/highlights`, {
         method: "POST",
         headers: {
@@ -210,7 +209,7 @@ class StoriesService {
 
   async deleteHighlight(highlightId: string): Promise<void> {
     try {
-      const token = await this.authService.getAuthToken();
+      const token = await AuthService.getStoredToken();
       const response = await fetch(
         `${this.baseUrl}/highlights/${highlightId}`,
         {
@@ -234,7 +233,7 @@ class StoriesService {
   // Helper method to upload image to server
   async uploadImage(imageUri: string): Promise<string> {
     try {
-      const token = await this.authService.getAuthToken();
+      const token = await AuthService.getStoredToken();
       const formData = new FormData();
 
       // Create file object from URI
