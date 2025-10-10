@@ -8,3 +8,6 @@ export { CommentsScreen } from "./CommentsScreen";
 export { default as CartScreen } from "./CartScreen";
 export { default as OrderHistoryScreen } from "./OrderHistoryScreen";
 export { default as OrderDetailsScreen } from "./OrderDetailsScreen";
+export { default as NotificationsScreen } from "./NotificationsScreen";
+export { default as SearchScreen } from "./SearchScreen";
+export { default as AchievementsScreen } from "./AchievementsScreen";
