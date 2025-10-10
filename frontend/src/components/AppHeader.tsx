@@ -70,11 +70,11 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             <Ionicons
               name="arrow-back"
               size={24}
-              color={theme.colors.text}
+              color={theme.colors.textPrimary}
             />
           </TouchableOpacity>
         ) : null}
-        <Text style={[styles.title, { color: theme.colors.text }]}>
+        <Text style={[styles.title, { color: theme.colors.textPrimary }]}>
           {title}
         </Text>
       </View>
@@ -89,7 +89,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             <Ionicons
               name="search-outline"
               size={24}
-              color={theme.colors.text}
+              color={theme.colors.textPrimary}
             />
           </TouchableOpacity>
         )}
@@ -104,7 +104,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               <Ionicons
                 name="notifications-outline"
                 size={24}
-                color={theme.colors.text}
+                color={theme.colors.textPrimary}
               />
               {unreadCount > 0 && (
                 <View
