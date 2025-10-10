@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { SimpleStoriesContainer } from "../../components/Stories";
+import { StoriesContainer } from "../../components/Stories";
 import {
   View,
   Text,
@@ -9,13 +9,14 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert,
+  StatusBar,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types";
-import { useAuth } from "../../providers";
+import { useAuth, useTheme } from "../../providers";
 import { Post } from "../../components/Post";
 import { CreatePostButton } from "../../components/CreatePostButton";
 import { AppHeader } from "../../components/AppHeader";
@@ -26,6 +27,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const FeedScreen: React.FC = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
   const navigation = useNavigation<NavigationProp>();
   const {
     posts,
@@ -48,33 +50,60 @@ export const FeedScreen: React.FC = () => {
     applyFilter(filter);
   };
 
-  // Renderizar filtros
+  // Navegar para criação de post
+  const handleCreatePost = () => {
+    navigation.navigate("CreatePost");
+  };
+
+  // Renderizar filtros com design moderno
   const renderFilters = () => (
-    <View style={styles.filtersContainer}>
-      {[
-        { key: "ALL", label: "Tudo" },
-        { key: "FOOD", label: "Comida" },
-        { key: "DRINKS", label: "Bebidas" },
-        { key: "SOCIAL", label: "Social" },
-      ].map((filter) => (
-        <TouchableOpacity
-          key={filter.key}
-          style={[
-            styles.filterButton,
-            selectedFilter === filter.key && styles.filterButtonActive,
-          ]}
-          onPress={() => handleFilterPress(filter.key as PostType | "ALL")}
-        >
-          <Text
+    <View style={[styles.filtersContainer, { backgroundColor: theme.colors.surface }]}>
+      <View style={styles.filtersRow}>
+        {[
+          { key: "ALL", label: "Tudo", icon: "apps" },
+          { key: "FOOD", label: "Comida", icon: "restaurant" },
+          { key: "DRINKS", label: "Bebidas", icon: "beer" },
+          { key: "SOCIAL", label: "Social", icon: "people" },
+        ].map((filter) => (
+          <TouchableOpacity
+            key={filter.key}
             style={[
-              styles.filterText,
-              selectedFilter === filter.key && styles.filterTextActive,
+              styles.filterButton,
+              {
+                backgroundColor:
+                  selectedFilter === filter.key
+                    ? theme.colors.primary
+                    : theme.colors.surfaceVariant,
+              },
             ]}
+            onPress={() => handleFilterPress(filter.key as PostType | "ALL")}
+            activeOpacity={0.7}
           >
-            {filter.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
+            <Ionicons
+              name={filter.icon as any}
+              size={16}
+              color={
+                selectedFilter === filter.key
+                  ? theme.colors.textOnPrimary
+                  : theme.colors.textSecondary
+              }
+            />
+            <Text
+              style={[
+                styles.filterText,
+                {
+                  color:
+                    selectedFilter === filter.key
+                      ? theme.colors.textOnPrimary
+                      : theme.colors.textSecondary,
+                },
+              ]}
+            >
+              {filter.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 
@@ -84,38 +113,107 @@ export const FeedScreen: React.FC = () => {
       post={item}
       onLike={() => toggleLike(item.id)}
       onComment={() => navigation.navigate("Comments", { postId: item.id })}
-      onSave={() => Alert.alert("Salvar", "Em desenvolvimento")}
-      onShare={() => Alert.alert("Compartilhar", "Em desenvolvimento")}
-      onUserPress={() =>
-        Alert.alert("Perfil", `Abrir perfil de ${item.user.name}`)
-      }
+      onSave={() => console.log("Salvar post:", item.id)}
+      onShare={() => console.log("Compartilhar post:", item.id)}
+      onUserPress={(userId) => {
+        if (userId === user?.id) {
+          // Navegar para próprio perfil (tab Profile)
+          navigation.navigate("Main");
+        } else {
+          // Navegar para perfil de outro usuário
+          console.log("Ver perfil:", userId);
+        }
+      }}
     />
+  );
+
+  // Header do Feed com Stories e Filtros
+  const renderListHeader = () => (
+    <View>
+      {/* Stories */}
+      <StoriesContainer currentUserId={user?.id || ""} />
+      
+      {/* Filtros */}
+      {renderFilters()}
+      
+      {/* Botão de criar post */}
+      <View style={styles.createPostContainer}>
+        <CreatePostButton onPress={handleCreatePost} />
+      </View>
+    </View>
   );
 
   // Loading inicial
   if (loading && posts.length === 0) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#2D5A27" />
-        <Text style={styles.loadingText}>Carregando posts...</Text>
-      </View>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <AppHeader title="FoodConnect" showSearch showNotifications />
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
+            Carregando posts...
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   // Error state
   if (error && posts.length === 0) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>Erro ao carregar posts</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={refresh}>
-          <Text style={styles.retryButtonText}>Tentar novamente</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <AppHeader title="FoodConnect" showSearch showNotifications />
+        <View style={styles.centerContainer}>
+          <Ionicons name="warning-outline" size={64} color={theme.colors.error} />
+          <Text style={[styles.errorText, { color: theme.colors.error }]}>
+            Erro ao carregar posts
+          </Text>
+          <Text style={[styles.errorSubtext, { color: theme.colors.textSecondary }]}>
+            {error}
+          </Text>
+          <TouchableOpacity
+            style={[styles.retryButton, { backgroundColor: theme.colors.primary }]}
+            onPress={refresh}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="refresh" size={20} color="#fff" />
+            <Text style={styles.retryButtonText}>Tentar novamente</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
+  // Empty state
+  const renderEmptyComponent = () => (
+    <View style={styles.emptyState}>
+      <Ionicons name="restaurant-outline" size={64} color={theme.colors.textTertiary} />
+      <Text style={[styles.emptyStateText, { color: theme.colors.textPrimary }]}>
+        Nenhum post encontrado
+      </Text>
+      <Text style={[styles.emptyStateSubtext, { color: theme.colors.textSecondary }]}>
+        {selectedFilter === "ALL"
+          ? "Siga mais pessoas para ver posts no seu feed"
+          : `Nenhum post de ${selectedFilter.toLowerCase()} encontrado`}
+      </Text>
+      <TouchableOpacity
+        style={[styles.exploreButton, { backgroundColor: theme.colors.primary }]}
+        onPress={() => navigation.navigate("Search")}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="search" size={20} color="#fff" />
+        <Text style={styles.exploreButtonText}>Explorar</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar
+        barStyle={Platform.OS === "ios" ? "dark-content" : "default"}
+        backgroundColor={theme.colors.surface}
+      />
+      
       <AppHeader
         title="FoodConnect"
         showSearch={true}
@@ -130,40 +228,33 @@ export const FeedScreen: React.FC = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={refresh}
-            colors={["#2D5A27"]}
-            tintColor="#2D5A27"
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
           />
         }
-        ListHeaderComponent={
-          <View>
-            <SimpleStoriesContainer currentUserId={user?.id || ""} />
-            {renderFilters()}
-            <CreatePostButton />
-          </View>
-        }
+        ListHeaderComponent={renderListHeader}
         ListFooterComponent={
           hasMore && posts.length > 0 ? (
             <View style={styles.footerLoader}>
-              <ActivityIndicator color="#2D5A27" />
+              <ActivityIndicator color={theme.colors.primary} />
+              <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
+                Carregando mais posts...
+              </Text>
             </View>
-          ) : null
-        }
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.5}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={
-          posts.length === 0 ? styles.emptyContainer : undefined
-        }
-        ListEmptyComponent={
-          !loading ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>Nenhum post encontrado</Text>
-              <Text style={styles.emptyStateSubtext}>
-                Siga mais pessoas para ver posts no seu feed
+          ) : posts.length > 0 ? (
+            <View style={styles.footerEnd}>
+              <Ionicons name="checkmark-circle" size={20} color={theme.colors.success} />
+              <Text style={[styles.footerEndText, { color: theme.colors.textSecondary }]}>
+                Você está em dia! 🎉
               </Text>
             </View>
           ) : null
         }
+        ListEmptyComponent={!loading ? renderEmptyComponent : null}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={posts.length === 0 ? styles.emptyContainer : undefined}
       />
     </SafeAreaView>
   );
@@ -172,29 +263,37 @@ export const FeedScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   centerContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
+    paddingHorizontal: 32,
   },
   loadingText: {
-    marginTop: 12,
+    marginTop: 16,
     fontSize: 16,
-    color: "#666",
+    fontWeight: "500",
   },
   errorText: {
-    fontSize: 16,
-    color: "#e74c3c",
-    marginBottom: 16,
+    fontSize: 18,
+    fontWeight: "600",
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  errorSubtext: {
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 24,
   },
   retryButton: {
-    backgroundColor: "#2D5A27",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
   },
   retryButtonText: {
     color: "#fff",
@@ -202,54 +301,88 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   filtersContainer: {
-    flexDirection: "row",
-    paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#fff",
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: "rgba(0,0,0,0.05)",
+  },
+  filtersRow: {
+    flexDirection: "row",
+    gap: 8,
   },
   filterButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    marginRight: 8,
     borderRadius: 20,
-    backgroundColor: "#f5f5f5",
-  },
-  filterButtonActive: {
-    backgroundColor: "#2D5A27",
   },
   filterText: {
     fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
+    fontWeight: "600",
   },
-  filterTextActive: {
-    color: "#fff",
+  createPostContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   footerLoader: {
-    paddingVertical: 20,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 24,
+  },
+  footerText: {
+    fontSize: 14,
+  },
+  footerEnd: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 32,
+  },
+  footerEndText: {
+    fontSize: 14,
+    fontWeight: "500",
   },
   emptyContainer: {
     flexGrow: 1,
+    justifyContent: "center",
   },
   emptyState: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 32,
+    paddingVertical: 64,
   },
   emptyStateText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
+    fontSize: 20,
+    fontWeight: "700",
+    marginTop: 16,
     marginBottom: 8,
     textAlign: "center",
   },
   emptyStateSubtext: {
-    fontSize: 14,
-    color: "#666",
+    fontSize: 15,
     textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  exploreButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+    marginTop: 8,
+  },
+  exploreButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
